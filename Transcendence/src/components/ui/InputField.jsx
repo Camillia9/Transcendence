@@ -13,3 +13,8 @@ export default function InputField({ label, type, value, onChange, error }) {
     </div>
   )
 }
+
+// Champ complet pour formulaire avec UX (label + erreurs + styles dynamiques)
+// type = type du champs a rentre
+// value = input controle par React
+// onChange = declanche quand on tape

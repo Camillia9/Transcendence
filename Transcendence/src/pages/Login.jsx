@@ -1,119 +1,108 @@
 import { useState } from 'react'
-import InputField from '../components/InputField'
-import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import Input from '../components/ui/Input'
+import Button from '../components/ui/Button'
+import { useAuth } from '../context/AuthContext'
 
-// --- Fonctions de validation ---
-function validate(fields, isSignup) {
-  const errors = {}
-
-  if (!fields.email.includes('@') || !fields.email.includes('.'))
-    errors.email = 'Email invalide'
-
-  if (fields.password.length < 8)
-    errors.password = 'Minimum 8 caractères'
-
-  if (isSignup) {
-    if (fields.username.trim().length < 3)
-      errors.username = 'Minimum 3 caractères'
-    if (fields.password !== fields.confirm)
-      errors.confirm = 'Les mots de passe ne correspondent pas'
-  }
-
-  return errors
-}
-
-export default function Login() {
-  const [isSignup, setIsSignup] = useState(false)
-  const [fields, setFields] = useState({ username: '', email: '', password: '', confirm: '' })
-  const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
+function Login() {
+  const navigate = useNavigate() // La demande pour avoir acces a un outil de navigation
   const { login } = useAuth()
-  const navigate = useNavigate()
 
-  // Met à jour un champ et revalide en direct
-  function handleChange(field, value) {
-    const updated = { ...fields, [field]: value }
-    setFields(updated)
-    if (submitted) setErrors(validate(updated, isSignup))
+  const [username, setUsername] = useState(''); // Verif input de l'username
+  const [password, setPassword] = useState(''); // Verif input du password
+  const [errors, setErrors]     = useState({})
+  const [loading, setLoading]   = useState(false)
+
+  // --- Validation ---
+  // validate() verifie juste les champs et retourne un objet. Elle ne modifie rien
+  const validate = () => {
+    const newErrors = {}
+
+    if (!username.trim())
+      newErrors.username = "Le nom d'utilisateur est requis"
+
+    if (!password)
+      newErrors.password = "Le mot de passe est requis"
+    else if (password.length < 6)
+      newErrors.password = "Minimum 6 caractères"
+
+    return newErrors
   }
 
-  function handleSubmit() {
-	setSubmitted(true)
-	const errs = validate(fields, isSignup)
-	setErrors(errs)
-	if (Object.keys(errs).length === 0) {
-		login({ email: fields.email })  // simule un login (sera remplacé par l'API)
-		navigate('/dashboard')           // redirige vers le dashboard
-  }
-}
+  // --- Soumission ---
+  const handleSubmit = async () => {
+    const newErrors = validate()
 
-  function switchMode() {
-    setIsSignup(!isSignup)
+    //  s'il y a au moins une erreur, on met à jour errors et on stoppe avec return. Le reste de handleSubmit ne s'exécute pas.
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setLoading(true)
     setErrors({})
-    setSubmitted(false)
+
+    // Simule un appel API
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    login({ username }) // appelle la fonction de ton AuthContext pour stocker l'utilisateur connecté.
+    navigate('/dashboard')
+    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-2xl w-full max-w-md flex flex-col gap-6 shadow-xl">
+    <div className="bg-gray-900 p-10 rounded-2xl w-96">
+      
+      <h2 className="text-white text-3xl font-bold mb-8 text-center">
+        Connexion
+      </h2>
 
-        {/* Titre */}
-        <h1 className="text-2xl font-bold text-white text-center">
-          {isSignup ? 'Créer un compte' : 'Connexion'}
-        </h1>
-
-        {/* Champs */}
-        {isSignup && (
-          <InputField
-            label="Nom d'utilisateur"
-            type="text"
-            value={fields.username}
-            onChange={e => handleChange('username', e.target.value)}
-            error={errors.username}
-          />
-        )}
-        <InputField
-          label="Email"
-          type="email"
-          value={fields.email}
-          onChange={e => handleChange('email', e.target.value)}
-          error={errors.email}
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Nom d'utilisateur"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          // e c'est l'événement, e.target c'est l'input, e.target.value c'est ce qu'il contient.
         />
-        <InputField
-          label="Mot de passe"
-          type="password"
-          value={fields.password}
-          onChange={e => handleChange('password', e.target.value)}
-          error={errors.password}
-        />
-        {isSignup && (
-          <InputField
-            label="Confirmer le mot de passe"
-            type="password"
-            value={fields.confirm}
-            onChange={e => handleChange('confirm', e.target.value)}
-            error={errors.confirm}
-          />
+        {errors.username && (
+          <p className="text-red-400 text-sm mt-1">{errors.username}</p>
         )}
-
-        {/* Bouton */}
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition"
-        >
-          {isSignup ? "S'inscrire" : 'Se connecter'}
-        </button>
-
-        {/* Switch login/signup */}
-        <p className="text-gray-400 text-sm text-center">
-          {isSignup ? 'Déjà un compte ?' : 'Pas encore de compte ?'}{' '}
-          <button onClick={switchMode} className="text-blue-400 hover:underline">
-            {isSignup ? 'Se connecter' : "S'inscrire"}
-          </button>
-        </p>
-
       </div>
+
+      <div className="mb-6">
+        <Input
+          type="password"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) =>setPassword(e.target.value)}
+          // e c'est l'événement, e.target c'est l'input, e.target.value c'est ce qu'il contient.
+        />
+        {errors.password && (
+          <p className="text-red-400 text-sm mt-1">{errors.password}</p>
+        )}
+      </div>
+
+      <Button onClick={handleSubmit} loading={loading}>
+        Se connecter
+      </Button>
+
+      <p
+        onClick={() => navigate('/signup')}
+        className="text-gray-500 text-center mt-4 cursor-pointer hover:text-white"
+      >
+        Pas encore de compte ? S'inscrire
+      </p>
+
+      <p
+        onClick={() => navigate('/')}
+        className="text-gray-500 text-center mt-4 cursor-pointer hover:text-white"
+      >
+        ← Retour
+      </p>
+
     </div>
   )
 }
+
+export default Login

@@ -1,8 +1,26 @@
-export default function Home() {
+import { useNavigate } from 'react-router-dom'
+import Button from '../components/ui/Button'
+import Card from "../components/ui/Card"
+import Avatar from "../components/ui/Avatar"
+import Badge from "../components/ui/Badge"
+
+function Home() {
+  const navigate = useNavigate()
+
   return (
-    <div>
-      <h1 className="text-4xl font-bold"> BIenvenue sur Transcendence 🏓</h1>
-      <p className="mt-3 text-gray-400">La page d'accueil.</p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      
+      <h1 className="text-white text-6xl font-bold mb-8">
+        TRANSCENDENCE
+      </h1>
+      
+      <Button onClick={() => navigate('/login')}>
+        Commencer
+      </Button>
+
     </div>
+
   )
 }
+
+export default Home
