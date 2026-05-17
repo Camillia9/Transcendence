@@ -45,7 +45,7 @@ function MainLayout() {
         {/* Droite — utilisateur connecté */}
         <div className="flex items-center gap-3">
           <Badge variant="green">🟢 En ligne</Badge>
-          <Avatar username={user?.username} size="sm" /> /*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. 
+          <Avatar username={user?.username} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
           <span className="text-sm text-gray-300">{user?.username}</span>
           <span
             onClick={handleLogout} /* logout() vide le contexte, puis navigate('/login') redirige. Les deux ensemble, sinon l'utilisateur resterait sur une page protégée avec un user null. */
