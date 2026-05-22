@@ -4,6 +4,9 @@ function Button({ children, onClick, variant = 'primary', loading = false }) {
     primary: 'bg-white text-black hover:bg-gray-200',
     danger:  'bg-red-500 text-white hover:bg-red-600',
     ghost:   'bg-transparent text-white border border-white hover:bg-gray-800',
+    dark:    'bg-[#1a3a5c] text-white hover:bg-[#0c2d4a]',
+    outline: 'bg-white text-[#1a3a5c] border border-gray-200 hover:bg-gray-50',
+    bleu: 'bg-[#1a3a5c] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#0c2d4a] transition-colors'
   }
 
   return (

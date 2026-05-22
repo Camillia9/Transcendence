@@ -13,15 +13,15 @@ function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-blue-600">
 
       {/* Navbar */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
 
         {/* Gauche — logo */}
         <span
-          onClick={() => navigate('/dashboard')}
-          className="font-bold text-lg tracking-widest cursor-pointer hover:text-gray-300"
+          onClick={() => navigate('/')}
+          className="font-bold text-lg tracking-widest cursor-pointer text-black"
         >
           TRANSCENDENCE
         </span>
@@ -29,13 +29,13 @@ function MainLayout() {
         {/* Centre — liens */}
         <div className="flex items-center gap-6">
           <span
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             className="text-gray-400 hover:text-white cursor-pointer transition-colors"
           >
             Accueil
           </span>
           <span
-            onClick={() => navigate('/profil')}
+            //onClick={() => navigate('/profil')}
             className="text-gray-400 hover:text-white cursor-pointer transition-colors"
           >
             Profil

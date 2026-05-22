@@ -5,6 +5,7 @@ import Button from '../components/ui/Button'
 import Card from "../components/ui/Card"
 import Avatar from "../components/ui/Avatar"
 import Badge from "../components/ui/Badge"
+import Logo from '../components/ui/Logo'
 
 function test() {
 //  const navigate = useNavigate()
@@ -18,6 +19,7 @@ function test() {
       setLoading(false)
     }, 2000)
   }
+  
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center">
@@ -25,6 +27,8 @@ function test() {
       <h1 className="text-white text-6xl font-bold mb-8">
         TEST
       </h1>
+
+      <Logo />
 
           {/*Usage basique*/}
       <Card>
