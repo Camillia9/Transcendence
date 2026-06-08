@@ -19,11 +19,10 @@ function App() {
   <AuthProvider>
     <BrowserRouter>
       <Routes>
+        <Route path="/"  element={<Landing />} />
         {/* Pages auth — centrées, sans navbar */}
         <Route element={<AuthLayout />}>
-          <Route path="/"  element={<Landing />} />
           <Route path="/login"  element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
         </Route>
     		{/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
     		<Route element={<MainLayout />}>

@@ -5,13 +5,14 @@ export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative w-screen h-screen flex flex-col overflow-hidden bg-[#ddeeff]">
+    <div className="relative min-h-screen w-full flex flex-col bg-[#ddeeff]">
+      {/*Responsive*/}
 
       {/* Motif de points — classe custom dans App.css */}
       <div className="dot-pattern absolute inset-0 opacity-50 pointer-events-none" />
 
       {/* Navbar */}
-      <nav className="relative z-10 flex items-center justify-between px-12 py-5">
+      <nav className="relative z-10 flex items-center justify-between px-5 py-5">
         <div className="flex items-center gap-2 text-[#1a3a5c] font-medium text-lg">
           <IconLayoutKanban size={28} />
           TaskBoard

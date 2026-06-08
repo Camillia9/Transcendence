@@ -36,14 +36,15 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       </div>}
 
 	  {/*En-tete: Nom + role*/}
-      <div className="flex items-start justify-between pr-10">
+      <div className="flex items-start justify-between pr-1">
         <h3
           onClick={() => navigate(`/projet/${project.id}`)}
           className="font-medium text-base leading-snug cursor-pointer hover:underline"
         >
           {project.name}
         </h3>
-        <span className="text-xs border rounded-full px-2 py-0.5 opacity-70 border-current whitespace-nowrap">
+        {/* Transition au survol*/}
+        <span className={`text-xs border rounded-full px-2 py-0.5 opacity-70 border-current whitespace-nowrap transition-all duration-200 ${hovered ? 'mr-12' : ''}`}>
           {project.role}
         </span>
       </div>

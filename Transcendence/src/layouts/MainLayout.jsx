@@ -23,7 +23,7 @@ function MainLayout() {
           onClick={() => navigate('/')}
           className="font-bold text-lg tracking-widest cursor-pointer text-black"
         >
-          TRANSCENDENCE
+          TaskBoard
         </span>
 
         {/* Centre — liens */}
