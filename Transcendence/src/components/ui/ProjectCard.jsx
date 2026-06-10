@@ -11,7 +11,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
   return (
     <div
       style={{backgroundColor: bg, color: text}}
-      className="rounded-2xl p-5 flex flex-col gap-4 min-h-[160px] relative"
+      className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
