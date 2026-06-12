@@ -41,3 +41,4 @@ export function useAuth() {
 // On save avec localStorage pour retrouver toutes nos infos apres un refresh. Sans cela on repart de zero a la page login
 // le Context API C’est ce qui permet de partager des données “globales” (comme l’utilisateur connecté) sans passer de props partout.
 // Props = arguments d'un composant React
+// Provider = Il partage des données et des fonctions à tous les composants placés à l'intérieur de lui.Ici user login logout
