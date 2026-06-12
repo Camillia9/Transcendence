@@ -8,6 +8,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Profil from './pages/Profil'
 import Landing from './pages/Landing'
+import Projet from './pages/Projet'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -28,6 +29,7 @@ function App() {
     		<Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/test" element={<Test />} />
+          <Route path="/projet" element={<Projet />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profil" element={<Profil />} />

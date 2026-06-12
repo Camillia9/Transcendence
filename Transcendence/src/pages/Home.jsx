@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { mockProjects } from "../data/mockProjet"
+import { useNavigate } from 'react-router-dom'
 import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
@@ -16,6 +17,9 @@ function Home() {
   const [newDeadline, setNewDeadline] = useState('') // string
   const [newMembers, setNewMembers] = useState('') // string
   const [newErrors, setNewErrors]   = useState({}) // Objet
+
+  // Provisoire
+  const navigate = useNavigate()
   
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (project) => {
@@ -188,6 +192,13 @@ function Home() {
               <Button variant="dark" onClick={handleCreateProject}> Cree le projet </Button>
             </div>
           </Modal>
+            
+          {/*BOUTON PROVISOIRE*/}
+          <p
+            onClick={() => navigate('/projet')} 
+            className='text-2xl text-black'>
+              Projet
+          </p>
     </div>
   )
 }
