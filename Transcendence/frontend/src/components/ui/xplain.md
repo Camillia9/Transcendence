@@ -1,26 +1,13 @@
 ## TaskCard
 
-const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
   id: task.id,
 })
 --> useDraggable rend la carte bougeable
 - attributes + listeners → les propriétés/écouteurs qui rendent l'élément attrapable (gestion de la souris, accessibilité clavier...)
 - setNodeRef → comme pour droppable, la référence à brancher sur la carte (ref={setNodeRef})
-- transform → la position de décalage pendant qu'on glisse la carte (coordonnées x/y)
 - isDragging → booléen, true pendant qu'on déplace cette carte
 
-const style = transform ? {
-  transform: `translate(${transform.x}px, ${transform.y}px)`,
-   zIndex: 999,
-} : {}
---> Le style dynamique (suivre la souris)
-- Comment marche 'transform' :
-    Au repos (pas de drag) → dnd-kit met transform = null
-    Pendant qu'on glisses cette carte → dnd-kit suit ta souris et met à jour transform à chaque mouvement, genre { x: 45, y: 120 } (de combien on as bougé depuis le point de départ). 
-    dnd-kit détecte le clic-maintenu-déplacement de la souris (grâce aux listeners, voir plus bas) et qui remplit transform en conséquence.
-- Si transform existe (on glisse) → on décale la carte de x et y pixels avec translate, et on la met au-dessus de tout (zIndex: 999)
-- Sinon → objet vide {}, pas de décalage
-Sans ça, la carte resterait figée pendant qu'on glisse.
 
 Le return() :
 Le spread : {...atributes} {...listeners}

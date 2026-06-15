@@ -13,17 +13,11 @@ function TaskCard({ task, onClick }) {
   const isDeadlinePast = task.deadline ? new Date(task.deadline) < new Date() : false
   //false: pas de retard, true retard
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id })
-
-  const style = transform ? {
-    transform: `translate(${transform.x}px, ${transform.y}px)`,
-     zIndex: 999,
-  } : {}
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id })
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...attributes}
       {...listeners}
       onClick={onClick}

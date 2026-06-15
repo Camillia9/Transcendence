@@ -7,11 +7,20 @@ But: Le drag&drop
 - useDroppable — c'est une colonne qui dit "je peux recevoir des cartes"
 - useDraggable — c'est une carte qui dit "je peux être glissée"
 
+
 Quand on lâches une carte sur une colonne, le DndContext déclenche un événement onDragEnd qui te dit : "la carte X a été déposée sur la colonne Y". On décides ensuite quoi faire avec cette info — dans notre cas, mettre à jour le state tasks.
 
 *La fonction*
+
+const handleDragStart = (event) => {
+  const task = tasks.find(t => t.id === event.active.id)
+  setActiveTask(task)
+}
+--> au début du glissement, on mémorise la tâche active dans activeTask. Le DragOverlay l'utilise pour savoir quoi afficher.
+
 const handleDragEnd = (event) => {
   const { active, over } = event
+   setActiveTask(null) // Dans tout les cas on remet a null
 
   // Si on lâche en dehors d'une colonne → on ne fait rien
   if (!over) return
@@ -43,3 +52,6 @@ On les extrait par destructuring : const { active, over } = event.
 - key={col.id} → l'identifiant unique (toujours sur l'élément du .map())
 - col={col} → la colonne (pour son label, son id)
 - colTasks={colTasks} → les tâches filtrées (pour le compteur)
+
+Au lieu de glisser directement la carte originale <DragOverlay> affiche une copie flottante au-dessus de tout pendant le glissement. Il est géré par @dnd-kit directement, donc il ne crée pas de scroll. 
+
