@@ -16,7 +16,16 @@ function Projet() {
 
   const handleDragEnd = (event) => {
     const { active, over } = event
-    console.log('carte deplacee:', active.id, '-> colonne:', over?.id)
+    if (!over) return
+
+    const taskId = active.id
+    const newColumn = over.id
+    const task = tasks.find(t => t.id === taskId)
+    if (task.column === newColumn) return
+
+    setTasks(tasks.map(t =>
+      t.id === taskId ? {...t, column: newColumn } : t
+    ))
   }
 
   return (

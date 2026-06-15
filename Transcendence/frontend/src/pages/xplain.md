@@ -11,8 +11,21 @@ Quand on lâches une carte sur une colonne, le DndContext déclenche un événem
 
 *La fonction*
 const handleDragEnd = (event) => {
-    const { active, over } = event
-    console.log('carte deplacee:', active.id, '-> colonne:', over?.id)
+  const { active, over } = event
+
+  // Si on lâche en dehors d'une colonne → on ne fait rien
+  if (!over) return
+
+  // Si on lâche sur la même colonne → on ne fait rien
+  const task = tasks.find(t => t.id === taskId)
+  if (task.column === newColumn) return
+
+  // Met à jour la colonne de la tâche
+  setTasks(tasks.map(t =>
+    t.id === taskId
+      ? { ...t, column: newColumn }
+      : t
+  ))
 }
 
 Quand on lâches une carte, dnd-kit appelle cette fonction avec un objet event qui contient plein d'infos. Les deux qui nous intéressent :
@@ -20,8 +33,10 @@ active → l'élément qu'on déplace (la carte attrapée). active.id = l'identi
 over → l'élément survolé au moment du lâcher (la colonne de destination). over.id = l'identifiant de cette colonne.
 On les extrait par destructuring : const { active, over } = event.
 
-Pourquoi over?.id et pas over.id ?
-Parce que si on lâches la carte en dehors de toute colonne (dans le vide), over vaut null. Faire null.id → crash. L'optional chaining ?. renvoie undefined au lieu de planter — comme pour user?.username. 
+- active.id — l'id de la carte qu'on vient de lâcher.
+- over.id — l'id de la colonne sur laquelle on a lâché.
+- tasks.find(t => t.id === taskId) — on retrouve la tâche dans le state pour vérifier sa colonne actuelle.
+- tasks.map(t => t.id === taskId ? { ...t, column: newColumn } : t) — on parcourt toutes les tâches. Si c'est la tâche déplacée, on crée une copie avec la nouvelle colonne (...t garde tout le reste intact). Sinon on retourne la tâche inchangée.
 
 <KanbanColumn></Kanbancolumn> 
 
