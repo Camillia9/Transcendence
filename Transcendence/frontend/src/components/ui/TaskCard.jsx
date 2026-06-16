@@ -1,5 +1,6 @@
 import { IconMessageCircle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
+import { useRef } from "react";
 
 const PRIORITY = {
 	urgent: { label: 'Urgent', bg: 'bg-red-100', text: 'text-red-600' },
@@ -13,8 +14,9 @@ function TaskCard({ task, onClick }) {
   const isDeadlinePast = task.deadline ? new Date(task.deadline) < new Date() : false
   //false: pas de retard, true retard
 
+  // Carte qui bouge
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id })
-
+  
   return (
     <div
       ref={setNodeRef}

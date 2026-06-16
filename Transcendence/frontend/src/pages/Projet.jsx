@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { mockTasks } from "../data/mockTasks";
 import TaskCard from "../components/ui/TaskCard"
 import KanbanColumn from "../components/ui/KanbanColum"
@@ -36,6 +36,19 @@ function Projet() {
     ))
   }
 
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint:{
+        delay:200,
+        tolerance: 5,
+      }
+    })
+  )
 
   return (
     <div className="flex flex-col gap-6 min-w-fit">
@@ -45,7 +58,7 @@ function Projet() {
       </div>
 
       {/*Les colonnes */}
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map((col) => {
             const colTasks = tasks.filter((t) => t.column === col.id);

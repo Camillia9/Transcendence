@@ -9,6 +9,9 @@ const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
 - isDragging → booléen, true pendant qu'on déplace cette carte
 
 
+
+
+
 Le return() :
 Le spread : {...atributes} {...listeners}
 - {...listners} :  contient les écouteurs d'événements souris : "quand on appuie ici", "quand on bouge", "quand on relâche". Ce sont eux qui détectent physiquement le glisser.
