@@ -4,73 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
 import Logo from '../components/ui/Logo'
-import { IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2 } from '@tabler/icons-react'
-
-//function MainLayout() {
-//  const { user, logout } = useAuth()
-//  const navigate = useNavigate()
-//  const [sidebarOpen, setSidebarOpen] = useState(true)
-
-//  const handleLogout = () => {
-//    logout()
-//    navigate('/login')
-//  }
-
-//  return (
-//    <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col">
-
-//      {/* Navbar */}
-//      <nav className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
-
-//        {/* Gauche — logo */}
-//        <span
-//          onClick={() => navigate('/')}
-//          className="font-bold text-lg tracking-widest cursor-pointer text-black"
-//        >
-//          TaskBoard
-//        </span>
-
-//        {/* Centre — liens */}
-//        <div className="flex items-center gap-6">
-//          <span
-//            onClick={() => navigate('/')}
-//            className="text-gray-400 hover:text-white cursor-pointer transition-colors"
-//          >
-//            Accueil
-//          </span>
-//          <span
-//            //onClick={() => navigate('/profil')}
-//            className="text-gray-400 hover:text-white cursor-pointer transition-colors"
-//          >
-//            Profil
-//          </span>
-//        </div>
-
-//        {/* Droite — utilisateur connecté */}
-//        <div className="flex items-center gap-3">
-//          <Badge variant="green">🟢 En ligne</Badge>
-//          <Avatar username={user?.username} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
-//          <span className="text-sm text-gray-300">{user?.username}</span>
-//          <span
-//            onClick={handleLogout} /* logout() vide le contexte, puis navigate('/login') redirige. Les deux ensemble, sinon l'utilisateur resterait sur une page protégée avec un user null. */
-//            className="text-gray-500 hover:text-red-400 text-sm cursor-pointer transition-colors"
-//          >
-//            Déconnexion
-//          </span>
-//        </div>
-
-//      </nav>
-
-//      {/* Contenu de la page */}
-//      <main className="p-6">
-//        <Outlet />
-//      </main>
-
-//    </div>
-//  )
-//}
-
-//export default MainLayout
+import { IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -161,6 +95,17 @@ function MainLayout() {
                 { sidebarOpen && (
                   <span> Home </span>
                 )}
+            </button>
+
+            <button
+              onClick={() => navigate('/Organisation')}
+              className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
+            >
+              <IconUsers size={18} className='shrink-0'/>
+              {sidebarOpen && (
+                <span>Organisations</span>
+              )}
+
             </button>
           </div>
 

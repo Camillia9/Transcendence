@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import Profil from './pages/Profil'
 import Landing from './pages/Landing'
 import Projet from './pages/Projet'
+import Organisation from './pages/Organisation'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -28,9 +29,10 @@ function App() {
     		{/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
     		<Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/test" element={<Test />} />
           <Route path="/projet" element={<Projet />} />
+          <Route path="/Organisation" element={<Organisation />} />
           <Route element={<ProtectedRoute />}>
+            <Route path="/test" element={<Test />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profil" element={<Profil />} />
         	</Route>
