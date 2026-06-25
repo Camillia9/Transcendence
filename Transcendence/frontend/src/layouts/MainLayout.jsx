@@ -1,28 +1,48 @@
+import { IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { mockNotifications } from '../data/mockNotifs'
+import { NOTIF_ICONS } from "../data/notifIcons"
+import { timeAgo } from '../utils/timeAgo'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
 import Logo from '../components/ui/Logo'
-import { IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
 
 function MainLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifications, setNotifications] = useState(mockNotifications)
+  const unreadCount = notifications.filter(n => !n.read).length
+
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
 
+  const markAsRead = (id) => {
+    setNotifications(notifications.map(notif => 
+      notif.id === id ? {...notif, read:true} : notif
+    ))
+  }
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(notif => ({...notif, read: true})))
+  }
+
   useEffect(() => {
-    const handleClickOutside = () => setProfileMenuOpen(false)
-    if (profileMenuOpen)
+    const handleClickOutside = () => {
+      setProfileMenuOpen(false)
+      setNotifOpen(false)
+    }
+    if (profileMenuOpen || notifOpen)
       document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [profileMenuOpen])
+  }, [profileMenuOpen, notifOpen])
   
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col">
@@ -30,13 +50,77 @@ function MainLayout() {
       <nav className='bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between'>
         <Logo /> {/* qui sera a gauche. Tout le reste a droite:*/}
         
-          {/*Cloche */}
-          <div className='flex items-center gap-4'> {/*centre les elements horizontalement avec espace 4 entre chaque element*/}
-            <button className='relative p-2 rounded-lg hover:bg-gray-100 transition-colors'>
-              <IconBell size={20} className="text-gray-500"/>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full" /> {/* Persistant pour l'instant. A modif plus tard pour qu'il apparaisse que lorsquil ya des notifs*/}
-            </button>
-          
+          {/*centre les elements horizontalement avec espace 4 entre chaque element*/}
+          <div className='flex items-center gap-4'>
+
+            {/*Cloche et son bouton rouge de notifs*/}
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setNotifOpen(!notifOpen) }}
+                className='relative p-2 rounded-lg hover:bg-gray-100 transition-colors'
+              >
+                <IconBell size={20} className="text-gray-500"/>
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/*Panneau deroulant*/}
+              {notifOpen && (
+                <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
+                  {/*En tete*/}
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <span className='text-sm font-medium text-gray-700'>Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); markAllAsRead()}}
+                        className='text-xs text-blue-400 hover:text-blue-500 font-medium transition-colors'
+                      >
+                        Tout marquer comme lu
+                      </button>
+                    )}
+                  </div>
+
+                  {/*Liste*/}
+                  <div className='max-h-96 overflow-y-auto flex flex-col'>
+                    {notifications.length === 0 ? (
+                      <p className='px-4 py-6 text-sm text-gray-400 text-center'>Aucune notification</p>
+                    ) : (
+                      notifications.map(notif => {
+                        const config = NOTIF_ICONS[notif.type]
+                        const Icon = config?.icon
+                        return(
+                        <button
+                        key={notif.id}
+                        onClick={() => {
+                          markAsRead(notif.id)
+                          navigate(notif.link)
+                          setNotifOpen(false)
+                        }}
+                        className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
+                        >
+                          {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
+                          {/*Pastille bleu - Non lu*/}
+                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-blue-400'}`} />
+                          <div className='flex flex-col'>
+                            <span className={`text-sm ${notif.read ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
+                              {notif.message}
+                            </span>
+                            <span className='text-xs text-gray-400 mt-0.5'>
+                              {timeAgo(notif.createdAt)}
+                            </span>
+
+                          </div>
+                        </button>
+                        )
+                      })
+                    )}
+                    </div>
+                </div>
+              )}
+            </div>
             {/*Langue */}
             <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm text-gray-500 font-medium'>
               <IconLanguage size={20} className='text-gray-500'/>
