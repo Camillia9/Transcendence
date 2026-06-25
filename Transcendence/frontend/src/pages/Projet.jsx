@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { mockTasks } from "../data/mockTasks";
+import { PRIORITIES } from "../data/priorities";
+import Modal from '../components/ui/Modal'
+import Input from '../components/ui/Input'
+import Button from '../components/ui/Button'
 import TaskCard from "../components/ui/TaskCard"
 import KanbanColumn from "../components/ui/KanbanColum"
+import TaskPanel from "../components/ui/TaskPanel";
 
 const COLUMNS = [
   { id: "todo", label: "À faire" },
@@ -14,6 +19,15 @@ const COLUMNS = [
 function Projet() {
   const [tasks, setTasks] = useState(mockTasks)
   const [activeTask, setActiveTask] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
+  const [newTaskColumn, setNewTaskColum] = useState(null)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskPriority, setNewTaskPriority] = useState('normal')
+  const [newTaskError, serNewTaskError] = useState('')
+
+  
+  // TEMPORAIRE 
+  console.log(selectedTask)
 
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
@@ -50,6 +64,39 @@ function Projet() {
     })
   )
 
+  // Maj de la tache depuis le paneau (panel)
+  const handleUpdateTask = (updateTask) => {
+    setTasks(tasks.map(t => t.id === updateTask.id ? updateTask : t))
+    setSelectedTask(updateTask)
+  }
+
+  // Remettre tout au propre lorsqu'on a fini de cree la tache
+  const handleCloseNewTask = () => {
+    setNewTaskColum(null)
+    setNewTaskTitle('')
+    setNewTaskPriority('normal')
+    setNewTaskError('')
+  }
+
+  const handleCreateTask = () => {
+    if (!newTaskTitle.trim()) {
+      setNewTaskError('Le titre est obligatoire')
+      return
+    }
+    
+    const newTask = {
+      id: Date.now(),
+      title: newTaskTitle.trim(),
+      priority: newTaskPriority,
+      column: newTaskColumn,
+      assignee: null,
+      deadline: null,
+      comments: [],
+    }
+    setTasks([newTask, ...tasks])
+    handleCloseNewTask()
+  }
+
   return (
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
@@ -63,14 +110,71 @@ function Projet() {
           {COLUMNS.map((col) => {
             const colTasks = tasks.filter((t) => t.column === col.id);
             return (
-              <KanbanColumn key={col.id} col={col} colTasks={colTasks}>
+              <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColum(col.id)}>
                 {colTasks.map(task => (
                   <TaskCard
-                    key={task.id}
-                    task={task}
-                    onClick={() => console.log('click', task.title)}
+                  key={task.id}
+                  task={task}
+                  onClick={() => setSelectedTask(task)}
                   />
                 ))}
+                  <TaskPanel
+                    task={selectedTask}
+                    onClose={() => setSelectedTask(null)}
+                    onUpdate={handleUpdateTask}
+                  />
+                  <Modal
+                    isOpen={!!newTaskColumn}
+                    inClos={handleCloseNewTask}
+                    title="Nouvelle tache"
+                  >
+
+                    {/*Titre*/}
+                    <div className="flex flex-col gap-1 mb-4">
+                      <label className="text-sm text-gray-500">Titre *</label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: Creation de la page login"
+                        value={newTaskTitle}
+                        onChange={(e) => {
+                          setNewTaskTitle(e.target.value)
+                          setNewTaskError('')
+                        }}
+                        light
+                      />
+                      {newTaskError && (
+                        <p className="text-red-400 text-xs mt-1">{newTaskError}</p>
+                      )}
+                    </div>
+
+                    {/*Priorite*/}
+                    <div className="flex flex-col gap-2 mb-6">
+                      <label className="text-sm text-gray-500">Priorite</label>
+                      <div className="flex gap-2">
+                        {PRIORITIES.map(p => (
+                          <button
+                            key={p.value}
+                            onClick={() => setNewTaskPriority(p.value)}
+                            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-opacity ${p.bg} ${p.text} ${
+                              newTaskPriority === p.value ? 'opacity-100' : 'opacity-40'
+                            }`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/*Boutons*/}
+                    <div className="flex gap-2">
+                      <Button onClick={handleCloseNewTask}>
+                        Annuler
+                      </Button>
+                      <Button variant="dark" onClick={handleCreateTask}>
+                        Cree la tache
+                      </Button>
+                    </div>
+                  </Modal>
               </KanbanColumn>
             )
           })}

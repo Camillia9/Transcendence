@@ -40,8 +40,8 @@ export const mockTasks = [
     title: "Design du tableau Kanban",
     priority: "low",
     column: "waiting",
-    assignee: "Bob",
-    deadline: "2025-06-25",
+    assignee: "",
+    deadline: "2027-06-25",
     comments: [
       { id: 1, author: "Alice", text: "En attente de la maquette Figma", date: "2025-05-01" }
     ]

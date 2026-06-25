@@ -48,7 +48,7 @@ On les extrait par destructuring : const { active, over } = event.
 - tasks.map(t => t.id === taskId ? { ...t, column: newColumn } : t) — on parcourt toutes les tâches. Si c'est la tâche déplacée, on crée une copie avec la nouvelle colonne (...t garde tout le reste intact). Sinon on retourne la tâche inchangée.
 
 
-fct const sensors()
+*fct const sensors()*
 Qu'est-ce qu'un sensor ? : Un capteur c'est ce qui détecte l'intention de drag. Les sensors permettent de configurer quand un drag doit vraiment démarrer, et non directement au clic.
 
 useSensor (singulier) → configure un capteur précis
@@ -59,7 +59,9 @@ MouseSensor gere le drag a la souris (le drag ne demarre que si la souris a boug
 
 TouchSensor gere le drag au tactile (tablette, tel) mais comment distinguer le drag d'un scroll au doigt ?
 - delay : il faut maintenir au doigt pour que le drag s'active
-- tolerance : Pendant ce maintient le doigt peux bouger jusqua 5px. Au dela -> scroll. 
+- tolerance : Pendant ce maintient le doigt peux bouger jusqua 5px. Au dela -> scroll.
+
+*fct handleCl*
 
 
 <KanbanColumn></Kanbancolumn> 

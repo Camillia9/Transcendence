@@ -1,15 +1,10 @@
 import { IconMessageCircle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
 import { useRef } from "react";
-
-const PRIORITY = {
-	urgent: { label: 'Urgent', bg: 'bg-red-100', text: 'text-red-600' },
-	normal: { label: 'Normal', bg: 'bg-orange-100', text: 'text-orange-500' },
-	low:    { label: 'Faible', bg: 'bg-gray-100', text: 'text-gray-500' },
-}
+import { PRIORITIES } from "../../data/priorities";
 
 function TaskCard({ task, onClick }) {
-  const priority = PRIORITY[task.priority]
+  const priority = PRIORITIES.find(p => p.value === task.priority)
 
   const isDeadlinePast = task.deadline ? new Date(task.deadline) < new Date() : false
   //false: pas de retard, true retard
