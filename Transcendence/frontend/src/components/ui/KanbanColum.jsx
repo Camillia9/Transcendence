@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 
-function KanbanColumn({col, colTasks, children}) {
+function KanbanColumn({col, colTasks, children, onAddTask }) {
 	const { setNodeRef, isOver } = useDroppable({id: col.id })
 
 	return (
@@ -18,7 +18,12 @@ function KanbanColumn({col, colTasks, children}) {
 						{colTasks.lenght}
 					</span>
 				</div>
-				<button className="text-gray-400 hover:text-gray-600 text-lg leading-none"> + </button>
+				<button 
+				onClick={onAddTask}
+				className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+				> 
+					+
+				</button>
 			</div>
 			
 			{/*Zone de depot */}

@@ -1,5 +1,6 @@
 import { IconLayoutKanban } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
+import Footer from '../components/ui/Footer'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -67,7 +68,7 @@ export default function Landing() {
         </div>
 
       </div>
-
+      <Footer />
     </div>
   )
 }

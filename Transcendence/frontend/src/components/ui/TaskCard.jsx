@@ -1,29 +1,20 @@
 import { IconMessageCircle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
-
-const PRIORITY = {
-	urgent: { label: 'Urgent', bg: 'bg-red-100', text: 'text-red-600' },
-	normal: { label: 'Normal', bg: 'bg-orange-100', text: 'text-orange-500' },
-	low:    { label: 'Faible', bg: 'bg-gray-100', text: 'text-gray-500' },
-}
+import { useRef } from "react";
+import { PRIORITIES } from "../../data/priorities";
 
 function TaskCard({ task, onClick }) {
-  const priority = PRIORITY[task.priority]
+  const priority = PRIORITIES.find(p => p.value === task.priority)
 
   const isDeadlinePast = task.deadline ? new Date(task.deadline) < new Date() : false
   //false: pas de retard, true retard
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id })
-
-  const style = transform ? {
-    transform: `translate(${transform.x}px, ${transform.y}px)`,
-     zIndex: 999,
-  } : {}
-
+  // Carte qui bouge
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id })
+  
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...attributes}
       {...listeners}
       onClick={onClick}
