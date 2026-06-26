@@ -72,3 +72,21 @@ TouchSensor gere le drag au tactile (tablette, tel) mais comment distinguer le d
 
 Au lieu de glisser directement la carte originale <DragOverlay> affiche une copie flottante au-dessus de tout pendant le glissement. Il est géré par @dnd-kit directement, donc il ne crée pas de scroll. 
 
+
+## LegalPages
+
+LegalPage est un composant réutilisable qui sert pour deux pages (Privacy Policy ET Terms of Service). Au lieu d'écrire deux fichiers quasi identiques, tu fais un composant qui reçoit son content en prop. Privacy lui passe son contenu, Terms le sien. Le composant ne fait que mettre en forme.
+
+La double boucle : 
+content.sections.map(...)      → pour chaque section
+  section.blocks.map(...)  → pour chaque bloc de la section
+
+Le rendu :
+if (block.type === 'p')  → rend un paragraphe
+if (block.type === 'ul') → rend une liste à puces
+return null              → si type inconnu, on ignore, on affaiche rien au lieu de planter
+
+Tailwind :
+<main className="max-w-3xl mx-auto px-6 py-12">  : Evite que le texte s'affiche sur tout l'ecran. Largeur confortable et centree. 
+leading-relaxed : Augmente l'interligne du text
+list-disc pl-5 sur le <ul> → list-disc remet les puces (•) que Tailwind enlève par défaut, pl-5 décale la liste vers la droite pour que les puces aient de la place.

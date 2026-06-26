@@ -15,6 +15,8 @@ import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import Test from "./pages/test"
 import './App.css'
+import LegalPage from './pages/LegalPage'
+import { privacyPolicy, termsOfService } from './data/legalContent'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/"  element={<Landing />} />
+        <Route path="/privacy" element={<LegalPage content={privacyPolicy}/>} />
+        <Route path="/terms" element={<LegalPage content={termsOfService}/>} />
         {/* Pages auth — centrées, sans navbar */}
         <Route element={<AuthLayout />}>
           <Route path="/login"  element={<Login />} />

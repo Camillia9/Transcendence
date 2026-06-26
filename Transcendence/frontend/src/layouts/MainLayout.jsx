@@ -8,6 +8,7 @@ import { timeAgo } from '../utils/timeAgo'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
 import Logo from '../components/ui/Logo'
+import Footer from '../components/ui/Footer'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -220,8 +221,11 @@ function MainLayout() {
         </aside>
 
         {/*Contenu de la page */}
-        <main className="flex-1 p-6 min-w-0 overflow-x-auto">
-          <Outlet/>
+        <main className="flex-1 min-w-0 overflow-x-auto flex flex-col">
+          <div className='flex-1 p-6'>
+            <Outlet/>
+          </div>
+          <Footer/>
         </main>
       </div>
     </div>

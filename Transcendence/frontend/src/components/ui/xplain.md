@@ -187,3 +187,23 @@ On parcourt tout les commentaire du tableau task.comment.
   - Date : {comment.date}
 
 {comment.text} → le contenu du commentaire.
+
+
+## Footer
+
+balise en bas de la page avec 2 zones : 
+À gauche : le copyright
+À droite : les liens légaux (Privacy + Terms)
+
+© {new Date().getFullYear()} TaskBoard 
+--> Copyright dynamique. Recupere l'annee actuelle tout les ans. Donc maj auto de la date
+
+Tailwind:
+flex flex-col sm:flex-row → le responsive :
+Par défaut (mobile) → flex--col = copyright et liens empilés verticalement
+À partir de sm: (écran ≥ 640px) → flex--row = côte à côte horizontalement
+
+<Link to="/privacy" className="...">
+On utilise <Link> de React Router, pas <a href>. La différence :
+<a href> → recharge toute la page (le navigateur refait une requête complète)
+<Link to> → navigation instantanée côté client, sans rechargement (React Router change juste le composant affiché)
