@@ -4,6 +4,7 @@
 // Init les sockets
 // Lance l'ecoute sur le port
 
+import 'dotenv/config'
 import express from 'express'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
@@ -25,6 +26,7 @@ const httpServer = createServer(app)
 const io = new Server(httpServer, {
 	cors: {
 		origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+		// origin : '*',
 		methods: ['GET', 'POST'],
 	},
 })
