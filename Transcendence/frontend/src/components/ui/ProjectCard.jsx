@@ -6,12 +6,12 @@ import { getProgressColor } from "../../utils/progressColor"
 export default function ProjectCard({ project, onEdit, onDelete }) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false) // Gere le survol
-  const { bg, text } = getProgressColor(project.tasks.done, project.tasks.total)
+  const { accent, tint, soft, text } = getProgressColor(project.tasks.done, project.tasks.total)
   const pct = project.tasks.total === 0 ? 0 : Math.round(project.tasks.done / project.tasks.total * 100)
   return (
     <div
-      style={{backgroundColor: bg, color: text}}
-      className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative"
+      className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
+      style={{ backgroundColor: tint, borderLeftColor: accent }}   /* l'accent latéral = couleur d'avancement */
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -22,14 +22,14 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 		{/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
         <button
         onClick={(e) => { e.stopPropagation(); onEdit(project)}}
-        className="p-1.5 rounded-lg bg-black/10 hover:bg-black/20 transition-colors">
+        className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
           <IconPencil size={14}/>
         </button>
 
         {project.role === 'Admin' && (
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(project) }}
-            className="p-1.5 rounded-lg bg-red-400/20 hover:bg-red-400/40 transition-colors">
+            className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 transition-colors">
             <IconTrash size={14} />
           </button>
         )}
@@ -38,13 +38,16 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 	  {/*En-tete: Nom + role*/}
       <div className="flex items-start justify-between pr-1">
         <h3
-          onClick={() => navigate(`/projet/${project.id}`)}
           className="font-medium text-base leading-snug cursor-pointer hover:underline"
+          style={{ color: text }}
         >
           {project.name}
         </h3>
         {/* Transition au survol*/}
-        <span className={`text-xs border rounded-full px-2 py-0.5 opacity-70 border-current whitespace-nowrap transition-all duration-200 ${hovered ? 'mr-12' : ''}`}>
+        <span
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered ? 'mr-12' : ''}`}
+          style={{ backgroundColor: soft, color: text }}
+        >
           {project.role}
         </span>
       </div>
@@ -53,14 +56,14 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 	  {/*Affiche les elemets de haut en bas*/}
       <div className="flex flex-col gap-1">
 		{/*La barre de tache statique grise*/}
-        <div className="w-full bg-black/10 rounded-full h-1.5">
+        <div className="w-full rounded-full h-1.5" style={{ backgroundColor: '#00000010' }}>
 		   {/*barre de progression (remplissage) */}
           <div
-            className="h-1.5 rounded-full bg-current opacity-60 transition-all"
-            style={{ width: `${pct}%` }}
+            className="h-1.5 rounded-full transition-all"
+            style={{ width: `${pct}%`, backgroundColor: accent }}  /* remplissage = couleur d'avancement */
           />
         </div>
-        <span className="text-xs opacity-70">
+        <span className="text-xs" style={{ color: text }}>
           {project.tasks.done}/{project.tasks.total} tâches — {pct}%
         </span>
       </div>
@@ -68,7 +71,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       {/* Pied : deadline + membres */}
 	  {/*2 blocs a gauche et a droite */}
       <div className="flex items-center justify-between mt-auto">
-        <span className="text-xs opacity-60">
+        <span className="text-xs text-gray-400">
 			{/*project.deadline : project.deadline: date brut. On la transfore en objet JS(new). Format en fr(toLocal())*/}
           📅 {new Date(project.deadline).toLocaleDateString('fr-FR')}
         </span>
@@ -78,7 +81,8 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
             <div
               key={i}
               title={member}
-              className="w-7 h-7 rounded-full bg-black/20 border-2 border-white flex items-center justify-center text-xs font-medium"
+              className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium"
+              style={{ backgroundColor: soft, color: text }}
             >
 			  {/*affiche 1ere lettres*/}
               {member[0]}
@@ -86,7 +90,10 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           ))}
 		  {/*4eme bulle compteur si +3 membres*/}
           {project.members.length > 3 && (
-            <div className="w-7 h-7 rounded-full bg-black/20 border-2 border-white flex items-center justify-center text-xs">
+            <div
+              className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
+              style={{ backgroundColor: soft, color: text }}
+            >
               +{project.members.length - 3}
             </div>
           )}

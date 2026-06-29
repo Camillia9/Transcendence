@@ -1,7 +1,9 @@
+
+
 export default function Organisation() {
 	return (
 		<div>
-			<h1 className="text-2xl font-medium text-gray-800">Organisations</h1>
+			<h1 className="bg-primary-500 text-white p-4"> TEst fichier primary </h1>
 		</div>
 	)
 }

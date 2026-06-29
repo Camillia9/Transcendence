@@ -103,7 +103,7 @@ function Home() {
         {/*Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-gray-800"> Mes projets </h1>
-        <Button variant="bleu" onClick={() => setShowNewProject(true)}>
+        <Button onClick={() => setShowNewProject(true)}>
           + Nouveau Projet
         </Button>
       </div>
@@ -188,8 +188,8 @@ function Home() {
 
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
-              <Button onClick={handleCloseNewProject}> Annuler </Button>
-              <Button variant="dark" onClick={handleCreateProject}> Cree le projet </Button>
+              <Button variant="outline" onClick={handleCloseNewProject}> Annuler </Button>
+              <Button variant="primary" onClick={handleCreateProject}> Cree le projet </Button>
             </div>
           </Modal>
             

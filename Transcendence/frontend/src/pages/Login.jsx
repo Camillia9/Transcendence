@@ -33,14 +33,14 @@ function Login() {
       {/* Boutons OAuth */}
       <div className="flex flex-col gap-3 w-full">
 
-        <Button variant="outline" onClick={handleGoogle}>
+        <Button variant="ghost" onClick={handleGoogle}>
           <span className="flex items-center justify-center gap-2">
             <IconBrandGoogle size={18} />
             Continuer avec Google
           </span>
         </Button>
 
-        <Button variant="dark" onClick={handleGithub}>
+        <Button variant='ghost' onClick={handleGithub}>
           <span className="flex items-center justify-center gap-2">
             <IconBrandGithub size={18} />
             Continuer avec GitHub

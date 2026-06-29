@@ -179,10 +179,10 @@ function Projet() {
         </div>
         {/*Boutons*/}
         <div className="flex gap-2">
-          <Button onClick={handleCloseNewTask}>
+          <Button variant="outline" onClick={handleCloseNewTask}>
             Annuler
           </Button>
-          <Button variant="dark" onClick={handleCreateTask}>
+          <Button  onClick={handleCreateTask}>
             Cree la tache
           </Button>
         </div>
