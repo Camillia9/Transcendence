@@ -84,7 +84,7 @@ const { setNodeRef, isOver } = useDroppable({id: col.id })
 
 ```
  className={`rounded-2xl p-4 flex flex-col gap-3 min-w-70 w-70 transition-colors ${
-   isOver ? 'bg-blue-50' : 'bg-gray-100'
+   isOver ? 'bg-primary-50' : 'bg-gray-100'
 
 -> Lorsqu'on survole une colonne on changle la couleur
 

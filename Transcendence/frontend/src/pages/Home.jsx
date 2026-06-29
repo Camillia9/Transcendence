@@ -102,7 +102,7 @@ function Home() {
     <div className="flex flex-col gap-6">
         {/*Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-gray-800"> Mes projets </h1>
+        <h1 className="text-2xl font-medium text-primary-900"> Mes projets </h1>
         <Button onClick={() => setShowNewProject(true)}>
           + Nouveau Projet
         </Button>
@@ -127,7 +127,7 @@ function Home() {
             >
               <p> {projectToDelete.name} sera supprime definitivement </p>
               <div className="flex gap-2">
-                <Button onClick={() => setProjectToDelete(null)}> Annuler </Button>
+                <Button variant="outline" onClick={() => setProjectToDelete(null)}> Annuler </Button>
                 <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
               </div>
             </Modal>

@@ -40,10 +40,10 @@ En tete: "Notifications + nb de notifs non lue si unreadCount > 0. Sinon rien
 
 Liste: S'il n y a pas de notifications (lue ou pas) : "Aucune notifications". Sinon : on parcours toutes les notifs garce a map et au id. Lorsqu'on clique sur une (onClick) on navigue sur le sujet en question puis on ferme le menu deroulant. MarkAsRead enleve le point bleu du non lu
 Elles sont affiche :
-<span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-blue-400'}`} />
+<span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-primary-400'}`} />
 - C'est un petit point qui indique visuellement si la notif est lue ou non :
 notif.read est true (lu) → bg-transparent → invisible (pas de point)
-notif.read est false (non-lu) → bg-blue-400 → point bleu visible
+notif.read est false (non-lu) → bg-primary-400 → point bleu visible
 
 
 fct markAsRead (marquer une notif comme lu lorsqu'on click dessus)

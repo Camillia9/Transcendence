@@ -47,7 +47,7 @@ function TaskPanel({task, onClose, onUpdate }) {
           <div className="flex flex-col gap-2">
             <label className="text-xs text-gray-400 uppercase tracking-wide">Assigne</label>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-[#1a3a5c]/20 flex items-center justify-center text-xs font-medium text-[#1a3a5c]">
+              <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
                 {task.assignee?.[0]}
               </div>
                 <span className="text-sm text-gray-700">{task.assignee || 'Non assigne'}</span>
@@ -104,7 +104,7 @@ function TaskPanel({task, onClose, onUpdate }) {
               {task.comments.map(comment => (
                 <div key={comment.id} className="flex flex-col gap-1 bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-[#1a3a5c]/20 flex items-center justify-center text-xs text-[#1a3a5c]">
+                    <div className="w-5 h-5 rounded-full bg-primary-900/20 flex items-center justify-center text-xs text-primary-900">
                       {comment.author[0]}
                     </div>
                     <span className="text-xs font-medium text-gray-600">{comment.author}</span>

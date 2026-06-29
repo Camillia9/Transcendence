@@ -17,6 +17,7 @@ import Test from "./pages/test"
 import './App.css'
 import LegalPage from './pages/LegalPage'
 import { privacyPolicy, termsOfService } from './data/legalContent'
+import DesignSystem from './pages/DesignSystem'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/projet" element={<Projet />} />
           <Route path="/Organisation" element={<Organisation />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/designsystem" element={<DesignSystem />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/test" element={<Test />} />
             <Route path="/dashboard" element={<Dashboard />} />

@@ -54,7 +54,7 @@ function TaskCard({ task, onClick }) {
           {task.assignee && (
             <div
               title={task.assignee}
-              className="w-6 h-6 rounded-full bg-[#1a3a5c]/20 flex items-center justify-center text-xs font-medium text-[#1a3a5c]"
+              className="w-6 h-6 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900"
             >
               {task.assignee[0]}
             </div>

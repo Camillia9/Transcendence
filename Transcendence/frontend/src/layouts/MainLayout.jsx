@@ -1,4 +1,4 @@
-import { IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
+import { IconPaletteFilled, IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +9,7 @@ import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
 import Logo from '../components/ui/Logo'
 import Footer from '../components/ui/Footer'
+import DesignSystem from '../pages/DesignSystem'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -77,7 +78,7 @@ function MainLayout() {
                     {unreadCount > 0 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); markAllAsRead()}}
-                        className='text-xs text-blue-400 hover:text-blue-500 font-medium transition-colors'
+                        className='text-xs text-primary-400 hover:text-primary-600 font-medium transition-colors'
                       >
                         Tout marquer comme lu
                       </button>
@@ -104,7 +105,7 @@ function MainLayout() {
                         >
                           {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
                           {/*Pastille bleu - Non lu*/}
-                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-blue-400'}`} />
+                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
                             <span className={`text-sm ${notif.read ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
                               {notif.message}
@@ -211,12 +212,24 @@ function MainLayout() {
                   <span>Tutoriel</span>
                 )}
               </button>
+
+              <button
+                className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
+                onClick={() => navigate('/DesignSystem')}
+              >
+                <IconPaletteFilled size={18} className='shrink-0' />
+                { sidebarOpen && (
+                  <span>Design systeme</span>
+                )}
+              </button>
+
               <button className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'>
                 <span className="w-4 h-4 rounded-full bg-green-400 shrink-0" />
                 { sidebarOpen && (
                   <span>En ligne</span>
                 )}
               </button>
+
           </div>
         </aside>
 

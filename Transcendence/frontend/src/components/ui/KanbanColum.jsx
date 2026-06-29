@@ -6,7 +6,7 @@ function KanbanColumn({col, colTasks, children, onAddTask }) {
 	return (
 		<div
 			className={`rounded-2xl p-4 flex flex-col gap-3 min-w-70 w-70 transition-colors ${
-				isOver ? 'bg-blue-50' : 'bg-gray-100'
+				isOver ? 'bg-primary-50' : 'bg-gray-100'
 			}`}
 		>
 
@@ -15,7 +15,7 @@ function KanbanColumn({col, colTasks, children, onAddTask }) {
 				<div className="flex items-center gap-2">
 					<span className="font-medium text-gray-700 text-sm">{col.label}</span>
 					<span className="bg-gray-200 text-gray-500 text-xs rounded-full px-2 py-0.5">
-						{colTasks.lenght}
+						{colTasks.length}
 					</span>
 				</div>
 				<button 
