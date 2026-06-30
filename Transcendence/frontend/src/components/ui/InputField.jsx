@@ -7,7 +7,7 @@ export default function InputField({ label, type, value, onChange, error }) {
         value={value}
         onChange={onChange}
         className={`bg-gray-700 text-white px-4 py-2 rounded-lg outline-none border-2 transition
-          ${error ? 'border-red-500' : 'border-transparent focus:border-blue-500'}`}
+          ${error ? 'border-red-500' : 'border-transparent focus:border-primary-500'}`}
       />
       {error && <span className="text-red-400 text-xs">{error}</span>}
     </div>

@@ -8,7 +8,7 @@ export const mockProjects = [
     deadline: "2025-06-15",
     tasks: { done: 8, total: 12 },
     members: ["Alice", "Bob", "Charlie"],
-    role: "Admin",
+    role: "Manager",
   },
   {
     id: 2,

@@ -25,22 +25,22 @@ function Login() {
 
       {/* Titre */}
       <div className="text-center">
-        <h2 className="text-2xl font-medium text-[#0c2d4a]">Connexion</h2>
-        <p className="text-sm text-[#3a5a7a] mt-1">
+        <h2 className="text-2xl font-medium text-primary-900">Connexion</h2>
+        <p className="text-sm text-primary-700 mt-1">
           Choisis ton moyen de connexion</p>
       </div>
 
       {/* Boutons OAuth */}
       <div className="flex flex-col gap-3 w-full">
 
-        <Button variant="outline" onClick={handleGoogle}>
+        <Button variant="ghost" onClick={handleGoogle}>
           <span className="flex items-center justify-center gap-2">
             <IconBrandGoogle size={18} />
             Continuer avec Google
           </span>
         </Button>
 
-        <Button variant="dark" onClick={handleGithub}>
+        <Button variant='ghost' onClick={handleGithub}>
           <span className="flex items-center justify-center gap-2">
             <IconBrandGithub size={18} />
             Continuer avec GitHub
@@ -50,7 +50,7 @@ function Login() {
       </div>
 
       {/* Note */}
-      <p className="text-xs text-center text-[#3a5a7a]">
+      <p className="text-xs text-center text-primary-700">
         Première fois ? Un compte sera créé automatiquement.
       </p>
 

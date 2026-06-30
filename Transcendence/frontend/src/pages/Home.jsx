@@ -92,7 +92,7 @@ function Home() {
       // map() : parcourt chaque element du tableau et les transforme. Ici trim donc supprime les espaces
       // filter() : garde seulement les elements respectant la condition. Ici supp les chaines vides
       // Sinon elle est vide donc cree un tableau vide
-      role: 'Admin' // Celui qui cree le projet est forcement Admin
+      role: 'Manager' // Celui qui cree le projet est forcement Manager
     } 
     console.log('Projet cree : ', newProject)
     handleCloseNewProject()
@@ -102,8 +102,8 @@ function Home() {
     <div className="flex flex-col gap-6">
         {/*Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-gray-800"> Mes projets </h1>
-        <Button variant="bleu" onClick={() => setShowNewProject(true)}>
+        <h1 className="text-2xl font-medium text-primary-900"> Mes projets </h1>
+        <Button onClick={() => setShowNewProject(true)}>
           + Nouveau Projet
         </Button>
       </div>
@@ -127,7 +127,7 @@ function Home() {
             >
               <p> {projectToDelete.name} sera supprime definitivement </p>
               <div className="flex gap-2">
-                <Button onClick={() => setProjectToDelete(null)}> Annuler </Button>
+                <Button variant="outline" onClick={() => setProjectToDelete(null)}> Annuler </Button>
                 <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
               </div>
             </Modal>
@@ -188,17 +188,11 @@ function Home() {
 
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
-              <Button onClick={handleCloseNewProject}> Annuler </Button>
-              <Button variant="dark" onClick={handleCreateProject}> Cree le projet </Button>
+              <Button variant="outline" onClick={handleCloseNewProject}> Annuler </Button>
+              <Button variant="primary" onClick={handleCreateProject}> Cree le projet </Button>
             </div>
           </Modal>
             
-          {/*BOUTON PROVISOIRE*/}
-          <p
-            onClick={() => navigate('/projet')} 
-            className='text-2xl text-black'>
-              Projet
-          </p>
     </div>
   )
 }

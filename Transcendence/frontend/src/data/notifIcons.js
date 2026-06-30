@@ -4,7 +4,7 @@ import {
 } from '@tabler/icons-react'
 
 export const NOTIF_ICONS = {
-  task_assigned:  { icon: IconUserPlus,   color: 'text-blue-400'   },
+  task_assigned:  { icon: IconUserPlus,   color: 'text-primary-400'   },
   task_created:   { icon: IconPlus,       color: 'text-green-400'  },
   task_moved:     { icon: IconArrowRight, color: 'text-amber-400'  },
   task_updated:   { icon: IconPencil,     color: 'text-amber-400'  },

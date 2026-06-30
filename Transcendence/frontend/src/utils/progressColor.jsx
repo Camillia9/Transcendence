@@ -1,12 +1,12 @@
 export function getProgressColor(done, total) {
-  // Évite la division par zéro si pas de tâches
-  if (total === 0) return { bg: '#f3f4f6', text: '#6b7280' }
+  // accent = liseré + barre (vif) · tint = fond carte (très pâle) · soft = fond badge/avatar (doux) · text = texte foncé
+  if (total === 0)  return { accent: '#cbd5e1', tint: '#f8fafc', soft: '#e2e8f0', text: '#64748b' } // gris
 
-  const pct = done / total // 0 à 1
+  const pct = done / total
 
-  if (pct === 0)   return { bg: '#f3f4f6', text: '#6b7280' } // gris  — 0%
-  if (pct < 0.33)  return { bg: '#fef9c3', text: '#854d0e' } // jaune — 1% à 32%
-  if (pct < 0.66)  return { bg: '#ffedd5', text: '#9a3412' } // orange — 33% à 65%
-  if (pct < 1)     return { bg: '#dcfce7', text: '#166534' } // vert clair — 66% à 99%
-  return           { bg: '#bbf7d0', text: '#14532d' }        // vert foncé — 100%
+  if (pct === 0)    return { accent: '#cbd5e1', tint: '#f8fafc', soft: '#e2e8f0', text: '#64748b' } // gris — 0%
+  if (pct < 0.33)   return { accent: '#f59e0b', tint: '#fffbeb', soft: '#fef3c7', text: '#92400e' } // ambre
+  if (pct < 0.66)   return { accent: '#f97316', tint: '#fff7ed', soft: '#ffedd5', text: '#9a3412' } // orange
+  if (pct < 1)      return { accent: '#22c55e', tint: '#f0fdf4', soft: '#dcfce7', text: '#15803d' } // vert
+  return            { accent: '#16a34a', tint: '#ecfdf5', soft: '#d1fae5', text: '#166534' }        // vert profond — 100%
 }

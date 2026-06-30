@@ -1,12 +1,10 @@
 function Button({ children, onClick, variant = 'primary', loading = false }) {
 
   const styles = {
-    primary: 'bg-white text-black hover:bg-gray-200',
+    primary: 'bg-primary-600 text-white hover:bg-primary-700',
     danger:  'bg-red-500 text-white hover:bg-red-600',
-    ghost:   'bg-transparent text-white border border-white hover:bg-gray-800',
-    dark:    'bg-[#1a3a5c] text-white hover:bg-[#0c2d4a]',
-    outline: 'bg-white text-[#1a3a5c] border border-gray-200 hover:bg-gray-50',
-    bleu:    'bg-[#1a3a5c] text-white text-sm hover:bg-[#0c2d4a] transition-colors'
+    ghost:   'bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-100',
+    outline: 'bg-white text-primary-700 border border-gray-200 hover:bg-gray-50',
   }
 
   return (

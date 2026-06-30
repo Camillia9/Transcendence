@@ -8,7 +8,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Profil from './pages/Profil'
 import Landing from './pages/Landing'
-import Projet from './pages/Projet'
+import KanbanPage from './pages/KanbanPage'
 import Organisation from './pages/Organisation'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
@@ -17,6 +17,7 @@ import Test from "./pages/test"
 import './App.css'
 import LegalPage from './pages/LegalPage'
 import { privacyPolicy, termsOfService } from './data/legalContent'
+import DesignSystem from './pages/DesignSystem'
 
 function App() {
   return (
@@ -33,9 +34,10 @@ function App() {
     		{/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
     		<Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/projet" element={<Projet />} />
+          <Route path="/projet/:id" element={<KanbanPage />} />
           <Route path="/Organisation" element={<Organisation />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/designsystem" element={<DesignSystem />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/test" element={<Test />} />
             <Route path="/dashboard" element={<Dashboard />} />

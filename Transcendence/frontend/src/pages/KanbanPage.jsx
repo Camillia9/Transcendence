@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { mockTasks } from "../data/mockTasks";
+import { mockProjects } from "../data/mockProjet";
 import { PRIORITIES } from "../data/priorities";
+import { useParams } from "react-router-dom";
+import { CURRENT_USER } from "../data/currentUser";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -16,17 +19,21 @@ const COLUMNS = [
   { id: "waiting", label: "En attente" },
 ];
 
-function Projet() {
-  const [tasks, setTasks] = useState(mockTasks)
+function KanbanPage() {
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
   const [newTaskColumn, setNewTaskColumn] = useState(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskPriority, setNewTaskPriority] = useState('normal')
   const [newTaskError, setNewTaskError] = useState('')
-
+  const { id } = useParams()
+  const projectId = Number(id)
+  const project = mockProjects.find(p => p.id === projectId)
+  const [tasks, setTasks] = useState(
+    mockTasks.filter(t => t.projectId === projectId)
+  )
   
-  // TEMPORAIRE 
+    // TEMPORAIRE 
   console.log(selectedTask)
 
   const handleDragStart = (event) => {
@@ -86,6 +93,7 @@ function Projet() {
     
     const newTask = {
       id: Date.now(),
+      projectId: projectId,
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
       column: newTaskColumn,
@@ -97,18 +105,21 @@ function Projet() {
     handleCloseNewTask()
   }
 
+  const visibleTasks = project.role === 'Manager' ? 
+          tasks : tasks.filter(t => t.assignee === CURRENT_USER)
+
   return (
+    
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-gray-800">Nom du projet</h1>
+        <h1 className="text-2xl font-medium text-primary-900">{project.name}</h1>
       </div>
-
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map((col) => {
-            const colTasks = tasks.filter((t) => t.column === col.id);
+            const colTasks = visibleTasks.filter((t) => t.column === col.id);
             return (
               <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
                 {colTasks.map(task => (
@@ -179,10 +190,10 @@ function Projet() {
         </div>
         {/*Boutons*/}
         <div className="flex gap-2">
-          <Button onClick={handleCloseNewTask}>
+          <Button variant="outline" onClick={handleCloseNewTask}>
             Annuler
           </Button>
-          <Button variant="dark" onClick={handleCreateTask}>
+          <Button  onClick={handleCreateTask}>
             Cree la tache
           </Button>
         </div>
@@ -191,4 +202,4 @@ function Projet() {
   )
 }
 
-export default Projet;
+export default KanbanPage;

@@ -1,46 +1,83 @@
-{/* Cloche */}
-<div className="relative">
-  <button
-    onClick={(e) => { e.stopPropagation(); setNotifOpen(!notifOpen) }}
-    className='relative p-2 rounded-lg hover:bg-gray-100 transition-colors'
-  >
-    <IconBell size={20} className="text-gray-500" />
-    {unreadCount > 0 && (
-      <span className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full" />
-    )}
-  </button>
+export default function ProjectCard({ project, onEdit, onDelete }) {
+  const navigate = useNavigate()
+  const [hovered, setHovered] = useState(false)
+  const { bg, text } = getProgressColor(project.tasks.done, project.tasks.total)
+  const pct = project.tasks.total === 0 ? 0 : Math.round(project.tasks.done / project.tasks.total * 100)
 
-  {/* Le panneau, affiché seulement si notifOpen */}
-  {notifOpen && (
-    <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
-      {/* En-tête */}
-      <div className='px-4 py-3 border-b border-gray-100 flex items-center justify-between'>
-        <span className='text-sm font-medium text-gray-700'>Notifications</span>
-        {unreadCount > 0 && (
-          <span className='text-xs text-gray-400'>{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</span>
+  return (
+    <div
+      className="bg-white rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
+      style={{ borderLeftColor: bg }}   /* l'accent latéral = couleur d'avancement */
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+
+      {/* Icônes au survol */}
+      {hovered &&
+      <div className="absolute top-3 right-3 flex gap-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); onEdit(project) }}
+          className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+          <IconPencil size={14} />
+        </button>
+        {project.role === 'Admin' && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(project) }}
+            className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 transition-colors">
+            <IconTrash size={14} />
+          </button>
         )}
+      </div>}
+
+      {/* En-tête : Nom + rôle */}
+      <div className="flex items-start justify-between pr-1">
+        <h3
+          onClick={() => navigate(`/projet/${project.id}`)}
+          className="font-medium text-base leading-snug cursor-pointer hover:underline text-gray-800"
+        >
+          {project.name}
+        </h3>
+        <span className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 bg-primary-100 text-primary-700 ${hovered ? 'mr-12' : ''}`}>
+          {project.role}
+        </span>
       </div>
 
-      {/* Liste */}
-      <div className='max-h-96 overflow-y-auto flex flex-col'>
-        {notifications.length === 0 ? (
-          <p className='px-4 py-6 text-sm text-gray-400 text-center'>Aucune notification</p>
-        ) : (
-          notifications.map(notif => (
-            <button
-              key={notif.id}
-              onClick={() => { navigate(notif.link); setNotifOpen(false) }}
-              className='px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0'
+      {/* Barre de progression */}
+      <div className="flex flex-col gap-1">
+        <div className="w-full bg-gray-100 rounded-full h-1.5">
+          <div
+            className="h-1.5 rounded-full transition-all"
+            style={{ width: `${pct}%`, backgroundColor: bg }}  /* remplissage = couleur d'avancement */
+          />
+        </div>
+        <span className="text-xs text-gray-500">
+          {project.tasks.done}/{project.tasks.total} tâches — {pct}%
+        </span>
+      </div>
+
+      {/* Pied : deadline + membres */}
+      <div className="flex items-center justify-between mt-auto">
+        <span className="text-xs text-gray-400">
+          📅 {new Date(project.deadline).toLocaleDateString('fr-FR')}
+        </span>
+        <div className="flex -space-x-2">
+          {project.members.slice(0, 3).map((member, i) => (
+            <div
+              key={i}
+              title={member}
+              className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 border-2 border-white flex items-center justify-center text-xs font-medium"
             >
-              {/* pastille bleue = non-lu */}
-              <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-blue-400'}`} />
-              <span className={`text-sm ${notif.read ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                {notif.message}
-              </span>
-            </button>
-          ))
-        )}
+              {member[0]}
+            </div>
+          ))}
+          {project.members.length > 3 && (
+            <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 border-2 border-white flex items-center justify-center text-xs">
+              +{project.members.length - 3}
+            </div>
+          )}
+        </div>
       </div>
+
     </div>
-  )}
-</div>
+  )
+}

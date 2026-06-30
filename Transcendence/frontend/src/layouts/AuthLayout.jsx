@@ -3,7 +3,7 @@ import Footer from '../components/ui/Footer'
 
 function AuthLayout() {
   return (
-    <div className="min-h-screen bg-[#ddeeff] flex flex-col relative">
+    <div className="min-h-screen bg-primary-50 flex flex-col relative">
       {/* Motif de points — classe custom dans App.css */}
       <div className="dot-pattern absolute inset-0 opacity-50 pointer-events-none" />
       {/* Zone centrale : prend tout l'espace dispo et centre la carte dedans */}
