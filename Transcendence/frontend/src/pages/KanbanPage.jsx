@@ -19,7 +19,6 @@ const COLUMNS = [
 ];
 
 function KanbanPage() {
-  const [tasks, setTasks] = useState(mockTasks)
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
   const [newTaskColumn, setNewTaskColumn] = useState(null)
@@ -27,7 +26,12 @@ function KanbanPage() {
   const [newTaskPriority, setNewTaskPriority] = useState('normal')
   const [newTaskError, setNewTaskError] = useState('')
   const { id } = useParams()
-  const project = Number(id)
+  const projectId = Number(id)
+  const project = mockProjects.find(p => p.id === projectId)
+  const [tasks, setTasks] = useState(
+    mockTasks.filter(t => t.projectId === projectId)
+  )
+  
   
 
   // TEMPORAIRE 
@@ -90,6 +94,7 @@ function KanbanPage() {
     
     const newTask = {
       id: Date.now(),
+      projectId: projectId,
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
       column: newTaskColumn,
@@ -106,7 +111,7 @@ function KanbanPage() {
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-primary-900">Nom du projet</h1>
+        <h1 className="text-2xl font-medium text-primary-900">{project.name}</h1>
       </div>
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
