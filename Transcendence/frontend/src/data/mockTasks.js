@@ -5,7 +5,8 @@ export const mockTasks = [
     title: "Créer la page login",
     priority: "urgent",
     column: "done",
-    assignee: "Alice",
+    createdBy: "Alice", // Qui a cree la tache
+    assignee: "Alice", // A qui a t-elle etait confie
     deadline: "2025-06-10",
     comments: []
   },
@@ -15,6 +16,7 @@ export const mockTasks = [
     title: "Intégrer l'API projets",
     priority: "normal",
     column: "inprogress",
+    createdBy: "Bob",
     assignee: "Bob",
     deadline: "2025-06-20",
     comments: []
@@ -25,6 +27,7 @@ export const mockTasks = [
     title: "Configurer la BDD",
     priority: "urgent",
     column: "todo",
+    createdBy: "Alice",
     assignee: "Charlie",
     deadline: "2025-06-15",
     comments: []
@@ -35,6 +38,7 @@ export const mockTasks = [
     title: "Mettre en place les WebSockets",
     priority: "normal",
     column: "todo",
+    createdBy: "Charlie",
     assignee: "Alice",
     deadline: null,
     comments: []
@@ -45,6 +49,7 @@ export const mockTasks = [
     title: "Design du tableau Kanban",
     priority: "low",
     column: "waiting",
+    createdBy: "David",
     assignee: "",
     deadline: "2027-06-25",
     comments: [

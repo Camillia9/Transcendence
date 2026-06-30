@@ -97,6 +97,7 @@ function KanbanPage() {
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
       column: newTaskColumn,
+      createdBy: CURRENT_USER,
       assignee: null,
       deadline: null,
       comments: [],
