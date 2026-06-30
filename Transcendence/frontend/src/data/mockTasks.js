@@ -41,7 +41,7 @@ export const mockTasks = [
   },
   {
     id: 5,
-    projectId: 5,
+    projectId: 2,
     title: "Design du tableau Kanban",
     priority: "low",
     column: "waiting",

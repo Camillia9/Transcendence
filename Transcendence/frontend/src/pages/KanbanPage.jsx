@@ -4,6 +4,7 @@ import { mockTasks } from "../data/mockTasks";
 import { mockProjects } from "../data/mockProjet";
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
+import { CURRENT_USER } from "../data/currentUser";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -32,9 +33,7 @@ function KanbanPage() {
     mockTasks.filter(t => t.projectId === projectId)
   )
   
-  
-
-  // TEMPORAIRE 
+    // TEMPORAIRE 
   console.log(selectedTask)
 
   const handleDragStart = (event) => {
@@ -106,6 +105,9 @@ function KanbanPage() {
     handleCloseNewTask()
   }
 
+  const visibleTasks = project.role === 'Manager' ? 
+          tasks : tasks.filter(t => t.assignee === CURRENT_USER)
+
   return (
     
     <div className="flex flex-col gap-6 min-w-fit">
@@ -117,7 +119,7 @@ function KanbanPage() {
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map((col) => {
-            const colTasks = tasks.filter((t) => t.column === col.id);
+            const colTasks = visibleTasks.filter((t) => t.column === col.id);
             return (
               <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
                 {colTasks.map(task => (
