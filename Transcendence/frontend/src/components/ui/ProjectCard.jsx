@@ -26,7 +26,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           <IconPencil size={14}/>
         </button>
 
-        {project.role === 'Admin' && (
+        {project.role === 'Manager' && (
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(project) }}
             className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 transition-colors">
@@ -38,6 +38,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 	  {/*En-tete: Nom + role*/}
       <div className="flex items-start justify-between pr-1">
         <h3
+        onClick={() => navigate(`/projet/${project.id}`)}
           className="font-medium text-base leading-snug cursor-pointer hover:underline"
           style={{ color: text }}
         >

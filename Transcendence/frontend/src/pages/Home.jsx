@@ -92,7 +92,7 @@ function Home() {
       // map() : parcourt chaque element du tableau et les transforme. Ici trim donc supprime les espaces
       // filter() : garde seulement les elements respectant la condition. Ici supp les chaines vides
       // Sinon elle est vide donc cree un tableau vide
-      role: 'Admin' // Celui qui cree le projet est forcement Admin
+      role: 'Manager' // Celui qui cree le projet est forcement Manager
     } 
     console.log('Projet cree : ', newProject)
     handleCloseNewProject()
@@ -193,12 +193,6 @@ function Home() {
             </div>
           </Modal>
             
-          {/*BOUTON PROVISOIRE*/}
-          <p
-            onClick={() => navigate('/projet')} 
-            className='text-2xl text-black'>
-              Projet
-          </p>
     </div>
   )
 }

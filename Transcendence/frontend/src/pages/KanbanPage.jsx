@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { mockTasks } from "../data/mockTasks";
+import { mockProjects } from "../data/mockProjet";
 import { PRIORITIES } from "../data/priorities";
+import { useParams } from "react-router-dom";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -16,7 +18,7 @@ const COLUMNS = [
   { id: "waiting", label: "En attente" },
 ];
 
-function Projet() {
+function KanbanPage() {
   const [tasks, setTasks] = useState(mockTasks)
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
@@ -24,8 +26,10 @@ function Projet() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskPriority, setNewTaskPriority] = useState('normal')
   const [newTaskError, setNewTaskError] = useState('')
-
+  const { id } = useParams()
+  const project = Number(id)
   
+
   // TEMPORAIRE 
   console.log(selectedTask)
 
@@ -98,12 +102,12 @@ function Projet() {
   }
 
   return (
+    
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900">Nom du projet</h1>
       </div>
-
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
@@ -191,4 +195,4 @@ function Projet() {
   )
 }
 
-export default Projet;
+export default KanbanPage;

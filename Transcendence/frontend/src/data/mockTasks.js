@@ -1,6 +1,7 @@
 export const mockTasks = [
   {
     id: 1,
+    projectId: 4, // "Cette tache appartient au projet 4"
     title: "Créer la page login",
     priority: "urgent",
     column: "done",
@@ -10,6 +11,7 @@ export const mockTasks = [
   },
   {
     id: 2,
+    projectId: 3,
     title: "Intégrer l'API projets",
     priority: "normal",
     column: "inprogress",
@@ -19,6 +21,7 @@ export const mockTasks = [
   },
   {
     id: 3,
+    projectId: 2,
     title: "Configurer la BDD",
     priority: "urgent",
     column: "todo",
@@ -28,6 +31,7 @@ export const mockTasks = [
   },
   {
     id: 4,
+    projectId: 1, 
     title: "Mettre en place les WebSockets",
     priority: "normal",
     column: "todo",
@@ -37,6 +41,7 @@ export const mockTasks = [
   },
   {
     id: 5,
+    projectId: 5,
     title: "Design du tableau Kanban",
     priority: "low",
     column: "waiting",
