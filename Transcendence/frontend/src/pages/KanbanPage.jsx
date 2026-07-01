@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { mockTasks } from "../data/mockTasks";
 import { mockProjects } from "../data/mockProjet";
@@ -12,6 +12,8 @@ import TaskCard from "../components/ui/TaskCard"
 import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
+import { useSocket } from "../context/SocketContext"
+
 const COLUMNS = [
   { id: "todo", label: "À faire" },
   { id: "inprogress", label: "En cours" },
@@ -20,20 +22,36 @@ const COLUMNS = [
 ];
 
 function KanbanPage() {
+  const socket = useSocket()
+  const { id } = useParams()
+  const projectId = Number(id)
+
+  useEffect(() => {
+    if (!socket || !projectId) return
+    socket.emit('project:join', { projectId })
+
+    socket.on('task:moved', ({ taskId, toColumn }) => {
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column: toColumn } : t))
+    })
+
+    return () => {
+      socket.emit('project:leave', { projectId })
+      socket.off('task:moved')
+    }
+  }, [socket, projectId])
+
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
   const [newTaskColumn, setNewTaskColumn] = useState(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskPriority, setNewTaskPriority] = useState('normal')
   const [newTaskError, setNewTaskError] = useState('')
-  const { id } = useParams()
-  const projectId = Number(id)
   const project = mockProjects.find(p => p.id === projectId)
   const [tasks, setTasks] = useState(
     mockTasks.filter(t => t.projectId === projectId)
   )
-  
-    // TEMPORAIRE 
+
+  // TEMPORAIRE 
   console.log(selectedTask)
 
   const handleDragStart = (event) => {
@@ -53,8 +71,12 @@ function KanbanPage() {
     if (task.column === newColumn) return
 
     setTasks(tasks.map(t =>
-      t.id === taskId ? {...t, column: newColumn } : t
+      t.id === taskId ? { ...t, column: newColumn } : t
     ))
+
+    if (socket) {
+      socket.emit('task:moved', { projectId, taskId, fromColumn: task.column, toColumn: newColumn })
+    }
   }
 
   const sensors = useSensors(
@@ -64,8 +86,8 @@ function KanbanPage() {
       },
     }),
     useSensor(TouchSensor, {
-      activationConstraint:{
-        delay:200,
+      activationConstraint: {
+        delay: 200,
         tolerance: 5,
       }
     })
@@ -90,7 +112,7 @@ function KanbanPage() {
       setNewTaskError('Le titre est obligatoire')
       return
     }
-    
+
     const newTask = {
       id: Date.now(),
       projectId: projectId,
@@ -106,11 +128,11 @@ function KanbanPage() {
     handleCloseNewTask()
   }
 
-  const visibleTasks = project.role === 'Manager' ? 
-          tasks : tasks.filter(t => t.assignee === CURRENT_USER)
+  const visibleTasks = project.role === 'Manager' ?
+    tasks : tasks.filter(t => t.assignee === CURRENT_USER)
 
   return (
-    
+
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
@@ -125,9 +147,9 @@ function KanbanPage() {
               <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
                 {colTasks.map(task => (
                   <TaskCard
-                  key={task.id}
-                  task={task}
-                  onClick={() => setSelectedTask(task)}
+                    key={task.id}
+                    task={task}
+                    onClick={() => setSelectedTask(task)}
                   />
                 ))}
               </KanbanColumn>
@@ -139,7 +161,7 @@ function KanbanPage() {
         <DragOverlay>
           {activeTask && (
             <div className="opacity-90 rotate-1 scale-105">
-              <TaskCard task={activeTask} onClick={() => {}} />
+              <TaskCard task={activeTask} onClick={() => { }} />
             </div>
           )}
         </DragOverlay>
@@ -180,9 +202,8 @@ function KanbanPage() {
               <button
                 key={p.value}
                 onClick={() => setNewTaskPriority(p.value)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-opacity ${p.bg} ${p.text} ${
-                  newTaskPriority === p.value ? 'opacity-100' : 'opacity-40'
-                }`}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-opacity ${p.bg} ${p.text} ${newTaskPriority === p.value ? 'opacity-100' : 'opacity-40'
+                  }`}
               >
                 {p.label}
               </button>
@@ -194,7 +215,7 @@ function KanbanPage() {
           <Button variant="outline" onClick={handleCloseNewTask}>
             Annuler
           </Button>
-          <Button  onClick={handleCreateTask}>
+          <Button onClick={handleCreateTask}>
             Cree la tache
           </Button>
         </div>

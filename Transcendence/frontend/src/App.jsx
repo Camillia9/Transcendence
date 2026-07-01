@@ -18,34 +18,37 @@ import './App.css'
 import LegalPage from './pages/LegalPage'
 import { privacyPolicy, termsOfService } from './data/legalContent'
 import DesignSystem from './pages/DesignSystem'
+import { SocketProvider } from './context/SocketContext'
 
 function App() {
   return (
-  <AuthProvider>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/"  element={<Landing />} />
-        <Route path="/privacy" element={<LegalPage content={privacyPolicy}/>} />
-        <Route path="/terms" element={<LegalPage content={termsOfService}/>} />
-        {/* Pages auth — centrées, sans navbar */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login"  element={<Login />} />
-        </Route>
-    		{/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
-    		<Route element={<MainLayout />}>
-          <Route path="/home" element={<Home />} />
-          <Route path="/projet/:id" element={<KanbanPage />} />
-          <Route path="/Organisation" element={<Organisation />} />
-          <Route path="/profil" element={<Profil />} />
-          <Route path="/designsystem" element={<DesignSystem />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/test" element={<Test />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-        	</Route>
-      	</Route>
-      </Routes>
-    </BrowserRouter>
-  </AuthProvider>
+    <AuthProvider>
+      <SocketProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/privacy" element={<LegalPage content={privacyPolicy} />} />
+            <Route path="/terms" element={<LegalPage content={termsOfService} />} />
+            {/* Pages auth — centrées, sans navbar */}
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+            </Route>
+            {/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
+            <Route element={<MainLayout />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/projet/:id" element={<KanbanPage />} />
+              <Route path="/Organisation" element={<Organisation />} />
+              <Route path="/profil" element={<Profil />} />
+              <Route path="/designsystem" element={<DesignSystem />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/test" element={<Test />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </SocketProvider>
+    </AuthProvider>
   )
 }
 
