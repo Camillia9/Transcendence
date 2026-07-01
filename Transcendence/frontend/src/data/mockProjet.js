@@ -1,4 +1,4 @@
-// Ce fichier simule exactement ce que l'API de Dev 2 renverra plus tard.
+15// Ce fichier simule exactement ce que l'API de Dev 2 renverra plus tard.
 // Quand le back sera prêt, tu remplaceras juste l'import par un vrai appel fetch.
 
 export const mockProjects = [
