@@ -78,15 +78,31 @@ socket.on('typing:update', ({ username, isTyping }) => {
 
 ---
 
-## Notifications — (à venir)
+## Notifications — prêt
 
-> Chaque utilisateur a sa propre room privée `user:<id>`.
+> Chaque user rejoint automatiquement sa room privée `user:<id>` à la connexion.
 
 | Serveur → Client | Payload | Description |
 |---|---|---|
-| `notification:new` | `{ id, type, message, link }` | Nouvelle notification en temps réel |
+| `notification:new` | `{ id, type, message, link, createdAt, read }` | Nouvelle notification en temps réel |
 
-*Déclenché par le back (Dev 2) lors d'une assignation, création ou suppression.*
+**Dev 2 — pour envoyer une notif depuis une route REST :**
+```js
+import { sendNotification } from '../sockets/handlers/notifications.js'
+
+// Exemple : après une assignation
+sendNotification(io, userId, {
+  type: 'task_assigned',
+  message: 'Tu as été assigné à "Créer la page login"',
+  link: '/projet/42'
+})
+```
+
+**Dev 1 — pour écouter les notifs :**
+```js
+socket.on('notification:new', (notif) => {
+  // afficher la cloche + incrémenter le compteur
+})
 
 ---
 

@@ -10,6 +10,7 @@ import Badge from '../components/ui/Badge'
 import Logo from '../components/ui/Logo'
 import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
+import { useSocket } from '../context/SocketContext'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -19,7 +20,15 @@ function MainLayout() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
   const unreadCount = notifications.filter(n => !n.read).length
+  const socket = useSocket()
 
+  useEffect(() => {
+    if (!socket) return
+    socket.on('notification:new', (notif) => {
+      setNotifications(prev => [notif, ...prev])
+    })
+    return () => socket.off('notification:new')
+  }, [socket])
 
   const handleLogout = () => {
     logout()
