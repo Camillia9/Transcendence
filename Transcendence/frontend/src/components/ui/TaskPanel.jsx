@@ -1,5 +1,6 @@
 import { IconX, IconCalendar, IconUser } from "@tabler/icons-react"
 import { PRIORITIES } from "../../data/priorities"
+import Button from "./Button"
 
 const COLUMN_OPTIONS = [
   { value: 'todo',        label: 'À faire'    },
@@ -8,11 +9,17 @@ const COLUMN_OPTIONS = [
   { value: 'waiting',     label: 'En attente' },
 ]
 
-function TaskPanel({task, onClose, onUpdate }) {
+function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onDelete }) {
   if (!task) return null
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
   const priority = PRIORITIES.find(p => p.value === task.priority)
+
+  // Peut-on supp la tache ?
+  const canDelete = userRole === 'Manager' || task.createdBy === currentUser
+
+  // Pour que le manager puisse changer l'assignation d'une tache
+  const canAssign = userRole === 'Manager'
 
   return (
     <>
@@ -93,6 +100,13 @@ function TaskPanel({task, onClose, onUpdate }) {
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none resize-none h-24 placeholder-gray-300"
             />
           </div>
+          {/*Champs 'supprimer la tache (Si possible)'*/}
+          { canDelete && (
+            <Button variant="danger" onClick={() => onDelete(task.id)}>
+              Supprimer la tache
+            </Button>
+          )}
+
           {/*Champs commentaire QUE colonne en attente*/}
           {task.column === 'waiting' && (
             <div className="flex flex-col gap-3">

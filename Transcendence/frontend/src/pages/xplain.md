@@ -1,4 +1,4 @@
-## Projet
+## KanbanPage
 
 <DndContext onDragEnd={handleDragEnd}>...</DndContext>
 

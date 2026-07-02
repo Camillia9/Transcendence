@@ -120,7 +120,7 @@ function KanbanPage() {
       priority: newTaskPriority,
       column: newTaskColumn,
       createdBy: CURRENT_USER,
-      assignee: null,
+      assignee: CURRENT_USER,
       deadline: null,
       comments: [],
     }
@@ -128,6 +128,12 @@ function KanbanPage() {
     handleCloseNewTask()
   }
 
+  const handleDeleteTask = (taskId) => {
+    setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
+    setSelectedTask(null) // et on ferme le panneau
+  }
+
+  // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
   const visibleTasks = project.role === 'Manager' ?
     tasks : tasks.filter(t => t.assignee === CURRENT_USER)
 
@@ -169,8 +175,12 @@ function KanbanPage() {
 
       <TaskPanel
         task={selectedTask}
+        userRole={project.role}
+        currentUser={CURRENT_USER}
+        members={project.members}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
+        onDelete={handleDeleteTask}
       />
       <Modal
         isOpen={!!newTaskColumn}
