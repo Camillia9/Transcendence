@@ -5,7 +5,7 @@ export const mockProjects = [
   {
     id: 1,
     name: "Refonte site web",
-    deadline: "2025-06-15",
+    deadline: "2027-06-15",
     tasks: { done: 8, total: 12 },
     members: ["Alice", "Bob", "Charlie"],
     role: "Manager",
@@ -13,7 +13,7 @@ export const mockProjects = [
   {
     id: 2,
     name: "App mobile",
-    deadline: "2025-07-01",
+    deadline: "2027-07-01",
     tasks: { done: 2, total: 10 },
     members: ["Alice", "David"],
     role: "Manager",
@@ -21,7 +21,7 @@ export const mockProjects = [
   {
     id: 3,
     name: "Dashboard analytics",
-    deadline: "2025-05-30",
+    deadline: "2027-05-30",
     tasks: { done: 5, total: 5 },
     members: ["Bob"],
     role: "User",
@@ -29,7 +29,7 @@ export const mockProjects = [
   {
     id: 4,
     name: "Système de notifications",
-    deadline: "2025-08-20",
+    deadline: "2027-08-20",
     tasks: { done: 0, total: 8 },
     members: ["Alice", "Charlie", "Eve", "Frank"],
     role: "User",

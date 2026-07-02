@@ -55,9 +55,24 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
             <label className="text-xs text-gray-400 uppercase tracking-wide">Assigne</label>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
-                {task.assignee?.[0]}
+                {task.assignee?.[0]} 
               </div>
+              {canAssign ? (
+                <select
+                // Champs select: affiche une selection de choix deroulante
+                  value={task.assignee || ''} // si task.assignee = null : ''
+                  onChange={(e) => onUpdate({...task, assignee: e.target.value || null})} // met a jour l'assignation instantanement. null si assignee = ''
+                  className="text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1"
+                >
+                  <option value="">Non assigne</option> 
+                  {members.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              ) : (
+                // Cas 2: Le user ne voit pas les options de delection 
                 <span className="text-sm text-gray-700">{task.assignee || 'Non assigne'}</span>
+              )}
             </div>
           </div>
           {/*Champs modifiable ~ Priorite*/}

@@ -15,25 +15,23 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-
-      {/*Icones au survol*/}
-      {hovered && 
-      <div className="absolute top-3 right-3 flex gap-1">
-		{/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
-        <button
-        onClick={(e) => { e.stopPropagation(); onEdit(project)}}
-        className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
-          <IconPencil size={14}/>
-        </button>
-
-        {project.role === 'Manager' && (
+      {/*Icones au survol pour le manager*/}
+      {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
+      {hovered && project.role === 'Manager' && (
+        <div className="absolute top-3 right-3 flex gap-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(project)}}
+            className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+            <IconPencil size={14}/>
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(project) }}
             className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 transition-colors">
             <IconTrash size={14} />
           </button>
-        )}
-      </div>}
+        </div>
+      )}
+        
 
 	  {/*En-tete: Nom + role*/}
       <div className="flex items-start justify-between pr-1">
@@ -46,7 +44,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
         </h3>
         {/* Transition au survol*/}
         <span
-          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered ? 'mr-12' : ''}`}
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && project.role === 'Manager' ? 'mr-12' : ''}`}
           style={{ backgroundColor: soft, color: text }}
         >
           {project.role}

@@ -196,6 +196,7 @@ export default function DesignSystem() {
           <h3 className="text-sm font-medium text-gray-700 mb-3">Badge</h3>
           <div className="flex flex-wrap items-center gap-3">
             <Badge>Admin</Badge>
+            <Badge>Membres</Badge>
             <Badge>Manager</Badge>
             <Badge>User</Badge>
           </div>

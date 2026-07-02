@@ -9,8 +9,9 @@ import Input from "../components/ui/Input";
 function Home() {
   // L'etat: Le projet qu'on veut supp
   const [projectToDelete, setProjectToDelete] = useState(null)
-  // L'etat: Le projet qu'on veut add
+  // L'etat: Le projet qu'on veut add ou edit
   const [showNewProject, setShowNewProject] = useState(false)
+  const [projectToEdit, setProjectToEdit] = useState(null)
   
   // Touts les etats utile pour le bouton "nouveau projet"
   const [newName, setNewName]       = useState('') // string
@@ -18,12 +19,19 @@ function Home() {
   const [newMembers, setNewMembers] = useState('') // string
   const [newErrors, setNewErrors]   = useState({}) // Objet
 
+  // etat pour lire le tableau mock et pouvoir le modifier
+  const [projects, setProjects] = useState(mockProjects)
+
   // Provisoire
   const navigate = useNavigate()
   
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (project) => {
-    console.log("Editer", project.name)
+    setProjectToEdit(project)
+    setNewName(project.name)
+    setNewDeadline(project.deadline || '')
+    setNewMembers(project.members.join(', ')) // join() modie le tableau ["alice", "bob"] en ["alice, bob"]. Inverse de split
+    setShowNewProject(true)
   }
   // Lorsqu'on appuie sur la ben. Elle ne supprime pas le projet, le memorise juste pour afficher le modal de confirmation
   const handleDelete = (project) => {
@@ -31,7 +39,7 @@ function Home() {
   }
   // Lorsqu'on confirme vouloir supp le projet sur le modal
   const confirmDelete = () => {
-    console.log("Supprimer", projectToDelete.name)
+    setProjects(projects.filter(p => p.id !== projectToDelete.id)) // garde tout le projets (le tableau) sauf celui-ci
     setProjectToDelete(null)
   }
 
@@ -40,7 +48,8 @@ function Home() {
     setNewName('')
     setNewDeadline('')
     setNewMembers('')
-    setNewErrors('')
+    setNewErrors({})
+    setProjectToEdit(null) // remet le mode edition a null
     setShowNewProject(false) // ferme la modal
   }
 
@@ -66,7 +75,7 @@ function Home() {
   }
 
   // Fonction appelle lorsqu'on soumet le formulaire du nouveauProjet
-  const handleCreateProject = () => {
+  const handleSubmitProject = () => {
     /*Object.keys prend un objet et renvoie un tableau contenant les noms de ses proprietes
     // ex:  const errors = {
       name: "Le nom est obligatoire",
@@ -79,23 +88,36 @@ function Home() {
       setNewErrors(errors)
       return
     }
-
-    // Cree l'objet du nouveau projet (Localement. Remplacer par un appel API)
-    const newProject = {
-      id: Date.now(), // Date.now() renvoie le nb de ms ecoule depuis 1970. Sert ici a avoir des ID forcement differents'
-      name: newName.trim(), // recupere le name en retirant tout les espaces autour
-      deadline: newDeadline || null, // Utilise deadline si existante, sinon = null
-      tasks: { done: 0, total: 0 }, // on commence avec 0 taches
-      members: newMembers ? newMembers.split(',').map(m => m.trim()).filter(m => m !== '') : [],
-      // Si newMembers n'est pas une chaine vide (donc continent des memnres) :
-      // split(): on tansforme la string de membres en tableau ("John, Eliott, ML" ==> ["John", " Eliott", " ML"])
-      // map() : parcourt chaque element du tableau et les transforme. Ici trim donc supprime les espaces
-      // filter() : garde seulement les elements respectant la condition. Ici supp les chaines vides
-      // Sinon elle est vide donc cree un tableau vide
-      role: 'Manager' // Celui qui cree le projet est forcement Manager
-    } 
-    console.log('Projet cree : ', newProject)
+    if (projectToEdit) {
+      // MODE EDITION (remplace projet existant)
+      // Updated : recopie tout le projet d'origine en modifiant seulelemt :
+      const updated = {
+        ...projectToEdit,
+        name: newName.trim(),
+        deadline: newDeadline || null,
+        members: newMembers ? newMembers.split(',').map(m => m.trim()).filter(m => m !== '') : [],
+      }
+      setProjects(projects.map(p => p.id === projectToEdit.id ? updated : p))
+      // Sert a parcourir tout les projets pour modifier celui qu'on veut. 
+    } else {
+      // Cree l'objet du nouveau projet (Localement. Remplacer par un appel API)
+      const newProject = {
+        id: Date.now(), // Date.now() renvoie le nb de ms ecoule depuis 1970. Sert ici a avoir des ID forcement differents'
+        name: newName.trim(), // recupere le name en retirant tout les espaces autour
+        deadline: newDeadline || null, // Utilise deadline si existante, sinon = null
+        tasks: { done: 0, total: 0 }, // on commence avec 0 taches
+        members: newMembers ? newMembers.split(',').map(m => m.trim()).filter(m => m !== '') : [],
+        // Si newMembers n'est pas une chaine vide (donc continent des memnres) :
+        // split(): on tansforme la string de membres en tableau ("John, Eliott, ML" ==> ["John", " Eliott", " ML"])
+        // map() : parcourt chaque element du tableau et les transforme. Ici trim donc supprime les espaces
+        // filter() : garde seulement les elements respectant la condition. Ici supp les chaines vides
+        // Sinon elle est vide donc cree un tableau vide
+        role: 'Manager' // Celui qui cree le projet est forcement Manager
+      }
+      setProjects([newProject, ...projects]) // creation newTableau sans toucher aux autres
+    }
     handleCloseNewProject()
+
   }
 
   return (
@@ -109,7 +131,7 @@ function Home() {
       </div>
         {/*Grille responsive*/}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockProjects.map(project => (
+          {projects.map(project => (
             <ProjectCard
             project={project}
             onEdit={handleEdit}
@@ -132,11 +154,11 @@ function Home() {
               </div>
             </Modal>
           )}
-          {/*Modal Cree un nouveau Projet*/}
+          {/*Modal Cree un nouveau Projet OU edit un projet (utilisations de la meme modal)*/}
           <Modal
             isOpen={showNewProject}
             onClose={handleCloseNewProject}
-            title="Nouveau projet"
+            title={projectToEdit ? "Modifier le projet" : "Nouveau Projet"}
           >
             {/*Entree du NameProject */}
             <div className="flex flex-col gap-1 mb-4">
@@ -189,7 +211,9 @@ function Home() {
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleCloseNewProject}> Annuler </Button>
-              <Button variant="primary" onClick={handleCreateProject}> Cree le projet </Button>
+              <Button variant="primary" onClick={handleSubmitProject}>
+                {projectToEdit ? "Enregistrer" : "Cree le projet"}
+              </Button>
             </div>
           </Modal>
             
