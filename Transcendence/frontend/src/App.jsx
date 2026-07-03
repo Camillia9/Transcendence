@@ -10,6 +10,7 @@ import Profil from './pages/Profil'
 import Landing from './pages/Landing'
 import KanbanPage from './pages/KanbanPage'
 import Organisation from './pages/Organisation'
+import Chat from './pages/Chat'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -40,6 +41,7 @@ function App() {
               <Route path="/Organisation" element={<Organisation />} />
               <Route path="/profil" element={<Profil />} />
               <Route path="/designsystem" element={<DesignSystem />} />
+              <Route path="/chat" element={<Chat />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/test" element={<Test />} />
                 <Route path="/dashboard" element={<Dashboard />} />

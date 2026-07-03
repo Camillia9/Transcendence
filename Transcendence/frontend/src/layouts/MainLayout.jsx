@@ -206,6 +206,7 @@ function MainLayout() {
 
           <div className='flex flex-col gap-1 px-2 mt-auto mb-4'>
               <button
+                onClick={() => navigate('/chat')}
                 className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
               >
                 <IconMessageCircle size={18} className='shrink-0'/>
