@@ -1,3 +1,5 @@
+import { IconUser, IconUsers, IconSend, IconMessage2 } from '@tabler/icons-react'
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  Chat.jsx — La page de messagerie
 // ═══════════════════════════════════════════════════════════════════════════
@@ -170,106 +172,153 @@ function Chat() {
     <div className="flex gap-4 h-[calc(100vh-8rem)]">
 
       {/* ═══ COLONNE GAUCHE : la liste des conversations ═══ */}
-      <div className="w-64 flex flex-col gap-1 border-r border-gray-100 pr-2 overflow-y-auto">
-
-        {/* On parcourt CHAQUE conversation et on dessine une ligne cliquable.
-            .map = "pour chaque conv de la liste, produis ce bloc de JSX". */}
-        {conversations.map(conv => (
-
-          <div
-            key={conv.id}   // React exige un "key" unique par élément d'une liste
-                            // (ça l'aide à suivre qui est qui quand ça change)
-
-            // AU CLIC sur une conversation : on change activeId pour son id.
-            // → activeConversation se recalcule → la colonne droite change.
-            onClick={() => setActiveId(conv.id)}
-
-            // Le style change selon que cette conv est ouverte ou non :
-            //   - ouverte (conv.id === activeId) → petit fond bleu clair
-            //   - fermée → juste un survol gris
-            className={`p-3 rounded-lg cursor-pointer ${
-              conv.id === activeId ? 'bg-primary-700/10' : 'hover:bg-gray-50'
-            }`}
-          >
-            {/* Le nom de la conversation (Alice, Bob, Équipe Frontend…) */}
-            <p className="text-sm font-medium text-gray-800">{conv.name}</p>
-
-            {/* Un aperçu du DERNIER message, en petit et grisé.
-                conv.messages[conv.messages.length - 1] = le dernier du tableau.
-                Le "?." évite un plantage si la conv n'a aucun message.
-                "truncate" coupe avec "…" si c'est trop long. */}
-            <p className="text-xs text-gray-400 truncate">
-              {conv.messages[conv.messages.length - 1]?.text}
-            </p>
-          </div>
-        ))}
+      <div className="w-72 flex flex-col gap-1 border-r border-gray-100 pr-2 overflow-y-auto">
+        {conversations.map(conv => {
+          // On calcule 2 valeurs AVANT de dessiner (d'où les { } et le return explicite) :
+          const lastMessage = conv.messages[conv.messages.length - 1]  // le dernier message
+          const isActive = conv.id === activeId                        // cette conv est-elle ouverte ?
+        
+          return (
+            <div
+              key={conv.id} // React exige un "key" unique par élément d'une liste (ça l'aide à suivre qui est qui quand ça change)
+              onClick={() => setActiveId(conv.id)} // AU CLIC sur une conversation : on change activeId pour son id. activeConversation se recalcule → la colonne droite change.
+              // border-l-4 = barre d'accent à gauche, comme sur ProjectCard.
+              // Active → fond navy très léger + barre navy. Sinon → barre invisible + survol gris.
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-l-4 transition-colors ${
+                isActive
+                  ? 'bg-primary-900/5 border-primary-600'
+                  : 'border-transparent hover:bg-gray-100'
+              }`}
+            >
+              {/* Avatar : l'initiale sur fond navy clair (même style que tes tâches).
+                  shrink-0 = "ne rétrécis jamais", sinon l'avatar s'écraserait. */}
+              <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center text-sm font-medium text-primary-900 shrink-0">
+                {conv.name[0]}
+              </div>
+              
+              {/* Bloc texte : nom + aperçu. min-w-0 est OBLIGATOIRE ici (explication plus bas). */}
+              <div className="flex-1 min-w-0">
+              
+                {/* Ligne du haut : nom (avec icône) à gauche, heure à droite */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {/* Icône selon le type : groupe = plusieurs personnes, privé = une seule */}
+                    {conv.type === 'group'
+                      ? <IconUsers size={14} className="text-gray-400 shrink-0" />
+                      : <IconUser size={14} className="text-gray-400 shrink-0" />}
+                    <p className="text-sm font-medium text-gray-800 truncate">{conv.name}</p>
+                  </div>
+                  {/* L'heure du dernier message (si la conv a au moins un message) */}
+                  {lastMessage && (
+                    <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
+                  )}
+                </div>
+                
+                {/* Ligne du bas : aperçu du dernier message, ou "Aucun message" si vide */}
+                <p className="text-xs text-gray-400 truncate">
+                  {lastMessage?.text || 'Aucun message'}
+                </p>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* ═══ COLONNE DROITE : la conversation ouverte ═══ */}
       <div className="flex-1 flex flex-col">
 
         {/* --- En-tête : le nom de la conversation active --- */}
-        <div className="pb-3 border-b border-gray-100">
-          <h2 className="text-lg font-medium text-primary-900">
-            {activeConversation.name}
-          </h2>
+        <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+          {/* Avatar, même style que dans la liste */}
+          <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center text-sm font-medium text-primary-900 shrink-0">
+            {activeConversation.name[0]}
+          </div>
+          <div>
+            <h2 className="text-lg font-medium text-primary-900 leading-tight">
+              {activeConversation.name}
+            </h2>
+            {/* Sous-titre contextuel : privé → une mention ; groupe → le nb de participants.
+                On déduit "group" du type. Pour le nb de membres, on affiche une valeur
+                seulement si elle existe (les groupes n'ont pas encore de champ members,
+                donc pour l'instant on reste sur un libellé simple). */}
+            <p className="text-xs text-gray-400">
+              {activeConversation.type === 'group' ? 'Conversation de groupe' : 'Conversation privée'}
+            </p>
+          </div>
         </div>
 
         {/* --- Le fil de messages --- */}
-        {/* flex-1 = "prends toute la place verticale dispo" ; overflow-y-auto =
-            "si ça déborde, fais défiler ICI" (pas toute la page). */}
-        <div className="flex-1 flex flex-col gap-2 py-4 overflow-y-auto">
-
-          {/* Pour chaque message de la conversation active, une bulle. */}
-          {activeConversation.messages.map(msg => (
-            <div
-              key={msg.id}
-
-              // LE point clé de l'affichage : mes messages à droite, les
-              // autres à gauche. On compare l'auteur du message à MOI :
-              //   - msg.author === CURRENT_USER (c'est moi) → bulle bleue,
-              //     collée à DROITE (self-end)
-              //   - sinon (quelqu'un d'autre) → bulle grise, à GAUCHE (self-start)
-              className={`max-w-xs rounded-2xl px-3 py-2 text-sm ${
-                msg.author === CURRENT_USER
-                  ? 'bg-primary-700 text-white self-end'
-                  : 'bg-gray-100 text-gray-800 self-start'
-              }`}
-            >
-              {msg.text}
+        <div className="flex-1 flex flex-col gap-3 py-4 overflow-y-auto">
+          {/* CAS 1 : la conversation n'a aucun message → on affiche un état vide.
+              C'est le "empty state" : plutôt qu'un grand vide, un message d'accueil. */}
+          {activeConversation.messages.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-2">
+              <IconMessage2 size={40} className="text-gray-200" />
+              <p className="text-sm text-gray-400">Aucun message pour l'instant</p>
+              <p className="text-xs text-gray-300">Envoie le premier message !</p>
             </div>
-          ))}
+          ) : (
+            // CAS 2 : il y a des messages → on les affiche.
+            activeConversation.messages.map(msg => {
+              // Est-ce MON message ? (pour l'aligner à droite et le colorer)
+              const isMine = msg.author === CURRENT_USER
+            
+              return (
+                // Ce conteneur gère l'alignement gauche/droite de TOUT le bloc
+                // (nom + bulle + heure), pas seulement la bulle.
+                <div
+                  key={msg.id}
+                  className={`flex flex-col max-w-xs ${isMine ? 'self-end items-end' : 'self-start items-start'}`}
+                >
+                  {/* Le nom de l'auteur : affiché SEULEMENT pour les autres, et
+                      SEULEMENT dans un groupe (dans un privé, c'est inutile, on sait
+                      qui parle). En condition : pas moi ET type groupe. */}
+                  {!isMine && activeConversation.type === 'group' && (
+                    <span className="text-xs text-gray-400 mb-0.5 px-1">{msg.author}</span>
+                  )}
+
+                  {/* La bulle elle-même */}
+                  <div
+                    className={`rounded-2xl px-3 py-2 text-sm ${
+                      isMine
+                        ? 'bg-primary-600 text-white'      // mes messages : navy plein
+                        : 'bg-gray-100 text-gray-800'      // les autres : gris clair
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                  
+                  {/* L'heure, en tout petit sous la bulle */}
+                  <span className="text-[10px] text-gray-300 mt-0.5 px-1">{msg.time}</span>
+                </div>
+              )
+            })
+          )}
         </div>
 
         {/* --- Le champ d'envoi (en bas) --- */}
         <div className="flex gap-2 pt-3 border-t border-gray-100">
-
           <input
             type="text"
-            value={draft}   // le champ AFFICHE toujours le contenu de "draft"
-
-            // À CHAQUE frappe : on met à jour "draft" avec le nouveau contenu.
-            // e.target.value = le texte actuellement dans le champ.
-            onChange={(e) => setDraft(e.target.value)}
-
-            // Si on appuie sur Entrée → on envoie (comme le bouton).
-            // "e.key === 'Enter' && handleSend()" = "si touche = Entrée,
-            // alors exécute handleSend".
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)} // À CHAQUE frappe : on met à jour "draft" avec le nouveau contenu. e.target.value = le texte actuellement dans le champ.
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-
             placeholder="Écris un message..."
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            // focus:outline-none enlève le contour bleu par défaut du navigateur,
+            // focus:border-primary-600 met TON accent quand le champ est actif.
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary-600 transition-colors"
           />
-
-          {/* Le bouton envoyer appelle la même fonction que la touche Entrée. */}
           <button
             onClick={handleSend}
-            className="bg-primary-700 text-white rounded-lg px-4 text-sm"
+            // flex + items-center + gap = icône et texte alignés proprement.
+            // disabled quand le champ est vide → le bouton se grise (voir plus bas).
+            disabled={!draft.trim()}
+            className="flex items-center gap-1.5 bg-primary-600 text-white rounded-xl px-4 text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
+            <IconSend size={16} />
             Envoyer
           </button>
         </div>
-
       </div>
     </div>
   )

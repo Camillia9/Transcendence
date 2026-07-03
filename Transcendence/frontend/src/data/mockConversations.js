@@ -27,4 +27,20 @@ export const mockConversations = [
       { id: 1, author: "Bob", text: "On se cale un point cet aprem ?", time: "11:00" },
     ],
   },
+    {
+    id: 4,
+    name: "La Team",
+    type: "group",
+    messages: [
+      { id: 1, author: "Bob", text: "On se cale un point cet aprem ?", time: "11:00" },
+      { id: 2, author: "Fredo", text: "C'est mort", time: "11:02" },
+      { id: 3, author: "Emilie", text: "Connard", time: "11:03" },
+    ],
+  },
+      {
+    id: 5,
+    name: "Julie",
+    type: "private",
+    messages: [],
+  },
 ]
