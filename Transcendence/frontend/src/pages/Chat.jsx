@@ -13,7 +13,7 @@ import { IconUser, IconUsers, IconSend, IconMessage2 } from '@tabler/icons-react
 //  quand elles changent, React redessine l'écran automatiquement).
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 // useState = l'outil de React pour créer une "donnée surveillée".
 // Chaque fois qu'on la modifie (via sa fonction set...), l'écran se redessine.
 
@@ -25,6 +25,7 @@ import { CURRENT_USER } from '../data/currentUser'
 // "Qui suis-je ?" — l'utilisateur connecté simulé. Sert à savoir quels messages
 // sont les MIENS (pour les afficher à droite) vs ceux des autres (à gauche).
 
+import { useSocket } from '../context/SocketContext'
 
 function Chat() {
 
@@ -56,9 +57,24 @@ function Chat() {
   const [draft, setDraft] = useState('')
 
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  DONNÉE DÉRIVÉE (calculée à partir des states, pas stockée séparément)
-  // ─────────────────────────────────────────────────────────────────────────
+  const socket = useSocket()
+
+  useEffect(() => {
+    if (!socket) return
+    socket.emit('conversation:join', { conversationId: activeId })
+    socket.on('message:new', ({ conversationId, content, sender, createdAt }) => {
+      receiveMessage(conversationId, {
+        id: Date.now(),
+        author: sender.username,
+        text: content,
+        time: new Date(createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      })
+    })
+    return () => {
+      socket.emit('conversation:leave', { conversationId: activeId })
+      socket.off('message:new')
+    }
+  }, [socket, activeId])
 
   // On a l'id de la conversation active (STATE 2), mais pour l'AFFICHER il nous
   // faut la conversation COMPLÈTE. On la retrouve dans la liste avec .find() :
@@ -131,29 +147,12 @@ function Chat() {
       }),
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  ⚠️  POINT DE BRANCHEMENT POUR DEV 3  ⚠️
-    // ═══════════════════════════════════════════════════════════════════════
-    //
-    //  COMMENT ÇA MARCHE AUJOURD'HUI (sans socket) :
-    //  On appelle directement receiveMessage() → le message s'ajoute tout de
-    //  suite à l'écran. C'est simple et ça rend le chat testable en local.
-    //
-    //  CE QUE DEV 3 FERA (avec le socket) :
-    //  Il REMPLACERA la ligne receiveMessage(...) ci-dessous par un envoi au
-    //  serveur, du genre :
-    //        socket.send({ conversationId: activeId, message: newMessage })
-    //
-    //  Et pourquoi il ne gardera PAS le receiveMessage ici ? Parce qu'avec le
-    //  socket, le serveur me RENVERRA mon propre message (il le diffuse à tous
-    //  les participants, moi compris). C'est à CE moment-là — à la réception —
-    //  que receiveMessage sera appelé (depuis son écouteur de socket).
-    //  Si je l'ajoutais aussi ici, je verrais mon message EN DOUBLE.
-    //
-    //  Donc la règle : un message ne s'affiche QUE lorsqu'il REVIENT du serveur.
-    //  En attendant le socket, on triche en appelant receiveMessage direct :
-    //
-    receiveMessage(activeId, newMessage)
+    if (socket) {
+      socket.emit('message:send', { conversationId: activeId, content: newMessage.text })
+    } else {
+      receiveMessage(activeId, newMessage) // fallback sans socket
+    }
+    // receiveMessage(activeId, newMessage)
     //
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -177,28 +176,27 @@ function Chat() {
           // On calcule 2 valeurs AVANT de dessiner (d'où les { } et le return explicite) :
           const lastMessage = conv.messages[conv.messages.length - 1]  // le dernier message
           const isActive = conv.id === activeId                        // cette conv est-elle ouverte ?
-        
+
           return (
             <div
               key={conv.id} // React exige un "key" unique par élément d'une liste (ça l'aide à suivre qui est qui quand ça change)
               onClick={() => setActiveId(conv.id)} // AU CLIC sur une conversation : on change activeId pour son id. activeConversation se recalcule → la colonne droite change.
               // border-l-4 = barre d'accent à gauche, comme sur ProjectCard.
               // Active → fond navy très léger + barre navy. Sinon → barre invisible + survol gris.
-              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-l-4 transition-colors ${
-                isActive
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-l-4 transition-colors ${isActive
                   ? 'bg-primary-900/5 border-primary-600'
                   : 'border-transparent hover:bg-gray-100'
-              }`}
+                }`}
             >
               {/* Avatar : l'initiale sur fond navy clair (même style que tes tâches).
                   shrink-0 = "ne rétrécis jamais", sinon l'avatar s'écraserait. */}
               <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center text-sm font-medium text-primary-900 shrink-0">
                 {conv.name[0]}
               </div>
-              
+
               {/* Bloc texte : nom + aperçu. min-w-0 est OBLIGATOIRE ici (explication plus bas). */}
               <div className="flex-1 min-w-0">
-              
+
                 {/* Ligne du haut : nom (avec icône) à gauche, heure à droite */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -213,7 +211,7 @@ function Chat() {
                     <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
                   )}
                 </div>
-                
+
                 {/* Ligne du bas : aperçu du dernier message, ou "Aucun message" si vide */}
                 <p className="text-xs text-gray-400 truncate">
                   {lastMessage?.text || 'Aucun message'}
@@ -262,7 +260,7 @@ function Chat() {
             activeConversation.messages.map(msg => {
               // Est-ce MON message ? (pour l'aligner à droite et le colorer)
               const isMine = msg.author === CURRENT_USER
-            
+
               return (
                 // Ce conteneur gère l'alignement gauche/droite de TOUT le bloc
                 // (nom + bulle + heure), pas seulement la bulle.
@@ -279,15 +277,14 @@ function Chat() {
 
                   {/* La bulle elle-même */}
                   <div
-                    className={`rounded-2xl px-3 py-2 text-sm ${
-                      isMine
+                    className={`rounded-2xl px-3 py-2 text-sm ${isMine
                         ? 'bg-primary-600 text-white'      // mes messages : navy plein
                         : 'bg-gray-100 text-gray-800'      // les autres : gris clair
-                    }`}
+                      }`}
                   >
                     {msg.text}
                   </div>
-                  
+
                   {/* L'heure, en tout petit sous la bulle */}
                   <span className="text-[10px] text-gray-300 mt-0.5 px-1">{msg.time}</span>
                 </div>
