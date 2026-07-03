@@ -20,6 +20,8 @@ function MainLayout() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
+  const [status, setStatus] = useState('online')       // 'online' ou 'offline'
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
   const unreadCount = notifications.filter(n => !n.read).length
   const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
   // reduce parcourt les conversations en accumulant un total
@@ -254,12 +256,39 @@ function MainLayout() {
                 )}
               </button>
 
-              <button className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'>
-                <span className="w-4 h-4 rounded-full bg-green-400 shrink-0" />
+              <div className="relative">
+              {/* Le bouton : le point prend la couleur du statut, le texte aussi */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setStatusMenuOpen(!statusMenuOpen) }}
+                className='w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
+              >
+                {/* Le point : vert si online, rouge si offline */}
+                <span className={`w-4 h-4 rounded-full shrink-0 ${status === 'online' ? 'bg-green-400' : 'bg-red-400'}`} />
                 { sidebarOpen && (
-                  <span>En ligne</span>
+                  <span>{status === 'online' ? 'En ligne' : 'Hors ligne'}</span>
                 )}
               </button>
+              
+              {/* Le menu déroulant, ouvert seulement si statusMenuOpen */}
+              {statusMenuOpen && (
+                <div className='absolute left-0 bottom-full mb-1 bg-white border border-gray-100 rounded-xl shadow-md w-40 flex flex-col overflow-hidden z-50'>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setStatus('online'); setStatusMenuOpen(false) }}
+                    className='flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
+                  >
+                    <span className="w-3 h-3 rounded-full bg-green-400 shrink-0" />
+                    En ligne
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setStatus('offline'); setStatusMenuOpen(false) }}
+                    className='flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
+                  >
+                    <span className="w-3 h-3 rounded-full bg-red-400 shrink-0" />
+                    Hors ligne
+                  </button>
+                </div>
+              )}
+            </div>
 
           </div>
         </aside>
