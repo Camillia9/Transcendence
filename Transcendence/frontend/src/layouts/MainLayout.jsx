@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { mockNotifications } from '../data/mockNotifs'
 import { NOTIF_ICONS } from "../data/notifIcons"
+import { mockConversations } from "../data/mockConversations" 
 import { timeAgo } from '../utils/timeAgo'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
@@ -20,6 +21,8 @@ function MainLayout() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
   const unreadCount = notifications.filter(n => !n.read).length
+  const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
+  // reduce parcourt les conversations en accumulant un total
   const socket = useSocket()
 
   useEffect(() => {
@@ -207,11 +210,29 @@ function MainLayout() {
           <div className='flex flex-col gap-1 px-2 mt-auto mb-4'>
               <button
                 onClick={() => navigate('/chat')}
-                className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
+                className='relative flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
               >
-                <IconMessageCircle size={18} className='shrink-0'/>
-                { sidebarOpen && (
-                  <span>Chat</span>
+                {/* L'icône, avec le badge en pastille quand la sidebar est FERMÉE */}
+                <div className="relative shrink-0">
+                  <IconMessageCircle size={18} />
+                  {/* Sidebar fermée + des non-lus → pastille rouge sur l'icône (comme la cloche) */}
+                  {!sidebarOpen && unreadMessages > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
+                      {unreadMessages > 9 ? '9+' : unreadMessages}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Le texte "Chat" + le compteur à droite quand la sidebar est OUVERTE */}
+                {sidebarOpen && (
+                  <>
+                    <span>Chat</span>
+                    {unreadMessages > 0 && (
+                      <span className="ml-auto w-5 h-5 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
+                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
               <button
