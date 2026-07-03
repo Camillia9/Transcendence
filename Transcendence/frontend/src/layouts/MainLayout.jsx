@@ -56,7 +56,7 @@ function MainLayout() {
   }, [profileMenuOpen, notifOpen])
   
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col">
+    <div className="h-screen bg-gray-50 text-gray-800 flex flex-col overflow-hidden">
       {/*Navbar du haut */}
       <nav className='bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between'>
         <Logo /> {/* qui sera a gauche. Tout le reste a droite:*/}
@@ -171,9 +171,9 @@ function MainLayout() {
 
       {/*Corps : sidebar + contenu */}
       {/*Le flex les met côte à côte, le flex-1 fait que ce bloc prend toute la hauteur restante sous la navbar.*/}
-      <div className='flex flex-1'>
+      <div className='flex flex-1 min-h-0'>
         {/*Sidebar */}
-        <aside className={`bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ${sidebarOpen ? 'w-56' : 'w-14'}`}>
+        <aside className={`bg-white border-r border-gray-100 flex flex-col overflow-y-auto transition-all duration-300 ${sidebarOpen ? 'w-56' : 'w-14'}`}>
           <button
             className='p-4 hover:bg-gray-100 transition-colors self-start'
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -244,7 +244,7 @@ function MainLayout() {
         </aside>
 
         {/*Contenu de la page */}
-        <main className="flex-1 min-w-0 overflow-x-auto flex flex-col">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-auto flex flex-col">
           <div className='flex-1 p-6'>
             <Outlet/>
           </div>
