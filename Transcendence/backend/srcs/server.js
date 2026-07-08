@@ -8,6 +8,7 @@ import 'dotenv/config'
 import express from 'express'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import cors from 'cors'
 
 import { initSockets } from './sockets/index.js'
 import conversationsRouter from './routes/conversations.js'
@@ -15,6 +16,12 @@ import messagesRouter from './routes/messages.js'
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()
+
+// Autorise le front (origine 5173) à appeler les routes REST du back.
+// elle dit à Express « pour toutes les routes, ajoute l'en-tête d'autorisation Access-Control-Allow-Origin pointant vers le front ».
+app.use(cors({
+	origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+}))
 
 // Permet de lire le corps JSON des requetes entrantes (req.body)
 app.use(express.json())
@@ -36,6 +43,11 @@ app.use('/api/conversations', conversationsRouter)
 
 // Toutes les URLs /api/messages/* sont geres par messagesRouter
 app.use('/api/messages', messagesRouter)
+
+// Route "santé" : confirme que le serveur répond. Ne dépend de rien (ni base, ni logique).
+app.get('/api/health', (req, res) => {
+	res.json({ status: 'ok' })
+})
 
 // Initialisation des WebSockets, on passe `io` pour que les handlers puissent emettre vers des rooms
 initSockets(io)
