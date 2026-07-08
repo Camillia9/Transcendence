@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockProjects } from "../data/mockProjet"
 import { useNavigate } from 'react-router-dom'
 import ProjectCard from "../components/ui/ProjectCard";
@@ -120,8 +120,32 @@ function Home() {
 
   }
 
+  // BRANCHEMENT BACK/FRONT:
+  // état local pour stocker ce que le back nous répond.
+  const [health, setHealth] = useState('...')
+
+  // useEffect avec [] : s'execute une fois au montage.
+  useEffect(() => {
+    // fction asynchrone : "Fonction qui contient des attentes"
+    async function checkBackend() {
+      try {
+        // 1. On renvoie la requete GET vers le back
+        const response = await fetch('http://localhost:3000/api/health')
+        // 2. On transforme le corps de la reponse en JSON
+        const data = await response.json()
+        // 3. On range le statut recu de notre etat
+        setHealth(data.status)
+      } catch (error) {
+        // Si le back ne repond pas on le note plutot que de planter 
+        setHealth('injoignable')
+      }
+    }
+    checkBackend()
+  }, [])
+
   return (
     <div className="flex flex-col gap-6">
+      <p>État du backend : {health}</p>
         {/*Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900"> Mes projets </h1>

@@ -7,6 +7,16 @@ services:
       - ./frontend:/app:z
       - /app/node_modules
 
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app:z
+      - /app/node_modules
+    environment:
+      - FRONTEND_URL=http://localhost:5173
+
   db:
     image: docker.io/library/postgres:16-alpine  # image officielle, rien à construire
     environment:                        # Postgres lit ces variables au démarrage
