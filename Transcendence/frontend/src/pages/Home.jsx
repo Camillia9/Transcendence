@@ -122,6 +122,7 @@ function Home() {
 
   // BRANCHEMENT BACK/FRONT:
   // état local pour stocker ce que le back nous répond.
+  // TEST de depart. A supp des qu'on aurra remplace les mock par de vraie donnees
   const [health, setHealth] = useState('...')
 
   // useEffect avec [] : s'execute une fois au montage.
@@ -130,6 +131,7 @@ function Home() {
     async function checkBackend() {
       try {
         // 1. On renvoie la requete GET vers le back
+        // Lorsqu'on remplacera un mock, c'est mieux de metre fetch dans une API centralisée (le useAuth/service API existant)
         const response = await fetch('http://localhost:3000/api/health')
         // 2. On transforme le corps de la reponse en JSON
         const data = await response.json()
