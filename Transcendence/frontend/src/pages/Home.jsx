@@ -5,6 +5,8 @@ import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
+import { getHealth } from "../api/health";
+import { getProjects } from "../api/projects";
 
 function Home() {
   // L'etat: Le projet qu'on veut supp
@@ -19,8 +21,8 @@ function Home() {
   const [newMembers, setNewMembers] = useState('') // string
   const [newErrors, setNewErrors]   = useState({}) // Objet
 
-  // etat pour lire le tableau mock et pouvoir le modifier
-  const [projects, setProjects] = useState(mockProjects)
+  // etat pour lire le tableau et pouvoir le modifier
+  const [projects, setProjects] = useState([])
 
   // Provisoire
   const navigate = useNavigate()
@@ -130,12 +132,7 @@ function Home() {
     // fction asynchrone : "Fonction qui contient des attentes"
     async function checkBackend() {
       try {
-        // 1. On renvoie la requete GET vers le back
-        // Lorsqu'on remplacera un mock, c'est mieux de metre fetch dans une API centralisée (le useAuth/service API existant)
-        const response = await fetch('http://localhost:3000/api/health')
-        // 2. On transforme le corps de la reponse en JSON
-        const data = await response.json()
-        // 3. On range le statut recu de notre etat
+        const data = await getHealth()
         setHealth(data.status)
       } catch (error) {
         // Si le back ne repond pas on le note plutot que de planter 
@@ -143,6 +140,18 @@ function Home() {
       }
     }
     checkBackend()
+  }, [])
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const data = await getProjects()
+        setProjects(data)
+      } catch(error) {
+        console.error('Impossible de charger les projets', error)
+      }
+    }
+    loadProjects()
   }, [])
 
   return (

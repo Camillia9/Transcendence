@@ -114,3 +114,16 @@ Badge (correspond à la couleur de ton rôle, donc peut changer selon les projet
 La page principal, le tabeau
 
 Alors suite a  ca, je ne veux pas que tu commence a coder tout ca maintenant, je veux juste que tu m'aides a clarifier mes idees, a les mettres au propores clairement, afin que je puisse relire tout ca et avoir en tete un plan parfait a suivre. 
+
+
+
+const BASE_URL — c'est le cœur du « écrit une seule fois » dont on a parlé. Ton http://localhost:3000 qui était en dur dans la Home vit désormais ici, à un seul endroit. Le jour du passage à Nginx/HTTPS, une seule ligne change.
+
+export async function apiRequest(...) — export la rend utilisable depuis d'autres fichiers ; async parce qu'elle contient des await (souviens-toi de la manche : le ticket/la promesse). C'est le moteur générique : n'importe quelle route passera par lui.
+
+options = {} — la valeur par défaut. Si on appelle apiRequest('/api/health') sans second argument, options vaut un objet vide, et rien ne casse. On s'en servira plus tard pour les POST/PUT (envoyer des données).
+
+...options (le "spread") — ça recopie dans l'objet toutes les clés de options. Concrètement : pour un simple GET, on ne passe rien ; pour un POST, on passera { method: 'POST', body: ... } et ça viendra compléter la config. C'est ce qui rend le moteur polyvalent sans le réécrire à chaque fois.
+
+if (!response.ok) — LE point non-évident, et une vraie subtilité de fetch. Contrairement à ce qu'on croit, fetch ne se met pas en erreur si le serveur répond « 404 non trouvé » ou « 500 plantage » : pour lui, avoir reçu une réponse, c'est un succès. Donc c'est à nous de vérifier que le statut est bon (response.ok est vrai pour les statuts 200-299). Sans cette vérif, une route en erreur passerait pour un succès et te donnerait des bugs très déroutants. On lève donc nous-mêmes une erreur.
+try/catch + throw — on attrape les soucis (back éteint, statut mauvais, JSON illisible), on les log pour toi (le console.error), puis on relance (throw). Pourquoi relancer au lieu de gérer ici ? Parce que le moteur ne sait pas quoi afficher — ça dépend de la page. La Home affichera peut-être « injoignable », une autre page un message différent. Donc le moteur signale le problème, et chaque appelant décide de la réaction. Séparation des rôles.
