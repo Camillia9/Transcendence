@@ -19,6 +19,9 @@ up:
 	$(COMPOSE_CMD) up -d --build
 
 down:
+	$(COMPOSE_CMD) down
+
+fclean:
 	$(COMPOSE_CMD) down -v
 
 stop:
