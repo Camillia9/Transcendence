@@ -1,49 +1,34 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { useSocket } from './SocketContext'   // adapte le chemin à ton useSocket
+// L'adresse de base du back, écrite UNE SEULE FOIS dans tout le projet.
+// Le jour où elle change (Nginx, HTTPS...), on ne modifie QUE cette ligne.
+const BASE_URL = 'http://localhost:3000'
 
-// ─── 1. CRÉER le contexte ───
-// Un "contexte" = un canal par lequel une donnée traverse tout l'arbre de
-// composants sans passer par les props. On crée le canal ici (vide au départ).
-const StatusContext = createContext()
+// Le moteur unique : toute requête vers le back passe par ici.
+// - path : la route qu'on veut appeler, ex. '/api/health'
+// - options : réglages optionnels (méthode, corps...), vide par défaut
+export async function apiRequest(path, options = {}) {
+	try {
+		// On construit l'URL complète : base + route.
+		const response = await fetch(`${BASE_URL}${path}`, {
+			// On annonce qu'on échange du JSON (utile dès qu'on enverra des données).
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			// On étale les options reçues : elles peuvent compléter/écraser ce qui précède.
+			...options,
+		})
 
-// ─── 2. FOURNIR la donnée (le Provider) ───
-// Ce composant enveloppera ton app. Il écoute le socket et maintient les statuts.
-export function StatusProvider({ children }) {
-  const socket = useSocket()
+		// fetch ne considère PAS un 404 ou un 500 comme une erreur.
+		// On vérifie donc nous-mêmes que la réponse est "ok" (statut 200-299).
+		if (!response.ok) {
+			throw new Error(`Erreur ${response.status} sur ${path}`)
+		}
 
-  // L'état central : un objet { username: "online" | "offline" }.
-  // Vide au départ, il se remplit au fil des annonces du socket.
-  const [statuses, setStatuses] = useState({})
-
-  useEffect(() => {
-    if (!socket) return   // le socket n'est pas encore prêt → on attend
-
-    // Quand le back annonce un changement de statut (connexion OU déconnexion),
-    // il envoie { userId, username, status }. On met à jour NOTRE objet.
-    const handleStatus = ({ username, status }) => {
-      // On repart de l'état précédent (prev) et on met à jour UNE clé :
-      // celle de l'utilisateur concerné. Les autres restent intactes.
-      setStatuses(prev => ({ ...prev, [username]: status }))
-    }
-
-    socket.on('user:status', handleStatus)
-
-    // Nettoyage : quand ce Provider disparaît (ou que le socket change),
-    // on se désabonne pour ne pas empiler les écouteurs. Même réflexe que
-    // ton useEffect de notifications dans MainLayout.
-    return () => socket.off('user:status', handleStatus)
-  }, [socket])
-
-  return (
-    <StatusContext.Provider value={statuses}>
-      {children}
-    </StatusContext.Provider>
-  )
+		// On décode le corps JSON et on le renvoie à celui qui a appelé.
+		return await response.json()
+	} catch (error) {
+		// On log pour le debug, puis on relance : l'appelant décidera quoi afficher.
+		console.error('Appel API échoué :', error.message)
+		throw error
+	}
 }
 
-// ─── 3. CONSOMMER la donnée (le hook) ───
-// Un raccourci pour que n'importe quel composant lise les statuts en une ligne :
-//   const statuses = useStatus()
-export function useStatus() {
-  return useContext(StatusContext)
-}
