@@ -2,7 +2,6 @@ import { IconPaletteFilled, IconBell, IconBulb, IconHome, IconLanguage, IconLayo
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { mockNotifications } from '../data/mockNotifs'
 import { NOTIF_ICONS } from "../data/notifIcons"
 import { mockConversations } from "../data/mockConversations" 
 import { timeAgo } from '../utils/timeAgo'
@@ -12,6 +11,7 @@ import Logo from '../components/ui/Logo'
 import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
+import { getNotifs } from '../api/notifications'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -19,7 +19,7 @@ function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const [notifications, setNotifications] = useState([])
   const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
   const unreadCount = notifications.filter(n => !n.read).length
@@ -34,6 +34,18 @@ function MainLayout() {
     })
     return () => socket.off('notification:new')
   }, [socket])
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const data = await getNotifs()
+        setNotifications(data)
+      } catch (error) {
+        console.error('Impossible de charger les notifications', error)
+      }
+    }
+    loadNotifications()
+  }, []) // Recharge une fois au demarage. Pas de boucle infini
 
   const handleLogout = () => {
     logout()

@@ -5,7 +5,7 @@ export const mockNotifications = [
     message: 'Manu t\'a assigné la tâche "Revoir la maquette"',
     read: true,
     createdAt: "2026-06-25T09:30:00Z",
-    link: "/kanban/3",
+    link: "/projet/3",
   },
   {
     id: 2,
@@ -13,7 +13,7 @@ export const mockNotifications = [
     message: 'Sarah a déplacé "Setup Docker" vers Terminé',
     read: false,
     createdAt: "2026-06-25T08:15:00Z",
-    link: "/kanban/3",
+    link: "/projet/3",
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ export const mockNotifications = [
     message: 'Manu a cree une tache "Manger du caca"',
     read: true,
     createdAt: "2026-06-25T09:30:00Z",
-    link: "/kanban/3",
+    link: "/projet/3",
   },
   {
     id: 5,

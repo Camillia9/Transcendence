@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
-import { mockProjects } from "../data/mockProjet";
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
@@ -162,7 +161,7 @@ function KanbanPage() {
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
   // Si on ne met pas cela, ca plante. 
   if (!project) return <p>Chargement…</p>
-  
+
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
   const visibleTasks = project.role === 'Manager' ?
     tasks : tasks.filter(t => t.assignee === CURRENT_USER)
