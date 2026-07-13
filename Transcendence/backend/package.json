@@ -7,6 +7,7 @@
     "start": "node srcs/server.js"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
@@ -15,6 +16,7 @@
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "prisma": "^7.8.0",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

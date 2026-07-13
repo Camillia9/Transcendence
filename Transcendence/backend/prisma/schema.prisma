@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Manager
+  User
+}
+
+enum Priorite {
+  Basse
+  Moyenne
+  Haute
+  Urgent
+}
+
+enum Colonne {
+  EnAttente
+  EnCours
+  EnRevue
+  Terminee
+}
+
+enum TypeConversation {
+  Prive
+  Groupe
+}
+
+enum TypeNotification {
+  Assignment
+  Invitation
+  Commentaire
+  DeplacementTache
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  pseudo        String
+  email         String    @unique
+  passwordHash  String? // null si connexion Oauth
+  avatar        String?
+  statut        String    @default("actif")
+  langue        String    @default("fr")
+  createdAt     DateTime  @default(now())
+}
+
+model Organisation {
+  id           Int       @id @default(autoincrement())
+  nom          String
+  createdAt    DateTime  @default(now())
+}
+
+model Membre {
+  userId  Int
+  orgId   Int
+  Role    Role  @default(User)
+}
+
+model Projet {
+  id           Int       @id @default(autoincrement())
+  nom          String
+  deadline    DateTime?
+  orgId   Int
+  createdAt    DateTime  @default(now())
+}
+
+model Tache {
+  id           Int       @id @default(autoincrement())
+  titre        String
+  description   String?
+  priorite      Priorite  @default(Moyenne)
+  colonne       Colonne   @default(EnAttente)
+  deadline    DateTime?
+  projetId    Int
+  createdAt    DateTime  @default(now())
+}
+
+model Invitation {
+  id           Int       @id @default(autoincrement())
+  email         String
+  orgId   Int
+  token   String    @unique
+  expireAt  DateTime
+  utilisee  Boolean @default(false)
+  createdAt    DateTime  @default(now())
+}
+
+model Notification {
+  id           Int       @id @default(autoincrement())
+  type        TypeNotification
+  contenu     String
+  userId      Int
+  lu        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model Message {
+  id           Int       @id @default(autoincrement())
+  contenu     String
+  userId      Int
+  lu        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
