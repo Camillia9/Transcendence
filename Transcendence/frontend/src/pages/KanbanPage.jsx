@@ -13,6 +13,7 @@ import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
 import { getTasks } from "../api/tasks";
+import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
   { id: "todo", label: "À faire" },
@@ -33,7 +34,7 @@ function KanbanPage() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskPriority, setNewTaskPriority] = useState('normal')
   const [newTaskError, setNewTaskError] = useState('')
-  const project = mockProjects.find(p => p.id === projectId)
+  const [project, setProject] = useState(null)
   const [tasks, setTasks] = useState([])
 
   useEffect(() => {
@@ -50,8 +51,8 @@ function KanbanPage() {
     }
   }, [socket, projectId])
 
+  // Utilise l'API pour les tachs plutot que le mock
   useEffect(() => {
-    // Utilise l'API pour les tachs plutot que le mock
     async function loadTasks() {
       try {
         const data = await getTasks(projectId)
@@ -62,6 +63,18 @@ function KanbanPage() {
     }
     loadTasks()
   }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
+
+  useEffect(() => {
+    async function loadProject() {
+      try {
+        const data = await getProjectById(projectId)
+        setProject(data)
+      } catch (error) {
+        console.error('Impossible de charger le projet', error)
+      }
+    }
+    loadProject()
+  }, [projectId])
 
 
   // TEMPORAIRE 
@@ -146,9 +159,14 @@ function KanbanPage() {
     setSelectedTask(null) // et on ferme le panneau
   }
 
+  // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
+  // Si on ne met pas cela, ca plante. 
+  if (!project) return <p>Chargement…</p>
+  
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
   const visibleTasks = project.role === 'Manager' ?
     tasks : tasks.filter(t => t.assignee === CURRENT_USER)
+
 
   return (
 

@@ -12,3 +12,10 @@ export async function getProjects() {
 
 // Plus tard, quand la route existera, il suffira de basculer USE_MOCK à false.
 // et return await apiRequest('/api/projects')
+
+export async function getProjectById(projectId) {
+	if (USE_MOCK) {
+		return mockProjects.find(p => p.id === projectId)
+	}
+	// plus tard : return await apiRequest(`/api/projects/${projectId}`)
+}
