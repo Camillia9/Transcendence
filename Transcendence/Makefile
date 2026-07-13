@@ -33,4 +33,7 @@ start:
 ps:
 	$(COMPOSE_CMD) ps
 
-.PHONY: all up down stop start ps
+logs:
+	$(COMPOSE_CMD) logs -f
+
+.PHONY: all up down stop start ps logs
