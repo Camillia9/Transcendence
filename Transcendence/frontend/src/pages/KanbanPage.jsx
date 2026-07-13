@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
-import { mockTasks } from "../data/mockTasks";
 import { mockProjects } from "../data/mockProjet";
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
@@ -13,6 +12,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
+import { getTasks } from "../api/tasks";
 
 const COLUMNS = [
   { id: "todo", label: "À faire" },
@@ -22,9 +22,19 @@ const COLUMNS = [
 ];
 
 function KanbanPage() {
+
   const socket = useSocket()
   const { id } = useParams()
   const projectId = Number(id)
+
+  const [activeTask, setActiveTask] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
+  const [newTaskColumn, setNewTaskColumn] = useState(null)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskPriority, setNewTaskPriority] = useState('normal')
+  const [newTaskError, setNewTaskError] = useState('')
+  const project = mockProjects.find(p => p.id === projectId)
+  const [tasks, setTasks] = useState([])
 
   useEffect(() => {
     if (!socket || !projectId) return
@@ -40,16 +50,19 @@ function KanbanPage() {
     }
   }, [socket, projectId])
 
-  const [activeTask, setActiveTask] = useState(null)
-  const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
-  const [newTaskColumn, setNewTaskColumn] = useState(null)
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskPriority, setNewTaskPriority] = useState('normal')
-  const [newTaskError, setNewTaskError] = useState('')
-  const project = mockProjects.find(p => p.id === projectId)
-  const [tasks, setTasks] = useState(
-    mockTasks.filter(t => t.projectId === projectId)
-  )
+  useEffect(() => {
+    // Utilise l'API pour les tachs plutot que le mock
+    async function loadTasks() {
+      try {
+        const data = await getTasks(projectId)
+        setTasks(data)
+      } catch (error) {
+        console.error('Impossible de charger les taches')
+      }
+    }
+    loadTasks()
+  }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
+
 
   // TEMPORAIRE 
   console.log(selectedTask)
