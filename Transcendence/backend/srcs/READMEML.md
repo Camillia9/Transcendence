@@ -677,3 +677,15 @@ model Member {
 }
 pas besoin de rajouter id Int @id @default(autoincrement()) car la cle primiaire est userId + orgId
 @@id([userId, orgId]) signifie : La combinaison de userId et orgId identifie une ligne de manière unique.
+
+
+npx prisma format
+npx prisma validate -> pour voir si le schema prisma est valid
+
+npx prisma db pull -> pour voir si ca marche
+
+npx prisma dev -> commande sert à lancer Prisma Postgres local (le service prisma+postgres://...)
+
+npx prisma migrate dev --name init -> synchronise la database avec mon schema prisma
+
+npx prisma generate -> regenerer le client apres la migration ou a chaque modification du schema prisma
