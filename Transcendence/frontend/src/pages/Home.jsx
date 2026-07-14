@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { mockProjects } from "../data/mockProjet"
 import { useNavigate } from 'react-router-dom'
 import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
