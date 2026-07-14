@@ -689,3 +689,16 @@ npx prisma dev -> commande sert à lancer Prisma Postgres local (le service pris
 npx prisma migrate dev --name init -> synchronise la database avec mon schema prisma
 
 npx prisma generate -> regenerer le client apres la migration ou a chaque modification du schema prisma
+
+
+a installer
+npm install -D ts-node
+ts-node =  un outil qui permet d'exécuter directement des fichiers TypeScript (.ts) sans devoir les compiler manuellement en JavaScript avant. Car Node comprend JavaScript (.js), pas TypeScript (.ts).
+on devrait faire sinon tsc prisma/seed.ts qui genere seed.js puis faire node seed.js
+
+
+
+npx prisma db seed -> pour lancer le seed
+
+a installer pour que prisma saches comment se connecter a PostreSQL
+npm install @prisma/adapter-pg
