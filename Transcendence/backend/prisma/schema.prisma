@@ -4,112 +4,224 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  //url      = env("DATABASE_URL")
 }
 
 enum Role {
   Admin
+  Member
   Manager
   User
 }
 
-enum Priorite {
-  Basse
-  Moyenne
-  Haute
+enum Priority {
+  Low
+  Normal
   Urgent
 }
 
 enum Colonne {
-  EnAttente
-  EnCours
-  EnRevue
-  Terminee
+  ToDo
+  Doing
+  Blocked
+  Done
 }
 
 enum TypeConversation {
-  Prive
-  Groupe
+  Private
+  Group
 }
 
 enum TypeNotification {
   Assignment
   Invitation
+  AjoutProjet
+  SuppProjet
   Commentaire
   DeplacementTache
 }
 
+enum UserStatus {
+  Online
+  Offline
+  Away
+  Busy
+}
+
+enum Language {
+  fr
+  en
+  cn
+}
+
 model User {
-  id            Int       @id @default(autoincrement())
-  pseudo        String
-  email         String    @unique
-  passwordHash  String? // null si connexion Oauth
-  avatar        String?
-  statut        String    @default("actif")
-  langue        String    @default("fr")
-  createdAt     DateTime  @default(now())
+  id           Int        @id @default(autoincrement())
+  pseudo       String
+  firstname    String
+  lastname     String
+  email        String     @unique
+  passwordHash String? // null si connexion Oauth
+  avatar       String?
+  statut       UserStatus @default(Online)
+  langue       Language   @default(fr)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  members             Member[]
+  projectMembers      ProjectMember[]
+  assignments         Assignment[]
+  messages            Message[]
+  notifications       Notification[]
+  invitations         Invitation[]
+  conversationMembers ConversationMember[]
 }
 
 model Organisation {
-  id           Int       @id @default(autoincrement())
-  nom          String
-  createdAt    DateTime  @default(now())
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members     Member[]
+  projects    Project[]
+  invitations Invitation[]
 }
 
-model Membre {
-  userId  Int
-  orgId   Int
-  Role    Role  @default(User)
+model Member {
+  userId Int
+  orgId  Int
+  role   Role @default(Member)
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  // un user ne peut etre membre qu'une fois par org
+
+  @@id([userId, orgId])
 }
 
-model Projet {
-  id           Int       @id @default(autoincrement())
-  nom          String
+model Project {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
   deadline    DateTime?
-  orgId   Int
-  createdAt    DateTime  @default(now())
+  orgId       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  organisation   Organisation    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  projectMembers ProjectMember[]
+  conversations  Conversation[]
+  notifications  Notification[]
 }
 
-model Tache {
-  id           Int       @id @default(autoincrement())
-  titre        String
-  description   String?
-  priorite      Priorite  @default(Moyenne)
-  colonne       Colonne   @default(EnAttente)
+model ProjectMember {
+  userId    Int
+  projectId Int
+  role      Role @default(User)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  priority    Priority  @default(Normal)
+  status      Colonne   @default(ToDo)
+  position    Int //pour le kanban pour deplacer les taches
   deadline    DateTime?
-  projetId    Int
-  createdAt    DateTime  @default(now())
+  projectId   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignments   Assignment[]
+  notifications Notification[]
+
+  @@unique([projectId, status, position])
 }
 
 model Invitation {
-  id           Int       @id @default(autoincrement())
-  email         String
-  orgId   Int
-  token   String    @unique
-  expireAt  DateTime
-  utilisee  Boolean @default(false)
-  createdAt    DateTime  @default(now())
+  id         Int       @id @default(autoincrement())
+  email      String
+  orgId      Int
+  token      String    @unique
+  inviterId  Int
+  expireAt   DateTime
+  utilisee   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  acceptedAt DateTime?
+
+  organisation Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [inviterId], references: [id])
 }
 
 model Notification {
-  id           Int       @id @default(autoincrement())
-  type        TypeNotification
-  contenu     String
-  userId      Int
-  lu        Boolean   @default(false)
-  createdAt   DateTime  @default(now())
+  id        Int              @id @default(autoincrement())
+  type      TypeNotification
+  content   String
+  userId    Int
+  projectId Int?
+  taskId    Int?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
+//conversation = contient plusieurs messages, salon de discussion
+model Conversation {
+  id        Int              @id @default(autoincrement())
+  name      String?
+  type      TypeConversation @default(Private)
+  projectId Int?
+
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  messages            Message[]
+  conversationMembers ConversationMember[]
+}
+
+// message = un message ecrit dans un salon, un message appartient a une seule conversation
 model Message {
-  id           Int       @id @default(autoincrement())
-  contenu     String
-  userId      Int
-  lu        Boolean   @default(false)
-  createdAt   DateTime  @default(now())
+  id             Int      @id @default(autoincrement())
+  content        String
+  userId         Int
+  conversationId Int
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model ConversationMember {
+  conversationId Int
+  userId         Int
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, conversationId])
+}
+
+model Assignment {
+  userId Int
+  taskId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([userId, taskId])
 }

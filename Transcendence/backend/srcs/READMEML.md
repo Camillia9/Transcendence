@@ -557,3 +557,123 @@ Le schéma complet
             │                  │
             │                  │
          Message             Task
+
+
+
+schema.prisma
+
+installation avec npm install prisma @prisma/client
+puis npx prisma init (si le dossier prisma n'existe pas encore)
+sinon npx prisma generate (si le dossier prisma existe deja)
+
+generator client {
+      provider = "prisma-client-js"
+      }
+genere le package @prisma/client utiliser dans le code Node.js
+
+datasource db {
+      provider = "postgresql"
+      url = env("DATABASE_URL")
+      }
+indique que la base est PostgreSQL et que l'URL vient de la variable d'environnement DATABASE_URL
+
+enum permet de limiter les valeurs possibles
+
+model = table
+model User {
+      id Int @id @default(autoincrement()) 
+      pseudo String 
+      email String @unique 
+      createdAt DateTime @default(now()) 
+      }
+revient a ecrire
+CREATE TABLE "User" (
+  id SERIAL PRIMARY KEY,
+  pseudo TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  createdAt TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+@id = clé primaire
+@default(autoincrement()) = auto-incrément
+@default(now()) = date actuelle
+@unique = valeur unique
+String? = champ nullable
+DateTime? = champ nullable
+
+les relations
+orgId Int 
+organisation Organisation 
+@relation(fields: [orgId], references: [id], onDelete: Cascade)
+Cela signifie :
+la table Projet possède une colonne orgId,
+orgId référence Organisation.id,
+onDelete: Cascade = si l’organisation est supprimée, ses projets le sont aussi.
+
+les relations plusieurs a plusieurs
+model Assignation { 
+      userId Int 
+      tacheId Int 
+      @@id([userId, tacheId]) 
+      }
+
+  @@id([userId, taskId]) cree une cle primaire composite
+un user ne peut etre assigner qu'une seule foi a une tache
+
+les relations optionnelles
+projetId Int? 
+projet Projet? 
+@relation(fields: [projetId], references: [id], onDelete: SetNull)
+Une conversation peut exister sans projet.
+Si le projet est supprimé, projetId devient NULL au lieu de supprimer la conversation.
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  contenu        String
+  userId         Int
+  conversationId Int
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+user User
+Le message est lié à un User
+
+fields: [userId]
+La colonne locale utilisée est userId
+
+references: [id]
+Cette colonne pointe vers User.id
+
+onDelete: Cascade
+Si l’utilisateur est supprimé, ses messages sont supprimés
+
+Message.userId pointe vers User.id
+references: [id] signifie « La valeur de userId doit correspondre à la colonne id du modèle User. »
+
+
+
+organisation et user relation many to many
+un utilisateur peut appartenir a plusieurs organisations, et une organisation peut avoir plusieurs utilisateurs
+donc il faut une table entre les 2 (ici member) qui va stocker userId, orgId et role
+
+si on avait mis userId direct dams organisation, ca veut dire que une organisation n'a qu'un seul utilisateur
+
+on aurait pu faire users User[] pour que Prisma cree une table de liaison automatique mais il manquerait le role donc obliger de faire une table member
+
+
+
+model Member {
+  userId  Int
+  orgId   Int
+  Role    Role  @default(User)
+
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation  Organisation  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@id([userId, orgId])
+// un user ne peut etre membre qu'une fois par org
+}
+pas besoin de rajouter id Int @id @default(autoincrement()) car la cle primiaire est userId + orgId
+@@id([userId, orgId]) signifie : La combinaison de userId et orgId identifie une ligne de manière unique.
