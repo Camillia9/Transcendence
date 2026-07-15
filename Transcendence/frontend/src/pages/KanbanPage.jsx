@@ -41,7 +41,7 @@ function KanbanPage() {
     socket.emit('project:join', { projectId })
 
     socket.on('task:moved', ({ taskId, toColumn }) => {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column: toColumn } : t))
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: toColumn } : t))
     })
 
     return () => {
@@ -96,7 +96,7 @@ function KanbanPage() {
     if (task.status === newColumn) return
 
     setTasks(tasks.map(t =>
-      t.id === taskId ? { ...t, column: newColumn } : t
+      t.id === taskId ? { ...t, status: newColumn } : t
     ))
 
     if (socket) {
@@ -143,7 +143,7 @@ function KanbanPage() {
       projectId: projectId,
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
-      column: newTaskColumn,
+      status: newTaskColumn,
       createdBy: CURRENT_USER,
       assignee: CURRENT_USER,
       deadline: null,

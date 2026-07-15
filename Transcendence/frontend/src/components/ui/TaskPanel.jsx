@@ -97,7 +97,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
             <label className="text-xs text-gray-400 uppercase tracking-wide">Colonne</label>
             <select
               value={task.status}
-              onChange={(e) => onUpdate({ ...task, column: e.target.value })}
+              onChange={(e) => onUpdate({ ...task, status: e.target.value })}
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
             >
               {COLUMN_OPTIONS.map(col => (
