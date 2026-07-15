@@ -39,7 +39,7 @@ Sinon → un <span /> vide, juste pour occuper la place à gauche et que justify
 
 
 {/*Icone commentaire*/}
-  {task.column === 'waiting' && (
+  {task.status === 'waiting' && (
     <span className="flex items-center gap-1 text-xs text-gray-400">
       <IconMessageCircle size={14} />
       {task.comments.length}
@@ -152,7 +152,7 @@ Contenu Scrollable :
 
 *MEnu deroulant Colonne*
 - <select> : Lise deroulante
-    - value={task.column} → le menu affiche la colonne        actuelle de la tâche
+    - value={task.status} → le menu affiche la colonne        actuelle de la tâche
     - onChange → quand on choisit une autre option, on appelle onUpdate avec la tâche modifiée, on écrase la colonne
     - e.target.value → la valeur de l'option choisie dans le menu.
 

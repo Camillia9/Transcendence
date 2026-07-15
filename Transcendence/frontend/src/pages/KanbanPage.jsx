@@ -15,10 +15,10 @@ import { getTasks } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
-  { id: "todo", label: "À faire" },
-  { id: "inprogress", label: "En cours" },
-  { id: "done", label: "Terminée" },
-  { id: "waiting", label: "En attente" },
+  { id: "ToDo", label: "À faire" },
+  { id: "Doing", label: "En cours" },
+  { id: "Done", label: "Terminée" },
+  { id: "Blocked", label: "En attente" },
 ];
 
 function KanbanPage() {
@@ -31,7 +31,7 @@ function KanbanPage() {
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
   const [newTaskColumn, setNewTaskColumn] = useState(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskPriority, setNewTaskPriority] = useState('normal')
+  const [newTaskPriority, setNewTaskPriority] = useState('Normal')
   const [newTaskError, setNewTaskError] = useState('')
   const [project, setProject] = useState(null)
   const [tasks, setTasks] = useState([])
@@ -93,14 +93,14 @@ function KanbanPage() {
     const taskId = active.id
     const newColumn = over.id
     const task = tasks.find(t => t.id === taskId)
-    if (task.column === newColumn) return
+    if (task.status === newColumn) return
 
     setTasks(tasks.map(t =>
       t.id === taskId ? { ...t, column: newColumn } : t
     ))
 
     if (socket) {
-      socket.emit('task:moved', { projectId, taskId, fromColumn: task.column, toColumn: newColumn })
+      socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
     }
   }
 
@@ -128,7 +128,7 @@ function KanbanPage() {
   const handleCloseNewTask = () => {
     setNewTaskColumn(null)
     setNewTaskTitle('')
-    setNewTaskPriority('normal')
+    setNewTaskPriority('Normal')
     setNewTaskError('')
   }
 
@@ -163,8 +163,9 @@ function KanbanPage() {
   if (!project) return <p>Chargement…</p>
 
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
-  const visibleTasks = project.role === 'Manager' ?
-    tasks : tasks.filter(t => t.assignee === CURRENT_USER)
+
+const visibleTasks = project.role === 'Manager' ?
+    tasks : tasks.filter(t => t.assignments.some(a => a.userId === CURRENT_USER))
 
 
   return (
@@ -178,7 +179,7 @@ function KanbanPage() {
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map((col) => {
-            const colTasks = visibleTasks.filter((t) => t.column === col.id);
+            const colTasks = visibleTasks.filter((t) => t.status === col.id);
             return (
               <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
                 {colTasks.map(task => (
@@ -206,7 +207,7 @@ function KanbanPage() {
       <TaskPanel
         task={selectedTask}
         userRole={project.role}
-        currentUser={CURRENT_USER}
+        currentUserId={CURRENT_USER}
         members={project.members}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}

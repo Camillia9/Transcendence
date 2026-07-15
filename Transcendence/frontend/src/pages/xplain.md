@@ -27,7 +27,7 @@ const handleDragEnd = (event) => {
 
   // Si on lâche sur la même colonne → on ne fait rien
   const task = tasks.find(t => t.id === taskId)
-  if (task.column === newColumn) return
+  if (task.status === newColumn) return
 
   // Met à jour la colonne de la tâche
   setTasks(tasks.map(t =>

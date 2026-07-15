@@ -3,10 +3,10 @@ import { PRIORITIES } from "../../data/priorities"
 import Button from "./Button"
 
 const COLUMN_OPTIONS = [
-  { value: 'todo',        label: 'À faire'    },
-  { value: 'inprogress',  label: 'En cours'   },
-  { value: 'done',        label: 'Terminée'   },
-  { value: 'waiting',     label: 'En attente' },
+  { value: 'ToDo',        label: 'À faire'    },
+  { value: 'Doing',  label: 'En cours'   },
+  { value: 'Done',        label: 'Terminée'   },
+  { value: 'Blocked',     label: 'En attente' },
 ]
 
 function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onDelete }) {
@@ -96,7 +96,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
           <div className="flex flex-col gap-2">
             <label className="text-xs text-gray-400 uppercase tracking-wide">Colonne</label>
             <select
-              value={task.column}
+              value={task.status}
               onChange={(e) => onUpdate({ ...task, column: e.target.value })}
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
             >
@@ -123,7 +123,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
           )}
 
           {/*Champs commentaire QUE colonne en attente*/}
-          {task.column === 'waiting' && (
+          {task.status === 'Blocked' && (
             <div className="flex flex-col gap-3">
               <label className="text-xs text-gray-400 uppercase tracking-wide">Commentaires</label>
               {task.comments.length === 0 && (

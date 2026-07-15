@@ -43,7 +43,7 @@ function TaskCard({ task, onClick }) {
         {/*Droite*/}
         <div className="flex items-center gap-2">
           {/*Icone commentaire */}
-          {task.column === 'waiting' && (
+          {task.status === 'Blocked' && (
             <span className="flex items-center gap-1 text-xs text-gray-400">
               <IconMessageCircle size={14} />
               {task.comments.length}
