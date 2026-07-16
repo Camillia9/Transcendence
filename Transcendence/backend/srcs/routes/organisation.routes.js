@@ -1,11 +1,12 @@
 import express from 'express';
 import { checkPermission, authenticate, loadMembership } from '../middleware/checkPermission.js';
-import { fakeDB, newId } from '../fakeDB.js';
+// import { fakeDB, newId } from '../fakeDB.js';
+import prisma from '../prisma.js';
 
 const router = express.Router();
 
 // creer une organisation
-router.post('/organisations', authenticate, (req, res) => {
+router.post('/organisations', authenticate, async (req, res) => {
     // le front envoie {"orgName": "Mon entreprise"} donc on recupere cet info
     const { orgName } = req.body;
     if (!orgName)
@@ -32,9 +33,11 @@ router.post('/organisations', authenticate, (req, res) => {
 // GET /organisations/:orgId
 // accessible a tous les membres connecter et on sait que l'utilisateur appartient a cette orga car loadmembership verifier
 router.get('/organisations/:orgId', authenticate, loadMembership, checkPermission('view_member'), 
-    (req, res) => {
-
-        const org = fakeDB.orgs.find(o => o.id === req.orgId);
+    async (req, res) => {
+        const org = await prisma.organisation.findUnique({
+            where: {id: req.orgId},
+        });
+        // const org = fakeDB.orgs.find(o => o.id === req.orgId);
         if (!org)
             return res.status(404).json({ error: 'Organisation not found'});
         res.json(org);
@@ -43,7 +46,7 @@ router.get('/organisations/:orgId', authenticate, loadMembership, checkPermissio
 
 // modifier mon organisation
 router.patch('/organisations/:orgId', authenticate, loadMembership, checkPermission('edit_orga'),
-    (req, res) => {
+    async (req, res) => {
         const { orgName } = req.body;
         if (!orgName)
             return res.status(400).json({ error: 'Organisation name required' });

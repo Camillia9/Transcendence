@@ -1,5 +1,6 @@
 import { verifyToken } from '../auth/jwt.utils.js';
-import { fakeDB } from '../fakeDB.js';
+import prisma from '../prisma.js';
+// import { fakeDB } from '../fakeDB.js';
 
 //table des droits par role
 const PERMISSIONS = {
@@ -36,53 +37,94 @@ export function authenticate(req, res, next) {
 
 // recupere les informations de l'utilisateur dans l'organisation (org + role)
 // le front indique l'organisation concernee dans l'URL
-export function loadMembership(req, res, next) {
-    const orgId = Number(req.params.orgId);
-    if (Number.isNaN(orgId))
-        return res.status(400).json({ error: 'Invalid organisation id' });
+export async function loadMembership(req, res, next) {
+    try {
+        const orgId = Number(req.params.orgId);
+        if (Number.isNaN(orgId))
+            return res.status(400).json({ error: 'Invalid organisation id' });
 
-    const membre = fakeDB.orgMembers.find(m => m.userId === req.user.userId && m.orgId === orgId);
+        // const membre = fakeDB.orgMembers.find(m => m.userId === req.user.userId && m.orgId === orgId);
+        const membre = await prisma.member.findUnique({
+            where: {
+                userId_orgId: {
+                    userId: req.user.userId,
+                    orgId: orgId,
+                },
+            },
+        });
 
-    if (!membre)
-        return res.status(403).json({ error: 'Not member of this organisation' });
+        if (!membre)
+            return res.status(403).json({ error: 'Not member of this organisation' });
 
-    //req.membership = propriete qu'on a ajouter soi meme a l'objet req pour transmettre des infos aux middlewares
-    // req.membership vaut par ex
-    // {
-    // userId: 5,
-    // orgId: 2,
-    // role: "Admin"
-    // }
-    // on peut l'utiliser ailleurs par ex const permissions = PERMISSIONS[req.membership.role] ?? []; ou req.membership.role vaut donc "Admin" ou "Member"
-    req.membership = membre;
-    req.orgId = orgId;
-    req.role = membre.role;
+        //req.membership = propriete qu'on a ajouter soi meme a l'objet req pour transmettre des infos aux middlewares
+        // req.membership vaut par ex
+        // {
+        // userId: 5,
+        // orgId: 2,
+        // role: "Admin"
+        // }
+        // on peut l'utiliser ailleurs par ex const permissions = PERMISSIONS[req.membership.role] ?? []; ou req.membership.role vaut donc "Admin" ou "Member"
+        req.membership = membre;
+        req.orgId = orgId;
+        req.role = membre.role;
 
-    next();
+        next();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
 }
 
-export function loadProject(req, res, next) {
-    const project = fakeDB.projets.find(p => p.id === Number(req.params.projectId));
-    if (!project)
-        return res.status(404).json({ error: 'Project not found' });
-    
-    const projectMember = fakeDB.projectMembers.find(
-        pm => 
-            pm.projectId === project.id &&
-            pm.userId === req.user.userId
-    )
+export async function loadProject(req, res, next) {
+    try {
+        // const project = fakeDB.projets.find(p => p.id === Number(req.params.projectId));
+        const projectId = Number(req.params.projectId);
+        if (Number.isNaN(projectId))
+            return res.status(400).json({ error: 'Invalid project id' });
+        
+        const project = await prisma.project.findUnique({
+            where: {
+                id: projectId,
+            },
+        });
 
-    if (!projectMember)
-        return res.status(403).json({ error: 'User is not part of this project' });
-    // verifie que le projet appartient a l'orga
-    // sinon on pourrait avoir un truc comme /orgs/1/projects/15 alors que le projet 15 appartient à l'orga 2
-    // if (project.orgId !== req.orgId)
-    //     return res.status(404).json({ error: 'Project not found' });
-    
-    req.project = project;
-    req.projectMember = projectMember;
-    
-    next();
+        if (!project)
+            return res.status(404).json({ error: 'Project not found' });
+
+        const projectMember = await prisma.projectMember.findUnique({
+            where: {
+                userId_projectId: {
+                    userId: req.user.userId,
+                    projectId: project.id,
+                },
+            },
+        });
+        // const projectMember = fakeDB.projectMembers.find(
+        //     pm => 
+        //         pm.projectId === project.id &&
+        //         pm.userId === req.user.userId
+        // )
+
+        if (!projectMember)
+            return res.status(403).json({ error: 'User is not part of this project' });
+        // verifie que le projet appartient a l'orga
+        // sinon on pourrait avoir un truc comme /orgs/1/projects/15 alors que le projet 15 appartient à l'orga 2
+        // if (project.orgId !== req.orgId)
+        //     return res.status(404).json({ error: 'Project not found' });
+
+        req.project = project;
+        req.projectMember = projectMember;
+
+        // on ecrase req.membership temporairement pour  que checkPermission fonctionne
+        req.membership = projectMember;
+
+        next();
+
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
 }
 
 
@@ -109,27 +151,45 @@ export function checkPermission(action) {
     };
 }
 
-export function canManageTask(req, res, next) {
-    const task = fakeDB.tasks.find(
-        t =>
-            t.id === Number(req.params.taskId) &&
-            t.projectId === req.project.id
-    );
+export async function canManageTask(req, res, next) {
+    try {
+        const taskId = Number(req.params.taskId);
+        if (Number.isNaN(taskId))
+            return res.status(400).json({ error: 'Invalid task id' });
+        
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+        });
 
-    if (!task)
-        return res.status(404).json({ error: "Task not found "});
+        // const task = fakeDB.tasks.find(
+        //     t =>
+        //         t.id === Number(req.params.taskId) &&
+        //         t.projectId === req.project.id
+        // );
 
-    req.task = task;
+        if (!task || task.projectId !== req.project.id)
+            return res.status(404).json({ error: "Task not found "});
 
-    // manager a acces a toutes les taches
-    if (req.membership.role === "Manager") {
-        return next();
+        req.task = task;
+
+        // manager a acces a toutes les taches
+        if (req.projectMember.role === 'Manager')
+            return next();
+        
+        // if (req.membership.role === "Manager") {
+        //     return next();
+        // }
+
+        // user a acces a uniquement ses taches
+        if (task.createdById !== req.user.userId)
+            return res.status(403).json({ error: 'Not allowed' });
+        // if (task.userId !== req.user.userId) {
+        //     return res.status(403).json({ error: "Not allowed" });
+        // }
+
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Database error' });
     }
-
-    // user a acces a uniquement ses taches
-    if (task.userId !== req.user.userId) {
-        return res.status(403).json({ error: "Not allowed" });
-    }
-
-    next();
 }

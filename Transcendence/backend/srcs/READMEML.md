@@ -312,19 +312,6 @@ La décision de créer un JWT appartient davantage à ta route.
 
 Mais ce n'est pas une erreur de le faire dans la Strategy, c'est surtout une question d'architecture.
 
-4. La fakeDB
-
-Pour un projet en cours, aucun problème.
-
-Quand tu passeras à Prisma, tu remplaceras simplement :
-
-fakeDB.users.find(...)
-
-par
-
-await prisma.user.findUnique(...)
-
-Le reste de ton architecture ne changera quasiment pas.
 
 Mon avis global
 
@@ -350,7 +337,7 @@ checkPermission
     │
     └── vérifie les droits
 
-C'est une séparation des responsabilités cohérente et évolutive. À part le petit bug sur generateToken({ userId: ... }) et le fait que je déplacerais éventuellement la génération du JWT hors de la stratégie, je trouve que la logique est saine. Si c'est un projet d'apprentissage ou de fin d'études, c'est une base solide qui sera facile à faire évoluer vers Prisma et une vraie base de données.
+
 
 
 Utilisateur
@@ -395,8 +382,6 @@ appartenir à l'organisation A ;
 appartenir aussi à l'organisation B ;
 participer à un projet créé par quelqu'un d'une autre organisation.
 
-C'est déjà une logique beaucoup plus proche de Trello.
-
 Donc ton architecture actuelle :
 ✅ utilisateurs multi-organisations
 ✅ projets collaboratifs
@@ -412,28 +397,7 @@ ajouter les labels/priorités ;
 ajouter un historique des modifications.
 
 
-User
-Organisation
-Member
-Project
-Task
-Assignment
-Conversation
-Message
-Notification
-
-
-User
---------
-id
-pseudo(username)
-firstname
-lastname
-email
-passwordHash
 avatar(URL de l'image de profil c'est optionnel)
-createdAt
-updatedAt
 
 Un utilisateur peut :
 appartenir à plusieurs organisations
@@ -441,90 +405,13 @@ appartenir à plusieurs organisations
 envoyer plusieurs messages
 recevoir plusieurs notifications
 
-
-Organisation
------------------
-id
-name(orgName)
-createdAt
-updatedAt
-
 Une organisation possède plusieurs projets.
-
-
-Member
------------
-id
-userId
-organisationId
-role [ADMIN, MEMBER]
-
-un utilisateur peut appartenir à plusieurs organisations.
-
-
-Project
---------------
-id
-title
-description
-color
-organisationId
-createdAt
 
 Chaque projet appartient à une organisation.
 
-
-Task
-----------------
-id
-title
-description
-status [todo, in_progress, done]
-priority [low, medium, high]
-deadline
 position -> pour le kanban pour deplacer les taches 
-projectId
-createdAt
-
-
-Assignment
-----------------
-id
-taskId
-userId
-
-Une tâche peut être assignée à plusieurs personnes.
-Et une personne peut avoir plusieurs tâches.
 
 Chaque projet possède un chat.
-
-
-Conversation
-------------
-id
-projectId
-
-
-Message
-------------
-id
-content
-conversationId
-userId
-createdAt
-
-
-Notification
-----------------
-id
-content
-isRead
-userId
-createdAt
-
-
-les enums (Role, TaskStatus, Priority) ;
-
 
 schema prisma
 model Project {
@@ -678,18 +565,46 @@ model Member {
 pas besoin de rajouter id Int @id @default(autoincrement()) car la cle primiaire est userId + orgId
 @@id([userId, orgId]) signifie : La combinaison de userId et orgId identifie une ligne de manière unique.
 
+model User{
+      createdTasks Task[] @relation("TaskCreator")
+}
+model Task{
+createdBy User @relation(
+  "TaskCreator",
+  fields: [createdById],
+  references: [id]
+) 
+}
+fields: [createdById], -> field = le nom qu'on va donner au champ qu'on va prendre dans Task
+references: [id] -> reference = la variable qu'on va recup dans User
 
-npx prisma format
-npx prisma validate -> pour voir si le schema prisma est valid
 
-npx prisma db pull -> pour voir si ca marche
+
+a chaque changement : format puis validate (puis migrate reset si les donnees de la db pas utile et on peut les remettre avec le seed) puis migrate dev --name puis generate puis seed puis npx prisma studio
+deja verifier que postgre est lancer avec docker ps
+puis si pas lancer mettre make start
+
+npx prisma format -> pour mettre au format
+npx prisma validate -> pour voir si le schema prisma est valid 
+
+npx prisma db pull -> sert a lire une base existante et a generer le schema prisma a partir de ses tables
 
 npx prisma dev -> commande sert à lancer Prisma Postgres local (le service prisma+postgres://...)
 
 npx prisma migrate dev --name init -> synchronise la database avec mon schema prisma
 
+npx prisma migrate dev --name update_schema -> va generer que les changements necessaire
+
 npx prisma generate -> regenerer le client apres la migration ou a chaque modification du schema prisma
 
+npx prisma migrate reset -> reinitalise la base
+
+npx prisma db seed -> lance le seed
+
+npx prisma db push -> quand on veut juste appliquer le schema a la base mais pas d'historique
+npx prisma migrate dev --name nom_de_ta_migration -> on cree une migration qui permettra d'avoir un suivi des changement sur le schema
+
+npx prisma studio -> va lancer prisma studio pour voir les tables
 
 a installer
 npm install -D ts-node
@@ -702,3 +617,5 @@ npx prisma db seed -> pour lancer le seed
 
 a installer pour que prisma saches comment se connecter a PostreSQL
 npm install @prisma/adapter-pg
+
+

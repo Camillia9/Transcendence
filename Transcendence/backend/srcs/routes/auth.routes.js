@@ -10,47 +10,66 @@ import passport from 'passport';
 import googleStrategy from '../auth/google.strategy.js';
 import gitHubStrategy from '../auth/github.strategy.js';
 import { generateToken } from '../auth/jwt.utils.js';
-import { fakeDB, newId } from '../fakeDB.js';
+// import { fakeDB, newId } from '../fakeDB.js';
+import prisma from '../prisma.js';
 
 const router = express.Router();
 
-// creer user (utiliser par email/mdp et Oauth)
-function createUser( { pseudo, email, passwordHash, avatar }) {
-    const userId = newId();
+// // creer user (utiliser par email/mdp et Oauth)
+// function createUser( { pseudo, email, passwordHash, avatar }) {
+//     const userId = newId();
 
-    fakeDB.users.push({ id: userId, pseudo, email, passwordHash, avatar, createdAt: new Date() });
+//     fakeDB.users.push({ id: userId, pseudo, email, passwordHash, avatar, createdAt: new Date() });
 
-    return { userId };
-}
+//     return { userId };
+// }
 
 // inscription email + mot de passe
 // POST /auth/register
 // Body : { pseudo, email, password}
 router.post('/auth/register', async (req, res) => {
-    const { pseudo, email, password } = req.body;
+    const { pseudo, firstname, lastname, email, password } = req.body;
 
     if (!pseudo || !email || !password)
-        return res.status(400).json({ error: 'pseudo, email and password needed'});
+        return res.status(400).json({ error: 'pseudo, email and password are required'});
 
     if (password.length < 8)
-        return res.status(400).json({ error: 'Password must be at least 8 characters long'});
+        return res.status(400).json({ error: 'Password must be at least 8 characters'});
 
-    // verfier que l'email n'existe pas deja
-    const alreadyExist = fakeDB.users.find(u => u.email == email);
-    if (alreadyExist) {
-        return res.status(409).json({ error: 'Email already used'});
-    }
+    const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
+        prisma.user.findUnique({ where: { email }}),
+        prisma.user.findUnique({ where: { pseudo }}),
+    ]);
+    // verfier que l'email et le pseudo n'existent pas deja car doit etre unique selon le schema prisma
+    if (emailAlreadyExist)
+        return res.status(409).json({ error: 'Email already used' });
+    if (pseudoAlreadyExist)
+         return res.status(409).json({ error: 'Pseudo already used' });
+    
+    // const alreadyExist = fakeDB.users.find(u => u.email == email);
+    // if (alreadyExist) {
+    //     return res.status(409).json({ error: 'Email already used'});
+    // }
 
     // chiffrer le mot de passe
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const { userId } = createUser({ pseudo, email, passwordHash, avatar: null });
-    const token = generateToken({ id: userId });
+    const user = await prisma.user.create({
+        data: {
+            pseudo,
+            firstname: firstname || null,
+            lastname: lastname || null,
+            email,
+            passwordHash,
+        },
+    });
+    // const { userId } = createUser({ pseudo, email, passwordHash, avatar: null });
+    const token = generateToken({ user });
 
     res.status(201).json({
         message: 'Account successfully created',
         token,
-        user: { id: userId, pseudo, email }
+        user: { id: user.id, pseudo: user.pseudo, email: user.email },
     });
 });
 
@@ -64,7 +83,8 @@ router.post('/auth/login', async (req, res) => {
         return res.status(400).json({ error: 'email and password needed'});
 
     // chercher le user
-    const user = fakeDB.users.find(u => u.email === email);
+    const user = await prisma.user.findUnique({ where: { email }});
+    // const user = fakeDB.users.find(u => u.email === email);
     if (!user || !user.passwordHash)
         return res.status(401).json({ error: 'Incorrect email or password'});
 
@@ -73,7 +93,7 @@ router.post('/auth/login', async (req, res) => {
     if (!passwordOk) {
         return res.status(401).json({ error: 'Incorrect password'});
     }
-    const token = generateToken({ id: user.id });
+    const token = generateToken({ user });
 
     res.json({
         token,
@@ -155,7 +175,7 @@ router.get('/auth/github/callback',
 // logout : cote front, dev1 supprime juste le token du localstorage
 // quand le front fait POST /logout, on repond juste disconnected.
 // pour se deconnecter, il suffira de supprimer le token coter client
-router.post('/logout', (req, res) => {
+router.post('/auth/logout', (req, res) => {
     res.json({ message: 'Successfully logged out'});
 });
 
