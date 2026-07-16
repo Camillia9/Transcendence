@@ -1,5 +1,6 @@
 import { IconX, IconCalendar, IconUser } from "@tabler/icons-react"
 import { PRIORITIES } from "../../data/priorities"
+import { getUserById } from "../../api/users"
 import Button from "./Button"
 
 const COLUMN_OPTIONS = [
@@ -14,6 +15,9 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
   const priority = PRIORITIES.find(p => p.value === task.priority)
+  
+  // Transformer l'id de l'assigné en objet User (ou null si non assignée)
+  const assignee = getUserById(task.assignedToId)
 
   // Peut-on supp la tache ?
   const canDelete = userRole === 'Manager' || task.createdBy === currentUser
@@ -55,23 +59,23 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
             <label className="text-xs text-gray-400 uppercase tracking-wide">Assigne</label>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
-                {task.assignee?.[0]} 
+                {assignee?.pseudo?.[0]} 
               </div>
               {canAssign ? (
                 <select
                 // Champs select: affiche une selection de choix deroulante
-                  value={task.assignee || ''} // si task.assignee = null : ''
-                  onChange={(e) => onUpdate({...task, assignee: e.target.value || null})} // met a jour l'assignation instantanement. null si assignee = ''
+                  value={task.assignedToId ?? ''} // si task.assignedToId = null : ''
+                  onChange={(e) => onUpdate({...task, assignedToId: e.target.value ? Number(e.target.value) : null})} // met a jour l'assignation instantanement. null si personne n'est assignee = ''
                   className="text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1"
                 >
                   <option value="">Non assigne</option> 
                   {members.map(m => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m.id} value={m.id}>{m.pseudo}</option>
                   ))}
                 </select>
               ) : (
                 // Cas 2: Le user ne voit pas les options de delection 
-                <span className="text-sm text-gray-700">{task.assignee || 'Non assigne'}</span>
+                <span className="text-sm text-gray-700">{assignee?.pseudo || 'Non assigne'}</span>
               )}
             </div>
           </div>
