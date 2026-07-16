@@ -51,7 +51,6 @@ async function main() {
   await prisma.conversationMember.deleteMany();
   await prisma.conversation.deleteMany();
   await prisma.notification.deleteMany();
-  await prisma.assignment.deleteMany();
   await prisma.task.deleteMany();
   await prisma.projectMember.deleteMany();
   await prisma.invitation.deleteMany();
@@ -206,26 +205,6 @@ async function main() {
 
       createdById:bob.id
     }
-  });
-
-
-
-  // =====================
-  // ASSIGNATIONS
-  // =====================
-
-
-  await prisma.assignment.createMany({
-    data:[
-      {
-        userId:bob.id,
-        taskId:task1.id
-      },
-      {
-        userId:alice.id,
-        taskId:task2.id
-      }
-    ]
   });
 
 

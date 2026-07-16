@@ -19,7 +19,7 @@ model User {
   langue              Language             @default(fr)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  assignments         Assignment[]
+  assignedTasks       Task[]               @relation("TaskAssignee")
   conversationMembers ConversationMember[]
   invitations         Invitation[]
   members             Member[]
@@ -87,12 +87,14 @@ model Task {
   createdById   Int
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  assignments   Assignment[]
+  assignedToId  Int?
   notifications Notification[]
   comments      Comment[]
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
+
+  assignedTo User? @relation("TaskAssignee", fields: [assignedToId], references: [id])
 
   @@unique([projectId, status, position])
 }
@@ -153,15 +155,6 @@ model ConversationMember {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, conversationId])
-}
-
-model Assignment {
-  userId Int
-  taskId Int
-  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, taskId])
 }
 
 model Comment {
