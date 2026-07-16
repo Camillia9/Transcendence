@@ -3,6 +3,7 @@ import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSenso
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
+import { getUsers } from "../api/users";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -145,7 +146,7 @@ function KanbanPage() {
       priority: newTaskPriority,
       status: newTaskColumn,
       createdBy: CURRENT_USER,
-      assignee: CURRENT_USER,
+      assignedToId: project.role === 'Manager' ? null : CURRENT_USER,
       deadline: null,
       comments: [],
     }
@@ -207,8 +208,8 @@ const visibleTasks = project.role === 'Manager' ?
       <TaskPanel
         task={selectedTask}
         userRole={project.role}
-        currentUserId={CURRENT_USER}
-        members={project.members}
+        currentUser={CURRENT_USER}
+        members={getUsers()}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
         onDelete={handleDeleteTask}
