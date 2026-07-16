@@ -2,6 +2,7 @@ import { IconMessageCircle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
 import { useRef } from "react";
 import { PRIORITIES } from "../../data/priorities";
+import { getUserById } from "../../api/users";
 
 function TaskCard({ task, onClick }) {
   const priority = PRIORITIES.find(p => p.value === task.priority)
@@ -11,6 +12,9 @@ function TaskCard({ task, onClick }) {
 
   // Carte qui bouge
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id })
+
+  // Transformer l'id de l'assigné en objet User (ou null si non assignée)
+  const assignee = getUserById(task.assignedToId)
   
   return (
     <div
@@ -51,12 +55,12 @@ function TaskCard({ task, onClick }) {
           )}
 
           {/*Avatar */}
-          {task.assignee && (
+          {assignee && (
             <div
-              title={task.assignee}
+              title={assignee.pseudo}
               className="w-6 h-6 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900"
             >
-              {task.assignee[0]}
+              {assignee.pseudo[0]}
             </div>
           )}
         </div>

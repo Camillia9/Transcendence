@@ -10,7 +10,7 @@ export const mockTasks = [
     status: "Done",
     position: 0,
     createdBy: 1,
-    assignments: [{ userId: 1 }],
+    assignedToId: 1,
     deadline: "2025-06-10",
     comments: []
   },
@@ -22,7 +22,7 @@ export const mockTasks = [
     status: "Doing",
     position: 0,
     createdBy: 2,
-    assignments: [{ userId: 4 }],
+    assignedToId: 4,
     deadline: "2025-06-20",
     comments: []
   },
@@ -34,7 +34,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 0,
     createdBy: 1,
-    assignments: [{ userId: 3 }],
+    assignedToId: 3,
     deadline: "2025-06-15",
     comments: []
   },
@@ -46,7 +46,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 0,
     createdBy: 3,
-    assignments: [{ userId: 2 }],
+    assignedToId: 2,
     deadline: null,
     comments: []
   },
@@ -58,7 +58,7 @@ export const mockTasks = [
     status: "Blocked",
     position: 0,
     createdBy: 4,
-    assignments: [],
+    assignedToId: null,
     deadline: "2027-06-25",
     comments: [
       {
@@ -77,7 +77,7 @@ export const mockTasks = [
     status: "Doing",
     position: 0,
     createdBy: 2,
-    assignments: [{ userId: 1 }],
+    assignedToId: 1,
     deadline: "2025-07-01",
     comments: []
   },
@@ -89,7 +89,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 0,
     createdBy: 3,
-    assignments: [{ userId: 4 }],
+    assignedToId: 4,
     deadline: "2025-06-30",
     comments: []
   },
@@ -101,7 +101,7 @@ export const mockTasks = [
     status: "Blocked",
     position: 0,
     createdBy: 1,
-    assignments: [{ userId: 3 }],
+    assignedToId: 3,
     deadline: "2025-07-08",
     comments: []
   },
@@ -113,7 +113,7 @@ export const mockTasks = [
     status: "Doing",
     position: 0,
     createdBy: 4,
-    assignments: [{ userId: 2 }],
+    assignedToId: 2,
     deadline: "2025-06-18",
     comments: []
   },
@@ -125,7 +125,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 1,
     createdBy: 1,
-    assignments: [{ userId: 4 }],
+    assignedToId: 4,
     deadline: "2025-07-15",
     comments: []
   },
@@ -137,7 +137,7 @@ export const mockTasks = [
     status: "Done",
     position: 1,
     createdBy: 2,
-    assignments: [{ userId: 3 }],
+    assignedToId: 3,
     deadline: "2025-06-12",
     comments: []
   },
@@ -149,7 +149,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 0,
     createdBy: 3,
-    assignments: [{ userId: 1 }],
+    assignedToId: 1,
     deadline: "2025-07-02",
     comments: []
   },
@@ -161,7 +161,7 @@ export const mockTasks = [
     status: "Blocked",
     position: 1,
     createdBy: 4,
-    assignments: [],
+    assignedToId: null,
     deadline: "2025-08-01",
     comments: []
   },
@@ -173,7 +173,7 @@ export const mockTasks = [
     status: "Doing",
     position: 1,
     createdBy: 1,
-    assignments: [{ userId: 2 }],
+    assignedToId: 2,
     deadline: "2025-06-28",
     comments: []
   },
@@ -185,7 +185,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 1,
     createdBy: 3,
-    assignments: [{ userId: 4 }],
+    assignedToId: 4,
     deadline: "2025-07-11",
     comments: []
   },
@@ -197,7 +197,7 @@ export const mockTasks = [
     status: "Done",
     position: 0,
     createdBy: 2,
-    assignments: [{ userId: 3 }],
+    assignedToId: 3,
     deadline: "2025-06-05",
     comments: []
   },
@@ -209,7 +209,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 1,
     createdBy: 1,
-    assignments: [{ userId: 4 }],
+    assignedToId: 4,
     deadline: "2025-07-20",
     comments: []
   },
@@ -221,7 +221,7 @@ export const mockTasks = [
     status: "Doing",
     position: 2,
     createdBy: 4,
-    assignments: [{ userId: 2 }],
+    assignedToId: 2,
     deadline: "2025-06-26",
     comments: []
   },
@@ -233,7 +233,7 @@ export const mockTasks = [
     status: "Blocked",
     position: 0,
     createdBy: 3,
-    assignments: [],
+    assignedToId: null,
     deadline: "2025-07-22",
     comments: []
   },
@@ -245,7 +245,7 @@ export const mockTasks = [
     status: "ToDo",
     position: 1,
     createdBy: 2,
-    assignments: [{ userId: 1 }],
+    assignedToId: 1,
     deadline: "2025-07-05",
     comments: []
   }

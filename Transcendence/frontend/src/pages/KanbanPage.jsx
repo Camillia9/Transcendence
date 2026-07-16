@@ -165,7 +165,7 @@ function KanbanPage() {
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
 
 const visibleTasks = project.role === 'Manager' ?
-    tasks : tasks.filter(t => t.assignments.some(a => a.userId === CURRENT_USER))
+    tasks : tasks.filter(t => t.assignedToId === CURRENT_USER)
 
 
   return (
