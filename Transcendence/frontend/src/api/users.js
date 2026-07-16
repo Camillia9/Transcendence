@@ -1,4 +1,4 @@
-import { mockUsers } from "../mocks/mockUsers";
+import { mockUsers } from "../data/mockUsers";
 // import { apiRequest } from "./client";
 
 const USE_MOCK = true;
