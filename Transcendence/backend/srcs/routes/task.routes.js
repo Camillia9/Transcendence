@@ -1,13 +1,13 @@
 import express from 'express';
 
-import { authenticate, loadProject, checkPermission, canManageTask } from '../middleware/checkPermission.js';
+import { authenticate, loadProject, checkPermissionProject, canManageTask } from '../middleware/checkPermission.js';
 
 import { fakeDB, newId } from '../fakeDB.js';
 
 const router = express.Router();
 
 // creer une task dans un projet
-router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermission('create_task'),
+router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermissionProject('create_task'),
     (req, res) => {
         const { title, description } = req.body;
         if (!title)
@@ -31,7 +31,7 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
 );
 
 // voir toutes les tasks d'un projet
-router.get('/projects/:projectId/tasks', authenticate, loadProject, checkPermission('view_task'),
+router.get('/projects/:projectId/tasks', authenticate, loadProject, checkPermissionProject('view_task'),
     (req, res) => {
         const tasks = fakeDB.tasks.filter(t => t.projectId === req.project.id);
 
@@ -55,7 +55,7 @@ router.get('/projects/:projectId/tasks/:taskId', authenticate, loadProject,
 );
 
 // modifier une task
-router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, checkPermission('edit_task'), canManageTask,
+router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, checkPermissionProject('edit_task'), canManageTask,
     (req, res) => {
         const task = req.task;
 
@@ -81,7 +81,7 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, ch
 );
 
 // move task
-router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProject, checkPermission('move_task'), canManageTask,
+router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProject, checkPermissionProject('move_task'), canManageTask,
     (req, res) => {
         const task = req.task;
 
@@ -102,7 +102,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
 );
 
 // assigner task
-router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProject, checkPermission('assign_task'),
+router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProject, checkPermissionProject('assign_task'),
     (req, res) => {
         const task = fakeDB.tasks.find(
             t =>
@@ -130,7 +130,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
 );
 
 // supprimer task
-router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, checkPermission('delete_task'), canManageTask,
+router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, checkPermissionProject('delete_task'), canManageTask,
     (req, res) => {
 
         fakeDB.tasks = fakeDB.tasks.filter(

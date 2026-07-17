@@ -1,11 +1,11 @@
 import express from 'express';
-import { authenticate, loadMembership, checkPermission, loadProject } from '../middleware/checkPermission.js';
+import { authenticate, loadMembership, checkPermissionProject, loadProject, checkPermissionOrga } from '../middleware/checkPermission.js';
 import { fakeDB, newId } from '../fakeDB.js';
 
 const router = express.Router();
 
 // creer un projet
-router.post('/organisations/:orgId/projects', authenticate, loadMembership, checkPermission('create_project'),
+router.post('/organisations/:orgId/projects', authenticate, loadMembership, checkPermissionProject('create_project'),
     (req, res) => {
         const { name, description } = req.body;
         if (!name)
@@ -33,7 +33,7 @@ router.post('/organisations/:orgId/projects', authenticate, loadMembership, chec
 );
 
 // voir toutes les projets accessibles par l'utilisateur
-router.get('/projects', authenticate, checkPermission('view_project'),
+router.get('/projects', authenticate, checkPermissionProject('view_project'),
     (req, res) => {
         const projectIds = fakeDB.projectMembers
             .filter(pm => pm.userId === req.user.userId)
@@ -45,7 +45,7 @@ router.get('/projects', authenticate, checkPermission('view_project'),
 });
 
 // voir un projet precis
-router.get('/projects/:projectId', authenticate, loadProject, checkPermission('view_project'),
+router.get('/projects/:projectId', authenticate, loadProject, checkPermissionProject('view_project'),
     (req, res) => {
         // req.project : propriete partager entre tt les middlewares et la route
         res.json(req.project);
@@ -53,7 +53,7 @@ router.get('/projects/:projectId', authenticate, loadProject, checkPermission('v
 );
 
 // modifier un projet
-router.patch('/projects/:projectId', authenticate, loadProject, checkPermission('edit_project'),
+router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionProject('edit_project'),
     (req, res) => {
     const { name, description } = req.body;
 
@@ -70,7 +70,7 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermission(
 });
 
 // supprimer un projet
-router.delete('/projects/:projectId', authenticate, loadProject, checkPermission('delete_project'),
+router.delete('/projects/:projectId', authenticate, loadProject, checkPermissionProject('delete_project'),
     (req, res) => {
         const projectId = req.project.id;
 

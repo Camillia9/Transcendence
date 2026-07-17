@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 import express from 'express';
 
-import { checkPermission, authenticate, loadMembership } from '../middleware/checkPermission.js';
+import { checkPermissionOrga, authenticate, loadMembership } from '../middleware/checkPermission.js';
 import { fakeDB, newId } from '../fakeDB.js';
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const router = express.Router();
 // async (req, res) => { -> cette fonction sera executer lorsque la requete est recue
 // const { email } = req.body; = recupere l'email
 // const { orgId } = req.user; = recupere l'orga
-router.post('/organisations/:orgId/invitations', authenticate, loadMembership, checkPermission('invit_member'), 
+router.post('/organisations/:orgId/invitations', authenticate, loadMembership, checkPermissionOrga('invit_member'), 
     async (req, res) => {
         const { email } = req.body;
         if (!email)

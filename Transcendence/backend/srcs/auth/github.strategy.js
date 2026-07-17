@@ -1,7 +1,6 @@
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { generateToken } from './jwt.utils.js';
 import prisma from '../prisma.js';
-import { use } from 'passport';
 // import { fakeDB, newId } from '../fakeDB.js';
 
 const gitHubStrategy = new GitHubStrategy (

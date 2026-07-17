@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkPermission, authenticate, loadMembership } from '../middleware/checkPermission.js';
+import { checkPermissionOrga, authenticate, loadMembership } from '../middleware/checkPermission.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
 
@@ -11,13 +11,21 @@ router.post('/organisations', authenticate, async (req, res) => {
     const { orgName } = req.body;
     if (!orgName)
         return res.status(400).json({ error: 'Organisation name required' });
+    const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name }});
+    if (orgaAlreadyExist)
+        return res.status(409).json({ error: 'Organisation name already taken' });
+    
+    const { org } = await prisma.$transaction(async (tx) => {
+        const org = await tx.organisation.create({ data: { name } });
+    })
+
     // ajoute une nouvelle orga dans fakeDB
-    const orgId = newId();
-    fakeDB.orgs.push({
-        id: orgId,
-        orgName,
-        createdAt: new Date()
-    });
+    // const orgId = newId();
+    // fakeDB.orgs.push({
+    //     id: orgId,
+    //     orgName,
+    //     createdAt: new Date()
+    // });
 
     // le createur devient Admin
     // req.user = verifyToken(token); et le JWT contient { userId: 123 }
@@ -32,7 +40,7 @@ router.post('/organisations', authenticate, async (req, res) => {
 // voir mon organisation
 // GET /organisations/:orgId
 // accessible a tous les membres connecter et on sait que l'utilisateur appartient a cette orga car loadmembership verifier
-router.get('/organisations/:orgId', authenticate, loadMembership, checkPermission('view_member'), 
+router.get('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('view_member'), 
     async (req, res) => {
         const org = await prisma.organisation.findUnique({
             where: {id: req.orgId},
@@ -45,7 +53,7 @@ router.get('/organisations/:orgId', authenticate, loadMembership, checkPermissio
     });
 
 // modifier mon organisation
-router.patch('/organisations/:orgId', authenticate, loadMembership, checkPermission('edit_orga'),
+router.patch('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('edit_orga'),
     async (req, res) => {
         const { orgName } = req.body;
         if (!orgName)
@@ -62,7 +70,7 @@ router.patch('/organisations/:orgId', authenticate, loadMembership, checkPermiss
     });
 
 // supprimer mon organisation et donc de ses membres aussi
-router.delete('/organisations/:orgId', authenticate, loadMembership, checkPermission('delete_orga'),
+router.delete('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('delete_orga'),
     (req, res) => {
         //remplace l'ancien tableau par le tableau sans celui rechercher
         fakeDB.orgs = fakeDB.orgs.filter(o => o.id !== req.orgId);
@@ -71,7 +79,7 @@ router.delete('/organisations/:orgId', authenticate, loadMembership, checkPermis
     })
 
 // voir les membres d'une organisation
-router.get('/organisations/:orgId/membres', authenticate, loadMembership, checkPermission('view_member'),
+router.get('/organisations/:orgId/membres', authenticate, loadMembership, checkPermissionOrga('view_member'),
     (req, res) => {
         const membres = fakeDB.orgMembers
             .filter(m => m.orgId === req.orgId)
@@ -96,7 +104,7 @@ router.get('/organisations/:orgId/membres', authenticate, loadMembership, checkP
     });
 
 // changer un role, par ex tu passes de admin a membre
-router.patch('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermission('change_role'),
+router.patch('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermissionOrga('change_role'),
     (req, res) => {
         // cherche quel utilisateur on veut modifier avec req.params.userId (en recuperant sur l'URL)
         // on utilise Number() car l'URL est en char et on veut un num
@@ -134,7 +142,7 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadMembersh
     });
 
 // supprimer un membre d'une orga
-router.delete('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermission('delete_member'),
+router.delete('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermissionOrga('delete_member'),
     (req, res) => {
         const cible = Number(req.params.userId);
 

@@ -12,7 +12,6 @@ import { generateToken } from './jwt.utils.js';
 
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
-import { use } from 'passport';
 
 // module.exports = ce que ce fichier fournit aux autres fichiers
 // callbackURL: l'adressse ou google renvoie l'utilisateur apres la connexion

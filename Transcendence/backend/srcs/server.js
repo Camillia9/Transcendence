@@ -36,16 +36,16 @@ app.use(cors({
 // Permet de lire le corps JSON des requetes entrantes (req.body)
 app.use(express.json())
 
-// Passport OAuth
-passport.use(googleStrategy);
-passport.use(gitHubStrategy);
+// // Passport OAuth
+// passport.use(googleStrategy);
+// passport.use(gitHubStrategy);
 
-// Routes REST authentification / organisation
-app.use(authRouter);
-app.use(orgaRouter);
-app.use(invitationRouter);
-app.use(projectRouter);
-app.use(taskRouter);
+// // Routes REST authentification / organisation
+// app.use(authRouter);
+// app.use(orgaRouter);
+// app.use(invitationRouter);
+// app.use(projectRouter);
+// app.use(taskRouter);
 
 // Serveur HTTP brut
 //0695428562
