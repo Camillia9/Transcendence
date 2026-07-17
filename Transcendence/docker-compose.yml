@@ -9,6 +9,8 @@ services:
 
   backend:
     build: ./backend
+    depends_on:
+      - db #Podman demarre d'abord bd et ensuite backend
     ports:
       - "3000:3000"
     volumes:
