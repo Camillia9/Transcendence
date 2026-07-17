@@ -3,19 +3,19 @@ import prisma from '../prisma.js';
 // import { fakeDB } from '../fakeDB.js';
 
 //table des droits par role
-const PERMISSIONS = {
+const ORGA_PERMISSIONS = {
     Admin: ['view_member', 'edit_orga', 'delete_orga', 'change_role', 'delete_member', 'invit_member'],
 
     Member: ['view_member'],
 
+};
+
+const PROJECT_PERMISSIONS = {
     Manager:['create_task', 'view_task', 'edit_task', 'move_task', 'delete_task', 'assign_task', 'create_project', 'view_project', 'edit_project', 'delete_project'],
 
     User: ['create_task', 'view_task', 'edit_task', 'move_task', 'delete_task', 'view_project'],
-    
-    // Manager:['create_task', 'edit_task', 'delete_task', 'assign_task', 'create_project', 'view_projects', 'edit_project', 'delete_project', 'view_all_tasks', 'move_all_tasks'],
-
-    // User: ['create_task', 'edit_own_task', 'view_own_tasks', 'move_own_tasks', 'delete_own_task'],
 };
+
 
 //verifie que le token est valide, mais ne verifie pas les permissions
 export function authenticate(req, res, next) {
@@ -65,9 +65,8 @@ export async function loadMembership(req, res, next) {
         // role: "Admin"
         // }
         // on peut l'utiliser ailleurs par ex const permissions = PERMISSIONS[req.membership.role] ?? []; ou req.membership.role vaut donc "Admin" ou "Member"
-        req.membership = membre;
+        req.orgMembership = membre;
         req.orgId = orgId;
-        req.role = membre.role;
 
         next();
 
@@ -115,10 +114,7 @@ export async function loadProject(req, res, next) {
         //     return res.status(404).json({ error: 'Project not found' });
 
         req.project = project;
-        req.projectMember = projectMember;
-
-        // on ecrase req.membership temporairement pour  que checkPermission fonctionne
-        req.membership = projectMember;
+        req.projectMembership = projectMember;
 
         next();
 
@@ -137,13 +133,13 @@ export async function loadProject(req, res, next) {
 // pareil que de faire : return function(req, res, next) {};
 //req, res, next = argument de la fonction qui est retourner
 
-export function checkPermission(action) {
+export function checkPermissionOrga(action) {
     return (req, res, next) => {
-        if (!req.membership)
+        if (!req.orgMembership)
             return res.status(500).json({ error: 'Membership not loaded' });
         //verifier les droits
         // ?? [] = si le role n'existe pas, donne un tableau vide
-        const permissions = PERMISSIONS[req.membership.role] ?? [];
+        const permissions = ORGA_PERMISSIONS[req.orgMembership.role] ?? [];
         if (!permissions.includes(action))
             return res.status(403).json({ error: 'Access denied'});
 
@@ -152,6 +148,20 @@ export function checkPermission(action) {
     };
 }
 
+export function checkPermissionProject(action) {
+    return (req, res, next) => {
+        if (!req.projectMembership)
+            return res.status(500).json({ error: 'Membership not loaded' });
+        //verifier les droits
+        // ?? [] = si le role n'existe pas, donne un tableau vide
+        const permissions = PROJECT_PERMISSIONS[req.projectMembership.role] ?? [];
+        if (!permissions.includes(action))
+            return res.status(403).json({ error: 'Access denied'});
+
+        //verification terminer, peut passer a la suite
+        next();
+    };
+}
 export async function canManageTask(req, res, next) {
     try {
         const taskId = Number(req.params.taskId);
@@ -174,7 +184,7 @@ export async function canManageTask(req, res, next) {
         req.task = task;
 
         // manager a acces a toutes les taches
-        if (req.projectMember.role === 'Manager')
+        if (req.projectMembership.role === 'Manager')
             return next();
         
         // if (req.membership.role === "Manager") {

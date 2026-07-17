@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node srcs/server.js",
-    "start": "node srcs/server.js"
+    "start": "npx prisma migrate deploy && node srcs/server.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

@@ -32,12 +32,16 @@ router.post('/auth/register', async (req, res) => {
 
     // peut etre rajouter firstname et lastname
     if (!pseudo || !email || !password)
-        return res.status(400).json({ error: 'pseudo, email and password are required'});
+        return res.status(400).json({ error: 'pseudo, email and password are required' });
 
-    // rajouter des contraintes si besoin pour un password plus sur
-    if (password.length < 8)
-        return res.status(400).json({ error: 'Password must be at least 8 characters'});
+    if (pseudo.length < 3)
+        return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
+    if (password.length < 6)
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    // a rajouter check sur le format de l'email 
+    
     const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
         prisma.user.findUnique({ where: { email }}),
         prisma.user.findUnique({ where: { pseudo }}),
