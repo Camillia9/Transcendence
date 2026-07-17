@@ -17,12 +17,18 @@ import { useState, useEffect } from 'react'
 // useState = l'outil de React pour créer une "donnée surveillée".
 // Chaque fois qu'on la modifie (via sa fonction set...), l'écran se redessine.
 
-import { CURRENT_USER } from '../data/currentUser'
-// "Qui suis-je ?" — l'utilisateur connecté simulé. Sert à savoir quels messages
-// sont les MIENS (pour les afficher à droite) vs ceux des autres (à gauche).
-
+import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
-import { getConversations } from '../api/conversations'
+import { getConversations, getMessages } from '../api/conversations'
+
+function toUiMsg(msg) {
+  return {
+    id: msg.id,
+    author: msg.user?.pseudo ?? String(msg.userId),
+    text: msg.content,
+    time: new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
+}
 
 function Chat() {
 
@@ -55,17 +61,13 @@ function Chat() {
 
 
   const socket = useSocket()
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!socket) return
     socket.emit('conversation:join', { conversationId: activeId })
-    socket.on('message:new', ({ conversationId, content, sender, createdAt }) => {
-      receiveMessage(conversationId, {
-        id: Date.now(),
-        author: sender.username,
-        text: content,
-        time: new Date(createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-      })
+    socket.on('message:new', (msg) => {
+      receiveMessage(msg.conversationId, toUiMsg(msg))
     })
     return () => {
       socket.emit('conversation:leave', { conversationId: activeId })
@@ -73,23 +75,42 @@ function Chat() {
     }
   }, [socket, activeId])
 
-  // API Conversations
   useEffect(() => {
     async function loadConversations() {
       try {
         const data = await getConversations()
-        setConversations(data)
-
-        // Une fois les convs recus, on selectionne la 1ere
-        if (data.length > 0)
-          setActiveId(data[0].id)
-
+        const normalized = data.map(c => {
+          const other = c.conversationMembers?.find(m => m.userId !== user?.id)
+          return {
+            ...c,
+            name: c.name ?? other?.user?.pseudo ?? 'Inconnu',
+            type: c.type?.toLowerCase() ?? 'private',
+            messages: (c.messages ?? []).map(toUiMsg)
+          }
+        })
+        setConversations(normalized)
+        if (normalized.length > 0) setActiveId(normalized[0].id)
       } catch (error) {
         console.log('Impossible de charger les conversations', error)
       }
     }
     loadConversations()
-  }, []) // Recharge une fois au demarage. Pas de boucle infini
+  }, [])
+
+  useEffect(() => {
+    if (!activeId) return
+    async function loadMessages() {
+      try {
+        const data = await getMessages(activeId)
+        setConversations(prev => prev.map(c =>
+          c.id === activeId ? { ...c, messages: data.map(toUiMsg) } : c
+        ))
+      } catch (e) {
+        console.error('Impossible de charger les messages', e)
+      }
+    }
+    loadMessages()
+  }, [activeId])
 
   // On a l'id de la conversation active (STATE 2), mais pour l'AFFICHER il nous
   // faut la conversation COMPLÈTE. On la retrouve dans la liste avec .find() :
@@ -152,14 +173,10 @@ function Chat() {
 
     // On fabrique l'objet message à partir de ce que j'ai tapé.
     const newMessage = {
-      id: Date.now(),          // un id unique : le nb de millisecondes depuis 1970
-                               // (jamais deux fois le même → parfait comme id)
-      author: CURRENT_USER,    // l'auteur, c'est MOI (je suis en train d'écrire)
-      text: draft.trim(),      // le texte tapé, sans espaces superflus autour
-      time: new Date().toLocaleTimeString('fr-FR', {  // l'heure actuelle, ex "14:32"
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      id: Date.now(),
+      author: user?.pseudo ?? 'Moi',
+      text: draft.trim(),
+      time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
     }
 
     if (socket) {
@@ -199,8 +216,8 @@ function Chat() {
               // border-l-4 = barre d'accent à gauche, comme sur ProjectCard.
               // Active → fond navy très léger + barre navy. Sinon → barre invisible + survol gris.
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border-l-4 transition-colors ${isActive
-                  ? 'bg-primary-900/5 border-primary-600'
-                  : 'border-transparent hover:bg-gray-100'
+                ? 'bg-primary-900/5 border-primary-600'
+                : 'border-transparent hover:bg-gray-100'
                 }`}
             >
               {/* Avatar : l'initiale sur fond navy clair (même style que tes tâches).
@@ -267,7 +284,7 @@ function Chat() {
                 </div>
               ) : (
                 activeConversation.messages.map(msg => {
-                  const isMine = msg.author === CURRENT_USER
+                  const isMine = msg.author === user?.pseudo
 
                   return (
                     <div
@@ -280,8 +297,8 @@ function Chat() {
 
                       <div
                         className={`rounded-2xl px-3 py-2 text-sm ${isMine
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-gray-100 text-gray-800'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-gray-100 text-gray-800'
                           }`}
                       >
                         {msg.text}

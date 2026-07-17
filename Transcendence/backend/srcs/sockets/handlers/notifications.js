@@ -1,5 +1,5 @@
-export function registerNotificationHandlers(io, socket) { // user join un message privee pour recevoir le message du notification sinon ca part dans le vide
-	socket.join(`user:${socket.user.id}`)
+export function registerNotificationHandlers(io, socket) {
+	socket.join(`user:${socket.user.userId}`)
 }
 
 export function sendNotification(io, userId, { type, message, link }) {
