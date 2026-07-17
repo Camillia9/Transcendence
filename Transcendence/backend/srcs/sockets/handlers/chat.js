@@ -1,5 +1,7 @@
+import prisma from '../../prisma.js';
+
 export function registerChatHandlers(io, socket) {
-    const user = socket.user
+    const userId = socket.user.userId
 
     socket.on('conversation:join', ({ conversationId }) => {
         socket.join(`conversation:${conversationId}`)
@@ -9,22 +11,31 @@ export function registerChatHandlers(io, socket) {
         socket.leave(`conversation:${conversationId}`)
     })
 
-    socket.on('message:send', ({ conversationId, content }) => {
-        // TODO : sauvegarder dans la database (besoin du dev 2 je crois). Message non sauvegarder = evoyer a un utilisateur non connecte, apres qu'il soit connecte, ne recoit pas le message
-        const message = {
-            conversationId,
-            content,
-            sender: { id: user.id, username: user.username },
-            createdAt: new Date().toISOString(),
+    socket.on('message:send', async ({ conversationId, content }) => {
+        if (!content || !content.trim()) return
+
+        try {
+            const message = await prisma.message.create({
+                data: {
+                    content: content.trim(),
+                    userId,
+                    conversationId,
+                },
+                include: { user: { select: { id: true, pseudo: true, avatar: true } } }
+            })
+
+            io.to(`conversation:${conversationId}`).emit('message:new', message)
+        } catch (e) {
+            socket.emit('error', { message: e.message })
         }
-        io.to(`conversation:${conversationId}`).emit('message:new', message)
     })
 
     socket.on('typing:start', ({ conversationId }) => {
-        socket.to(`conversation:${conversationId}`).emit('typing:update', { username: user.username, isTyping: true })
+        socket.to(`conversation:${conversationId}`).emit('typing:update', { userId, isTyping: true })
     })
 
     socket.on('typing:stop', ({ conversationId }) => {
-        socket.to(`conversation:${conversationId}`).emit('typing:update', { username: user.username, isTyping: false })
+        socket.to(`conversation:${conversationId}`).emit('typing:update', { userId, isTyping: false })
     })
 }
+

@@ -20,6 +20,7 @@ import messagesRouter from './routes/messages.js';
 
 import authRouter from './routes/auth.routes.js';
 import orgaRouter from './routes/organisation.routes.js';
+import invitationRouter from './routes/invitation.routes.js';
 import projectRouter from './routes/project.routes.js';
 import taskRouter from './routes/task.routes.js';
 
@@ -42,6 +43,7 @@ passport.use(gitHubStrategy);
 // Routes REST authentification / organisation
 app.use(authRouter);
 app.use(orgaRouter);
+app.use(invitationRouter);
 app.use(projectRouter);
 app.use(taskRouter);
 
