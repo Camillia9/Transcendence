@@ -80,6 +80,10 @@ function KanbanPage() {
   // TEMPORAIRE 
   console.log(selectedTask)
 
+  // Fction helper 
+  const getNextPosition = (projId, column) =>
+    tasks.filter(t => t.projectId === projId && t.status === column).length
+
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
     setActiveTask(task)
@@ -96,9 +100,27 @@ function KanbanPage() {
     const task = tasks.find(t => t.id === taskId)
     if (task.status === newColumn) return
 
-    setTasks(tasks.map(t =>
-      t.id === taskId ? { ...t, status: newColumn } : t
-    ))
+    // Calcule de la prochiane position loesqu'on bouge
+    const nextPosition = getNextPosition(projectId, newColumn)
+
+    // Met a jour la position des cartes lorsqu'une est bouge
+    setTasks(tasks.map(t => {
+      // task.map (parcourt toutes les taches une par une, et collecte les reponses dans un nouveau tableau)
+      // Cas 1: La tache deplace -> dans la new colonne, bout de file
+      if (t.id === taskId) {
+        return { ...t, status: newColumn, position: nextPosition }
+      }
+      // Cas 2: les taches derriere elle dans l'ancienne file avance d'un cran
+      if (
+        t.projectId === task.projectId &&
+        t.status === task.status &&
+        t.position === task.position
+      ) {
+        return {...t, position: t.position - 1}
+      }
+      // Cas 3 : Les taches qui ne sont pas dans les colonnes concerenes restent inchange
+      return t
+    }))
 
     if (socket) {
       socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
@@ -138,6 +160,7 @@ function KanbanPage() {
       setNewTaskError('Le titre est obligatoire')
       return
     }
+    const nextPosition = getNextPosition(projectId, newTaskColumn)
 
     const newTask = {
       id: Date.now(),
@@ -145,6 +168,7 @@ function KanbanPage() {
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
       status: newTaskColumn,
+      position: nextPosition,
       createdBy: CURRENT_USER,
       assignedToId: project.role === 'Manager' ? null : CURRENT_USER,
       deadline: null,
@@ -179,8 +203,10 @@ const visibleTasks = project.role === 'Manager' ?
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {COLUMNS.map((col) => {
-            const colTasks = visibleTasks.filter((t) => t.status === col.id);
+          {COLUMNS.map((col) => { // Fabrication de mes 4 colonnes une par une. Ce qui suis s'execute 4 fois (todo, doing etc)
+            const colTasks = visibleTasks
+              .filter((t) => t.status === col.id) // Parrcourt les taches visible et affiche que celle qui correspondent a sa colonne 
+              .sort((a, b) => a.position - b.position) // Range l'ordre des cartes. Si a est negatif -> au dessus, positif -> en dessous
             return (
               <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
                 {colTasks.map(task => (
