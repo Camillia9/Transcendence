@@ -26,13 +26,15 @@ const router = express.Router();
 
 // inscription email + mot de passe
 // POST /auth/register
-// Body : { pseudo, email, password}
+// Body : { pseudo, firstname, lastname, email, password}
 router.post('/auth/register', async (req, res) => {
     const { pseudo, firstname, lastname, email, password } = req.body;
 
+    // peut etre rajouter firstname et lastname
     if (!pseudo || !email || !password)
         return res.status(400).json({ error: 'pseudo, email and password are required'});
 
+    // rajouter des contraintes si besoin pour un password plus sur
     if (password.length < 8)
         return res.status(400).json({ error: 'Password must be at least 8 characters'});
 
@@ -54,23 +56,31 @@ router.post('/auth/register', async (req, res) => {
     // chiffrer le mot de passe
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-        data: {
-            pseudo,
-            firstname: firstname || null,
-            lastname: lastname || null,
-            email,
-            passwordHash,
-        },
-    });
-    // const { userId } = createUser({ pseudo, email, passwordHash, avatar: null });
-    const token = generateToken({ user });
+    try{
+        const user = await prisma.user.create({
+            data: {
+                pseudo,
+                firstname: firstname || null,
+                lastname: lastname || null,
+                email,
+                passwordHash,
+            },
+        });
+        // const { userId } = createUser({ pseudo, email, passwordHash, avatar: null });
+        const token = generateToken({ user });
 
-    res.status(201).json({
-        message: 'Account successfully created',
-        token,
-        user: { id: user.id, pseudo: user.pseudo, email: user.email },
-    });
+        res.status(201).json({
+            message: 'Account successfully created',
+            token,
+            user: { id: user.id, pseudo: user.pseudo, email: user.email },
+        });
+    } catch (err) {
+        // quand ya une erreur, ca cree automatiquement une variable avec le catch et on met le nom qu'on veut ici err
+        if (err.code === 'P2002' )
+            return res.status(409).json({ error: 'Email or pseudo already used'});
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // connexion email + mot de passe

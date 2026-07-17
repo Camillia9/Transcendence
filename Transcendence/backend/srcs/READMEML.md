@@ -619,3 +619,9 @@ a installer pour que prisma saches comment se connecter a PostreSQL
 npm install @prisma/adapter-pg
 
 
+Un middleware peut faire plusieurs choses avant que la requête arrive à la route :
+vérifier quelque chose (authentification, permissions, validation, etc.) ;
+modifier la requête (req) ;
+modifier la réponse (res) ;
+arrêter la requête en renvoyant une erreur ;
+ou laisser passer avec next().

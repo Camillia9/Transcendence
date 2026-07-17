@@ -29,6 +29,7 @@ export function authenticate(req, res, next) {
         const token = authHeader.split(' ')[1];
         req.user = verifyToken(token);
 
+        // next ca veut dire si c'est ok, continue vers la route
         next();
     } catch {
         return res.status(401).json({ error: 'Invalid or expired token'})
