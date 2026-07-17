@@ -16,6 +16,7 @@ services:
       - /app/node_modules
     environment:
       - FRONTEND_URL=http://localhost:5173
+      - DATABASE_URL=${DATABASE_URL}
 
   db:
     image: docker.io/library/postgres:16-alpine  # image officielle, rien à construire
