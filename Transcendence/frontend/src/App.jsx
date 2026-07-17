@@ -33,6 +33,7 @@ function App() {
             {/* Pages auth — centrées, sans navbar */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
             </Route>
             {/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
             <Route element={<MainLayout />}>
