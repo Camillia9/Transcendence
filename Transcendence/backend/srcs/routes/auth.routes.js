@@ -34,13 +34,21 @@ router.post('/auth/register', async (req, res) => {
     if (!pseudo || !email || !password)
         return res.status(400).json({ error: 'pseudo, email and password are required' });
 
+    // soit utilise une biblio avec un validateur d'email comme zod, joi ou validator.js
+    // soit on veut pas rajouter de dependance et on fait un regex simple (= regular expression / respecte la forme) qui va verifier juste qqch@qqch.qqch
+    // ^ → début de la chaîne.
+    // [^\s@]+ → un ou plusieurs caractères qui ne sont ni un espace (\s) ni @.
+    // $ → fin de la chaîne.
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+   if (!emailRegex.test(email))
+        return res.status(400).json({ error: 'Invalid email format' });
+   
     if (pseudo.length < 3)
         return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
     if (password.length < 6)
         return res.status(400).json({ error: 'Password must be at least 6 characters' });
-
-    // a rajouter check sur le format de l'email 
     
     const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
         prisma.user.findUnique({ where: { email }}),

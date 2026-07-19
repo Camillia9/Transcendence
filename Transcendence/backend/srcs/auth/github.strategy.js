@@ -24,9 +24,17 @@ const gitHubStrategy = new GitHubStrategy (
 
             // creation si inexistant
             if (!user) {
+                let pseudoFinal = pseudo;
+                let count = 1;
+                
+                while (await prisma.user.findUnique({ where: { pseudo: pseudoFinal }})) {
+                    pseudoFinal = `${pseudo}_${count}`;
+                    count++;
+                }
+
                 user = await prisma.user.create ({
                     data: {
-                        pseudo,
+                        pseudo: pseudoFinal,
                         email,
                         firstname: "",
                         lastname: "",

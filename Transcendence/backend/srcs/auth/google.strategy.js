@@ -55,9 +55,19 @@ const googleStrategy = new GoogleStrategy(
                 // fakeDB.users.push({ id: userId, pseudo, email, passwordHash: null, avatar, createdAt: new Date() });
             
                 // user = fakeDB.users.find(u => u.id === userId);
+
+                // le pseudo doit etre unique, donc si par ex john existe, on va creer john_1 automatiquement
+                let pseudoFinal = pseudo;
+                let count = 1;
+                
+                while (await prisma.user.findUnique({ where: { pseudo: pseudoFinal }})) {
+                    pseudoFinal = `${pseudo}_${count}`;
+                    count++;
+                }
+
                 user = await prisma.user.create({
                     data: {
-                        pseudo,
+                        pseudo: pseudoFinal,
                         email,
                         firstname: '',
                         lastname: '',

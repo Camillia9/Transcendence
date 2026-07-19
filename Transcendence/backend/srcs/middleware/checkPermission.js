@@ -152,16 +152,15 @@ export function checkPermissionProject(action) {
     return (req, res, next) => {
         if (!req.projectMembership)
             return res.status(500).json({ error: 'Membership not loaded' });
-        //verifier les droits
-        // ?? [] = si le role n'existe pas, donne un tableau vide
+
         const permissions = PROJECT_PERMISSIONS[req.projectMembership.role] ?? [];
         if (!permissions.includes(action))
             return res.status(403).json({ error: 'Access denied'});
 
-        //verification terminer, peut passer a la suite
         next();
     };
 }
+
 export async function canManageTask(req, res, next) {
     try {
         const taskId = Number(req.params.taskId);
