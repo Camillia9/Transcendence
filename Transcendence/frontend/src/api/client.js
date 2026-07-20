@@ -2,13 +2,16 @@ const BASE_URL = 'http://localhost:3000'
 
 // Le moteur unique : toute requête vers le back passe par ici.
 export async function apiRequest(path, options = {}) {
+  // Bracelet d'Auth : null tant que la vrai auth n'existe pas
+  const token = localStorage.getItem('token')
 	try {
 		const response = await fetch(`${BASE_URL}${path}`, {
-      // On annonce qu'on échange du JSON (utile dès qu'on enverra des données).
+			...options,
 			headers: {
 				'Content-Type': 'application/json',
+				...(token && { Authorization: `Bearer ${token}` }),
+				...options.headers,
 			},
-      ...options,
 		})
 
     if (!response.ok) {
@@ -17,8 +20,8 @@ export async function apiRequest(path, options = {}) {
     // On décode le corps JSON et on le renvoie à celui qui a appelé.
     return await response.json()
 	} catch (error) {
-    console.error('Appel API echoue :', error.message)
-    throw error
+    	console.error('Appel API echoue :', error.message)
+    	throw error
   }
 }
 

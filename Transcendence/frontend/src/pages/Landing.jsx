@@ -22,13 +22,7 @@ export default function Landing() {
           onClick={() => navigate('/login')}
           className="text-sm text-primary-800 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
         >
-          Se connecter OAuth
-        </span>
-        <span
-          onClick={() => navigate('/signup')}
-          className="text-sm text-primary-800 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
-        >
-          Se connecter Normal
+          Se connecter
         </span>
       </nav>
 

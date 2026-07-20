@@ -1,75 +1,112 @@
 import { useNavigate } from 'react-router-dom'
-import Card from '../components/ui/Card'
+import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { loginRequest } from '../api/auth'
+import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
-import Logo from '../components/ui/Logo'
-import { IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react'
+import AuthCard from '../components/ui/AuthCard'
 
 function Login() {
   const navigate = useNavigate() // La demande pour avoir acces a un outil de navigation
-  
-    const handleGoogle = () => {
-    // À brancher avec Dev 4 — OAuth Google
-    console.log('Google OAuth')
+  const { login } = useAuth()
+
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword]     = useState('')
+  const [errors, setErrors]         = useState({})
+  const [loading, setLoading]       = useState(false)
+
+  const validate = () => {
+    const newErrors = {}
+
+    if (!identifier.trim())
+      newErrors.identifier = "Ton nom d'utilisateur ou email est requis"
+
+    if (!password)
+      newErrors.password = "Le mot de passe est requis"
+
+    return newErrors
   }
 
-  const handleGithub = () => {
-    // À brancher avec Dev 4 — OAuth GitHub
-    console.log('GitHub OAuth')
+  const handleSubmit = async () => {
+    const newErrors = validate()
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setLoading(true)
+    setErrors({})
+
+    try {
+      // Appel API : envoie identifiant + mot de passe, reçoit { token, user }
+      const data = await loginRequest({ identifier, password })
+
+      // 1. On range le token dans le navigateur → le "bracelet" de client.js
+      localStorage.setItem('token', data.token)
+
+      // 2. On mémorise l'utilisateur dans l'app (AuthContext)
+      login(data.user)
+
+      // 3. On entre dans l'app
+      navigate('/home')
+    } catch (error) {
+      // Le back a refusé (mauvais identifiants, ou serveur injoignable)
+      setErrors({ global: "Identifiant ou mot de passe incorrect" })
+    } finally {
+      setLoading(false)
+    }
   }
+
 
   return (
-    <Card className="w-96 flex flex-col items-center gap-6 p-10">
-    
-      {/* Logo */}
-            <Logo />
-
-      {/* Titre */}
-      <div className="text-center">
-        <h2 className="text-2xl font-medium text-primary-900">Connexion</h2>
-        <p className="text-sm text-primary-700 mt-1">
-          Choisis ton moyen de connexion</p>
-      </div>
-
-      {/* Boutons OAuth */}
+    <AuthCard
+      title="Connexion"
+      subtitle="Content de te revoir"
+      swapText="Pas encore de compte ? S'inscrire"
+      swapTo="/signup"
+    >
       <div className="flex flex-col gap-3 w-full">
 
-        <Button variant="ghost" onClick={handleGoogle}>
-          <span className="flex items-center justify-center gap-2">
-            <IconBrandGoogle size={18} />
-            Continuer avec Google
-          </span>
-        </Button>
+        {/* Identifiant */}
+        <div>
+          <Input
+            variant='auth'
+            type="text"
+            placeholder="Nom d'utilisateur ou email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            light
+          />
+          {errors.identifier && (
+            <p className="text-red-500 text-sm mt-1">{errors.identifier}</p>
+          )}
+        </div>
 
-        <Button variant='ghost' onClick={handleGithub}>
-          <span className="flex items-center justify-center gap-2">
-            <IconBrandGithub size={18} />
-            Continuer avec GitHub
-          </span>
+        {/* Mot de passe */}
+        <div>
+          <Input
+            variant='auth'
+            type="password"
+            placeholder="Mot de passe"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          )}
+        </div>
+
+        {errors.global && (
+          <p className="text-red-500 text-sm text-center">{errors.global}</p>
+        )}
+
+        <Button onClick={handleSubmit} loading={loading}>
+          Se connecter
         </Button>
 
       </div>
-
-      {/* Note */}
-      <p className="text-xs text-center text-primary-700">
-        Première fois ? Un compte sera créé automatiquement.
-      </p>
-
-      {/* Retour */}
-      <p
-        onClick={() => navigate('/')}
-        className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
-      >
-        ← Retour
-      </p>
-
-      {/*A retirer - Nav. Home*/}
-      <p
-        onClick={() => navigate('/home')} 
-        className='text-2xl text-black'>
-          HOME
-      </p>
-
-    </Card>
+    </AuthCard>
   )
 }
 

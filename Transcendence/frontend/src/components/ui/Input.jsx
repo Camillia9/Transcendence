@@ -1,15 +1,16 @@
-function Input({ placeholder, type, value, onChange, light = false }) {
+function Input({ placeholder, type, value, onChange, variant = "light" }) {
+  const variants = {
+    light: "bg-white border border-gray-200 text-gray-800 placeholder-gray-400 focus:border-primary-600",
+    auth:  "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-100 placeholder-gray-600",
+  }
+ 
   return (
     <input
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className={`w-full px-4 py-3 rounded-lg outline-none ${
-        light
-          ? 'bg-white border border-gray-200 text-gray-800 placeholder-gray-400'
-          : 'bg-gray-800 text-white'
-      }`}
+      className={`w-full px-4 py-3 rounded-lg outline-none transition-colors ${variants[variant]}`}
     />
   )
 }
