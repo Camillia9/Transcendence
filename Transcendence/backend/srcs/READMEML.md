@@ -625,3 +625,6 @@ modifier la requête (req) ;
 modifier la réponse (res) ;
 arrêter la requête en renvoyant une erreur ;
 ou laisser passer avec next().
+
+
+met un try/catch si requete prisma plante car async et peut echouer

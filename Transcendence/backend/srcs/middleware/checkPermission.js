@@ -38,10 +38,10 @@ export function authenticate(req, res, next) {
 
 // recupere les informations de l'utilisateur dans l'organisation (org + role)
 // le front indique l'organisation concernee dans l'URL
-export async function loadMembership(req, res, next) {
+export async function loadOrgMembership(req, res, next) {
     try {
         const orgId = Number(req.params.orgId);
-        if (Number.isNaN(orgId))
+        if (!Number.isInteger(orgId) || orgId <= 0)
             return res.status(400).json({ error: 'Invalid organisation id' });
 
         // const membre = fakeDB.orgMembers.find(m => m.userId === req.user.userId && m.orgId === orgId);
@@ -80,7 +80,7 @@ export async function loadProject(req, res, next) {
     try {
         // const project = fakeDB.projets.find(p => p.id === Number(req.params.projectId));
         const projectId = Number(req.params.projectId);
-        if (Number.isNaN(projectId))
+        if (!Number.isInteger(projectId) || projectId <= 0)
             return res.status(400).json({ error: 'Invalid project id' });
         
         const project = await prisma.project.findUnique({
@@ -124,6 +124,27 @@ export async function loadProject(req, res, next) {
     }
 }
 
+export async function loadTask(req, res, next) {
+    try {
+        const taskId = Number(req.params.taskId);
+
+        if (!Number.isInteger(taskId) || taskId <= 0)
+            return res.status(400).json({ error: 'Invalid taskId' });
+
+        const task = await prisma.task.findUnique({ where: { id: taskId }, });
+
+        if (!task || task.projectId !== req.project.id)
+            return res.status(404).json({ error: 'Task not found' });
+
+        req.task = task;
+
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Database error' });
+    }
+}
+
 
 //verifie qu'un utilisateur est connecter et a le droit de faire une action avant de laisser passer une requete
 // req = request = la requete envoyer
@@ -161,45 +182,17 @@ export function checkPermissionProject(action) {
     };
 }
 
-export async function canManageTask(req, res, next) {
-    try {
-        const taskId = Number(req.params.taskId);
-        if (Number.isNaN(taskId))
-            return res.status(400).json({ error: 'Invalid task id' });
-        
-        const task = await prisma.task.findUnique({
-            where: { id: taskId },
-        });
+export function canManageTask(req, res, next) {
+    if (!req.task)
+        return res.status(500).json({ error: 'Task not loaded' });
 
-        // const task = fakeDB.tasks.find(
-        //     t =>
-        //         t.id === Number(req.params.taskId) &&
-        //         t.projectId === req.project.id
-        // );
+    // manager a acces a toutes les taches
+    if (req.projectMembership.role === 'Manager')
+        return next();
 
-        if (!task || task.projectId !== req.project.id)
-            return res.status(404).json({ error: "Task not found "});
+    // user a acces a uniquement ses taches
+    if (req.task.createdById !== req.user.userId && req.task.assignedToId !== req.user.userId)
+        return res.status(403).json({ error: 'Not allowed' });
 
-        req.task = task;
-
-        // manager a acces a toutes les taches
-        if (req.projectMembership.role === 'Manager')
-            return next();
-        
-        // if (req.membership.role === "Manager") {
-        //     return next();
-        // }
-
-        // user a acces a uniquement ses taches
-        if (task.createdById !== req.user.userId)
-            return res.status(403).json({ error: 'Not allowed' });
-        // if (task.userId !== req.user.userId) {
-        //     return res.status(403).json({ error: "Not allowed" });
-        // }
-
-        next();
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Database error' });
-    }
+    next();
 }

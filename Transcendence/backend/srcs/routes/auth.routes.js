@@ -30,6 +30,7 @@ const router = express.Router();
 router.post('/auth/register', async (req, res) => {
     const { pseudo, firstname, lastname, email, password } = req.body;
 
+    // peut etre rajouter mettre le mail et pseudo en minuscule pour normaliser ici et dans login
     // peut etre rajouter firstname et lastname
     if (!pseudo || !email || !password)
         return res.status(400).json({ error: 'pseudo, email and password are required' });
@@ -59,11 +60,6 @@ router.post('/auth/register', async (req, res) => {
         return res.status(409).json({ error: 'Email already used' });
     if (pseudoAlreadyExist)
          return res.status(409).json({ error: 'Pseudo already used' });
-    
-    // const alreadyExist = fakeDB.users.find(u => u.email == email);
-    // if (alreadyExist) {
-    //     return res.status(409).json({ error: 'Email already used'});
-    // }
 
     // chiffrer le mot de passe
     const passwordHash = await bcrypt.hash(password, 10);
@@ -97,30 +93,43 @@ router.post('/auth/register', async (req, res) => {
 
 // connexion email + mot de passe
 // POST /auth/login
-// Body : { email, password }
+// Body : { identifier, password }
+// en fait on veut se co par email ou pseudo a faire
 router.post('/auth/login', async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { identifier, password } = req.body;
 
-    if (!email || !password)
-        return res.status(400).json({ error: 'email and password needed'});
+        if (!identifier || !password)
+            return res.status(400).json({ error: 'Identifier and password needed'});
 
-    // chercher le user
-    const user = await prisma.user.findUnique({ where: { email }});
-    // const user = fakeDB.users.find(u => u.email === email);
-    if (!user || !user.passwordHash)
-        return res.status(401).json({ error: 'Incorrect email or password'});
+        // chercher le user par email ou pseudo
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: identifier },
+                    { pseudo: identifier },
+                ],
+            }
+        });
 
-    // compare le mot de passe avec le hash
-    const passwordOk = await bcrypt.compare(password, user.passwordHash);
-    if (!passwordOk) {
-        return res.status(401).json({ error: 'Incorrect password'});
+        if (!user || !user.passwordHash)
+            return res.status(401).json({ error: 'Incorrect email or password'});
+
+        // compare le mot de passe avec le hash
+        const passwordOk = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordOk) {
+            return res.status(401).json({ error: 'Incorrect password'});
+        }
+        const token = generateToken(user);
+
+        res.json({
+            token,
+            user: { id: user.id, pseudo: user.pseudo, email: user.email }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
     }
-    const token = generateToken({ user });
-
-    res.json({
-        token,
-        user: { id: user.id, pseudo: user.pseudo, email: user.email }
-    });
 });
 
 // connexion google oauth
