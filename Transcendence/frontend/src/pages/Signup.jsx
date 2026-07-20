@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { signupRequest } from '../api/auth'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import AuthCard from '../components/ui/AuthCard'
@@ -56,12 +57,18 @@ function Signup() {
     setLoading(true)
     setErrors({})
 
-    // Simule un appel API — remplacé plus tard par le vrai back
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Appel API : envoie les champs d'inscription, reçoit { token, user }
+      const data = await signupRequest({ username, email, password })
 
-    login({ username, email }) // placeholder — le vrai user viendra du back
-    navigate('/home')
-    setLoading(false)
+      localStorage.setItem('token', data.token)
+      login(data.user)
+      navigate('/home')
+    } catch (error) {
+      setErrors({ global: "Impossible de créer le compte. Cet email est peut-être déjà utilisé." })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -128,6 +135,10 @@ function Signup() {
             <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
           )}
         </div>
+
+        {errors.global && (
+          <p className="text-red-500 text-sm text-center">{errors.global}</p>
+        )}
 
         <Button onClick={handleSubmit} loading={loading}>
           Créer mon compte

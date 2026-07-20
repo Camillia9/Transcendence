@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { loginRequest } from '../api/auth'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import AuthCard from '../components/ui/AuthCard'
@@ -37,12 +38,24 @@ function Login() {
     setLoading(true)
     setErrors({})
 
-    // Simule un appel API — remplacé plus tard par le vrai back
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Appel API : envoie identifiant + mot de passe, reçoit { token, user }
+      const data = await loginRequest({ identifier, password })
 
-    login({ username: identifier}) // placeholder — le vrai user viendra du back
-    navigate('/home')
-    setLoading(false)
+      // 1. On range le token dans le navigateur → le "bracelet" de client.js
+      localStorage.setItem('token', data.token)
+
+      // 2. On mémorise l'utilisateur dans l'app (AuthContext)
+      login(data.user)
+
+      // 3. On entre dans l'app
+      navigate('/home')
+    } catch (error) {
+      // Le back a refusé (mauvais identifiants, ou serveur injoignable)
+      setErrors({ global: "Identifiant ou mot de passe incorrect" })
+    } finally {
+      setLoading(false)
+    }
   }
 
 
@@ -84,6 +97,10 @@ function Login() {
           )}
         </div>
 
+        {errors.global && (
+          <p className="text-red-500 text-sm text-center">{errors.global}</p>
+        )}
+
         <Button onClick={handleSubmit} loading={loading}>
           Se connecter
         </Button>
@@ -94,64 +111,3 @@ function Login() {
 }
 
 export default Login
-
-
-
-
-
-
-  //  return (
-  //    <Card className="w-96 flex flex-col items-center gap-6 p-10">
-      
-  //      {/* Logo */}
-  //            <Logo />
-  
-  //      {/* Titre */}
-  //      <div className="text-center">
-  //        <h2 className="text-2xl font-medium text-primary-900">Connexion</h2>
-  //        <p className="text-sm text-primary-700 mt-1">
-  //          Choisis ton moyen de connexion</p>
-  //      </div>
-  
-  //      {/* Boutons OAuth */}
-  //      <div className="flex flex-col gap-3 w-full">
-  
-  //        <Button variant="ghost" onClick={handleGoogle}>
-  //          <span className="flex items-center justify-center gap-2">
-  //            <IconBrandGoogle size={18} />
-  //            Continuer avec Google
-  //          </span>
-  //        </Button>
-  
-  //        <Button variant='ghost' onClick={handleGithub}>
-  //          <span className="flex items-center justify-center gap-2">
-  //            <IconBrandGithub size={18} />
-  //            Continuer avec GitHub
-  //          </span>
-  //        </Button>
-  
-  //      </div>
-  
-  //      {/* Note */}
-  //      <p className="text-xs text-center text-primary-700">
-  //        Première fois ? Un compte sera créé automatiquement.
-  //      </p>
-  
-  //      {/* Retour */}
-  //      <p
-  //        onClick={() => navigate('/')}
-  //        className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
-  //      >
-  //        ← Retour
-  //      </p>
-  
-  //      {/*A retirer - Nav. Home*/}
-  //      <p
-  //        onClick={() => navigate('/home')} 
-  //        className='text-2xl text-black'>
-  //          HOME
-  //      </p>
-  
-  //    </Card>
-  //  )
-//}
