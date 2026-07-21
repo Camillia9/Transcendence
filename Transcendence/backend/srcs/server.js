@@ -41,7 +41,7 @@ app.use(express.json())
 // passport.use(gitHubStrategy);
 
 // // Routes REST authentification / organisation
-// app.use(authRouter);
+app.use('/api', authRouter);
 // app.use(orgaRouter);
 // app.use(invitationRouter);
 // app.use(projectRouter);
