@@ -628,3 +628,21 @@ ou laisser passer avec next().
 
 
 met un try/catch si requete prisma plante car async et peut echouer
+
+ex de fake database
+const fakeDB = {
+  users: [],      // { id, pseudo, email, passwordHash, avatar, createdAt }
+  orgs: [],       // { id, orgName, createdAt }
+  orgMembers: [],    // { userId, orgId, role (admin | member) }
+  projets: [],    // { id, name, description, createdBy, createdAt }
+  invitations: [], // { id, email, orgId, token, createdAt, expireAt }
+  projectMembers: [], // { projectId, userId, role (manager | user) }
+  tasks: []        // { id, projectId, title, description, createdBy (createur), createdAt, assignedTo (optionnel), status (todo/doing/done), dueDate}
+};
+
+Parcours le tableau fakeDB.membres et retourne le premier membre dont le userId est égal à l'identifiant (id) de l'utilisateur trouvé précédemment. Si aucun utilisateur n'a été trouvé (user vaut undefined), alors user?.id renvoie simplement undefined au lieu de provoquer une erreur.
+let user = fakeDB.users.find(u => u.email === email);
+
+pour creer user
+const userId = newId();
+fakeDB.users.push({ id: userId, pseudo, email, passwordHash: null, avatar, createdAt: new Date() });

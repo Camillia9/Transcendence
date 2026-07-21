@@ -1,7 +1,6 @@
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { generateToken } from './jwt.utils.js';
 import prisma from '../prisma.js';
-// import { fakeDB, newId } from '../fakeDB.js';
 
 const gitHubStrategy = new GitHubStrategy (
     {
@@ -11,16 +10,38 @@ const gitHubStrategy = new GitHubStrategy (
     },
     async (accessToken, refreshToken, profile, done) => {
         try{
-            const email = profile.emails?.[0]?.value ?? `${profile.username}@github.com`;
-            const pseudo = profile.displayName || profile.username;
+            const githubId = profile.id;
+            const email = profile.emails?.[0]?.value ?? null;
+            const pseudo = profile.displayName || profile.username || `github_${githubId}`;
             const avatar = profile.photos?.[0]?.value ?? null;
 
-            // recherche de l'utilisateur
+            // recherche de l'utilisateur par githubId
             let user = await prisma.user.findUnique({
                 where: {
-                    email,
+                    githubId,
                 },
             });
+
+            //verifie qu'il n'a pas deja un compte creer avec un email
+            // si oui, rajoute le githubId au user
+            if (!user && email) {
+                user = await prisma.user.findUnique({
+                    where: {
+                        email,
+                    },
+                });
+
+                if (user && !user.githubId) {
+                    user = await prisma.user.update({
+                        where: {
+                            id: user.id,
+                        },
+                        data: {
+                            githubId,
+                        },
+                    });
+                }
+            }
 
             // creation si inexistant
             if (!user) {
@@ -36,26 +57,19 @@ const gitHubStrategy = new GitHubStrategy (
                     data: {
                         pseudo: pseudoFinal,
                         email,
-                        firstname: "",
-                        lastname: "",
+                        githubId,
                         passwordHash: null,
                         avatar,
                     },
                 });
             }
-            // let user = fakeDB.users.find(u => u.email === email);
-
-            // if (!user) {
-            //     const userId = newId();
-            //     fakeDB.users.push({ id: userId, pseudo, email, passwordHash: null, avatar, createdAt: new Date() });
-
-            //     user = fakeDB.users.find(u => u.id === userId);
-            // }
 
             const token = generateToken( user );
-            done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, }, });
+
+            return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, }, });
+
             } catch (error) {
-                done (error, null);
+                return done (error, null);
             }
         }
 );

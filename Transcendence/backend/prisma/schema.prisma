@@ -10,10 +10,10 @@ datasource db {
 model User {
   id                  Int                  @id @default(autoincrement())
   pseudo              String               @unique
-  firstname           String
-  lastname            String
-  email               String               @unique
+  email               String?              @unique
   passwordHash        String?
+  githubId            String?              @unique
+  googleId            String               @unique
   avatar              String?
   statut              UserStatus           @default(Online)
   langue              Language             @default(fr)

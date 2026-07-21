@@ -10,28 +10,17 @@ import passport from 'passport';
 import googleStrategy from '../auth/google.strategy.js';
 import gitHubStrategy from '../auth/github.strategy.js';
 import { generateToken } from '../auth/jwt.utils.js';
-// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
 
 const router = express.Router();
 
-// // creer user (utiliser par email/mdp et Oauth)
-// function createUser( { pseudo, email, passwordHash, avatar }) {
-//     const userId = newId();
-
-//     fakeDB.users.push({ id: userId, pseudo, email, passwordHash, avatar, createdAt: new Date() });
-
-//     return { userId };
-// }
-
 // inscription email + mot de passe
 // POST /auth/register
-// Body : { pseudo, firstname, lastname, email, password}
+// Body : { pseudo, email, password}
 router.post('/auth/register', async (req, res) => {
-    const { pseudo, firstname, lastname, email, password } = req.body;
+    const { pseudo, email, password } = req.body;
 
     // peut etre rajouter mettre le mail et pseudo en minuscule pour normaliser ici et dans login
-    // peut etre rajouter firstname et lastname
     if (!pseudo || !email || !password)
         return res.status(400).json({ error: 'pseudo, email and password are required' });
 
@@ -68,14 +57,12 @@ router.post('/auth/register', async (req, res) => {
         const user = await prisma.user.create({
             data: {
                 pseudo,
-                firstname: firstname || null,
-                lastname: lastname || null,
                 email,
                 passwordHash,
             },
         });
-        // const { userId } = createUser({ pseudo, email, passwordHash, avatar: null });
-        const token = generateToken({ user });
+
+        const token = generateToken(user);
 
         res.status(201).json({
             message: 'Account successfully created',
