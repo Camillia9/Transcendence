@@ -10,7 +10,6 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // const { Strategy: GoogleStrategy } = require(...);	Prend Strategy et la renomme en GoogleStrategy.
 import { generateToken } from './jwt.utils.js';
 
-// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
 
 // module.exports = ce que ce fichier fournit aux autres fichiers
@@ -31,19 +30,42 @@ const googleStrategy = new GoogleStrategy(
     // await ne peut etre utiliser que dans une fonction async
     async (accessToken, refreshToken, profile, done) => {
         try {
-            const email = profile.emails[0].value;
-            const pseudo = profile.displayName;
-            const avatar = profile.photos[0]?.value ?? null;
+            const googleId = profile.id;
+            const email = profile.emails?.[0]?.value ?? null;
+            const pseudo = profile.displayName || `google_${googleId}`;
+            const avatar = profile.photos?.[0]?.value ?? null;
 
             // let = cree une variable mais constrairement a const, sa valeur pourra changer plus tard
             // where: { email } equivaut a :
             // SELECT *
             // FROM User
             // WHERE email = 'jean@gmail.com'
+
             // cherche si le user existe deja
-            let user = await prisma.user.findUnique({ where: { email } });
-            // Parcours le tableau fakeDB.membres et retourne le premier membre dont le userId est égal à l'identifiant (id) de l'utilisateur trouvé précédemment. Si aucun utilisateur n'a été trouvé (user vaut undefined), alors user?.id renvoie simplement undefined au lieu de provoquer une erreur.
-            // let user = fakeDB.users.find(u => u.email === email);
+            let user = await prisma.user.findUnique({ 
+                where: {
+                    googleId,
+                },
+            });
+            
+            if (!user && email) {
+                user = await prisma.user.findUnique({
+                    where: {
+                        email,
+                    },
+                });
+
+                if (user && !user.googleId) {
+                    user = await prisma.user.update({
+                        where: {
+                            id : user.id,
+                        },
+                        data: {
+                            googleId,
+                        },
+                    });
+                }
+            }
 
             // ?. = operateur d'acces optionnel
             // si photos[0] existe, prends value, sinon renvoie undefined sans provoquer d'erreur
@@ -51,16 +73,21 @@ const googleStrategy = new GoogleStrategy(
             if (!user)
             {
                 // premiere connexion : creer user
-                // const userId = newId();
-                // fakeDB.users.push({ id: userId, pseudo, email, passwordHash: null, avatar, createdAt: new Date() });
-            
-                // user = fakeDB.users.find(u => u.id === userId);
+
+                // le pseudo doit etre unique, donc si par ex john existe, on va creer john_1 automatiquement
+                let pseudoFinal = pseudo;
+                let count = 1;
+                
+                while (await prisma.user.findUnique({ where: { pseudo: pseudoFinal }})) {
+                    pseudoFinal = `${pseudo}_${count}`;
+                    count++;
+                }
+
                 user = await prisma.user.create({
                     data: {
-                        pseudo,
+                        pseudo: pseudoFinal,
                         email,
-                        firstname: '',
-                        lastname: '',
+                        googleId,
                         passwordHash: null,
                         avatar,
                     },
@@ -68,34 +95,16 @@ const googleStrategy = new GoogleStrategy(
             }
             
             const token = generateToken( user );
+
+            // // finir la connexion : passport attend qu'on appelle done (...)
+            // // 1er parametre est l'erreur donc null si tout s'est bien passer 
+            // // 2eme parametre contient ce qu'on veut renvoyer, ici token et user mais pas tout le user juste ce qu'on veut
             return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar } });
 
-             //     const org = await prisma.organisation.create({ data: { nom: `Org de ${profile.displayName}`} });
-             //     user = await prisma.user.create({
-             //         data: {
-             //             email,
-             //             pseudo: profile.displayName,
-             //             avatar: profile.photos[0]?.value,
-             //             membres: { create: { organisationId: org.id, role: 'Admin'} },
-             //         },
-             //         // par defaut Prisma renvoie seulement l'utilisateur et avec include, on demande aussi les membres
-             //         include: { membres: true },
-             //     });
-             // }
-
-             // // recupere son role
-             // const membre = user.membres[0];
-             // const token = generateToken({ id: user.id, role: membre.role, orgId: membre.organisationId});
-
-             // // finir la connexion : passport attend qu'on appelle done (...)
-             // // 1er parametre est l'erreur donc null si tout s'est bien passer 
-             // // 2eme parametre contient ce qu'on veut renvoyer, ici user et token
-             // done(null, { user, token });
             } catch (error) {
-                donne (error, null);
+                return done (error, null);
             }
 })
-
 
 export default googleStrategy;
 
@@ -149,4 +158,3 @@ export default googleStrategy;
 //     }
 //   }
 // }
-

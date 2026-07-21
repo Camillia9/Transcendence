@@ -66,8 +66,6 @@ async function main() {
   const alice = await prisma.user.create({
     data:{
       pseudo:"alice",
-      firstname:"Alice",
-      lastname:"Martin",
       email:"alice@test.com",
       passwordHash:"fake_hash",
     }
@@ -77,8 +75,6 @@ async function main() {
   const bob = await prisma.user.create({
     data:{
       pseudo:"bob",
-      firstname:"Bob",
-      lastname:"Dupont",
       email:"bob@test.com",
       passwordHash:"fake_hash",
     }
@@ -88,8 +84,6 @@ async function main() {
   const charlie = await prisma.user.create({
     data:{
       pseudo:"charlie",
-      firstname:"Charlie",
-      lastname:"Durand",
       email:"charlie@test.com",
       passwordHash:"fake_hash",
     }

@@ -1,168 +1,309 @@
 import express from 'express';
-import { checkPermissionOrga, authenticate, loadMembership } from '../middleware/checkPermission.js';
+import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/checkPermission.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
 
 const router = express.Router();
 
 // creer une organisation
-router.post('/organisations', authenticate, async (req, res) => {
-    // le front envoie {"orgName": "Mon entreprise"} donc on recupere cet info
-    const { orgName } = req.body;
-    if (!orgName)
-        return res.status(400).json({ error: 'Organisation name required' });
-    const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name }});
-    if (orgaAlreadyExist)
-        return res.status(409).json({ error: 'Organisation name already taken' });
-    
-    const { org } = await prisma.$transaction(async (tx) => {
-        const org = await tx.organisation.create({ data: { name } });
-    })
+router.post('/organisations', authenticate,
+    async (req, res) => {
+        try {
+            // le front envoie {"orgName": "Mon entreprise"} donc on recupere cet info
+            const { orgName } = req.body;
+            if (!orgName)
+                return res.status(400).json({ error: 'Organisation name required' });
+        
+            const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name: orgName }});
+            if (orgaAlreadyExist)
+                return res.status(409).json({ error: 'Organisation name already taken' });
 
-    // ajoute une nouvelle orga dans fakeDB
-    // const orgId = newId();
-    // fakeDB.orgs.push({
-    //     id: orgId,
-    //     orgName,
-    //     createdAt: new Date()
-    // });
+            // transaction : creer l'orga et ajoute le createur en admin en 1 seul operation
+            // si l'une echoue, les 2 sont annulees
+            const { org } = await prisma.$transaction(async (tx) => {
+                const org = await tx.organisation.create({ data: { name: orgName } });
 
-    // le createur devient Admin
-    // req.user = verifyToken(token); et le JWT contient { userId: 123 }
-    fakeDB.orgMembers.push({
-        userId: req.user.userId,
-        orgId,
-        role: 'Admin'
-    });
-    res.status(201).json({ message: 'The organisation is created', orgId });
+                await tx.member.create({ 
+                    data: {
+                        userId: req.user.userId,
+                        orgId: org.id,
+                        role: 'Admin',
+                    },
+                });
+                return { org };
+            });
+
+            // ajoute une nouvelle orga dans fakeDB
+            // const orgId = newId();
+            // fakeDB.orgs.push({
+            //     id: orgId,
+            //     orgName,
+            //     createdAt: new Date()
+            // });
+
+            // // le createur devient Admin
+            // // req.user = verifyToken(token); et le JWT contient { userId: 123 }
+            // fakeDB.orgMembers.push({
+            //     userId: req.user.userId,
+            //     orgId,
+            //     role: 'Admin'
+            // });
+            res.status(201).json({ message: 'The organisation is created', organisation: org });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
 });
 
 // voir mon organisation
 // GET /organisations/:orgId
 // accessible a tous les membres connecter et on sait que l'utilisateur appartient a cette orga car loadmembership verifier
-router.get('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('view_member'), 
+router.get('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('view_member'), 
     async (req, res) => {
-        const org = await prisma.organisation.findUnique({
-            where: {id: req.orgId},
-        });
-        // const org = fakeDB.orgs.find(o => o.id === req.orgId);
-        if (!org)
-            return res.status(404).json({ error: 'Organisation not found' });
-        res.json(org);
+        try {
+            const org = await prisma.organisation.findUnique({
+                where: {id: req.orgId},
+            });
+            // const org = fakeDB.orgs.find(o => o.id === req.orgId);
+            if (!org)
+                return res.status(404).json({ error: 'Organisation not found' });
 
+            res.json(org);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     });
 
 // modifier mon organisation
-router.patch('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('edit_orga'),
+router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('edit_orga'),
     async (req, res) => {
-        const { orgName } = req.body;
-        if (!orgName)
-            return res.status(400).json({ error: 'Organisation name required' });
+        try {
+            const { orgName } = req.body;
+            if (!orgName)
+                return res.status(400).json({ error: 'Organisation name required' });
 
-        const org = fakeDB.orgs.find(o => o.id === req.orgId);
-        if (!org)
-            return res.status(404).json({ error: 'Organisation not found' });
-        org.orgName = orgName;
-        res.json({
-            message: 'Organisation modified',
-            organisation: org
-        });
+            // verifie qu'une autre organisation ne possede pas deja ce nom
+            const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name: orgName, }, });
+            if (orgaAlreadyExist && orgaAlreadyExist.id !== req.orgId)
+                return res.status(409).json({ error: 'Organisation name already taken' });
+
+            // where pour dire de trouver l'organisation dont l'id correspond a req.orgId
+            // data pour dire quel colonne a modifier
+            const org = await prisma.organisation.update({
+                where: { id: req.orgId },
+                data: { name: orgName },
+            })
+            // const org = fakeDB.orgs.find(o => o.id === req.orgId);
+            // if (!org)
+            //     return res.status(404).json({ error: 'Organisation not found' });
+            // org.orgName = orgName;
+            res.json({
+                message: 'Organisation updated',
+                organisation: org
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     });
 
 // supprimer mon organisation et donc de ses membres aussi
-router.delete('/organisations/:orgId', authenticate, loadMembership, checkPermissionOrga('delete_orga'),
-    (req, res) => {
-        //remplace l'ancien tableau par le tableau sans celui rechercher
-        fakeDB.orgs = fakeDB.orgs.filter(o => o.id !== req.orgId);
-        fakeDB.orgMembers = fakeDB.orgMembers.filter(m => m.orgId != req.orgId);
-        res.json({ message: 'Organisation deleted' });
-    })
+router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
+    async (req, res) => {
+        try {
+            // //remplace l'ancien tableau par le tableau sans celui rechercher
+            // fakeDB.orgs = fakeDB.orgs.filter(o => o.id !== req.orgId);
+            // fakeDB.orgMembers = fakeDB.orgMembers.filter(m => m.orgId != req.orgId);
+            
+            // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
+            await prisma.organisation.delete({ where: { id: req.orgId }});
+            
+            res.json({ message: 'Organisation deleted' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    });
 
 // voir les membres d'une organisation
-router.get('/organisations/:orgId/membres', authenticate, loadMembership, checkPermissionOrga('view_member'),
-    (req, res) => {
-        const membres = fakeDB.orgMembers
-            .filter(m => m.orgId === req.orgId)
-            // map() parcourt chaque membre, puis avec find() va rechercher a l'interieur le user pour recuperer ses infos
-            .map(m => {
-                const user = fakeDB.users.find(u => u.id === m.userId);
-                if (!user)
-                    return null;
+router.get('/organisations/:orgId/membres', authenticate, loadOrgMembership, checkPermissionOrga('view_member'),
+    async (req, res) => {
+        try {
+            const membres = await prisma.member.findMany({
+                where: { orgId: req.orgId },
+                include: {
+                    user: {
+                        select: { id: true, pseudo: true, email: true, avatar: true },
+                    },
+                },
+            });
 
-                return {
-                    id: user.id,
-                    pseudo: user.pseudo,
-                    email: user.email,
-                    avatar: user.avatar,
-                    role: m.role
-                };
-            })
-            // pour enlever du tableau les valeur ou user = null
-            .filter(Boolean);
-        // et on renvoie ce nouveau tableau au front (ca depend des infos qu'il a besoin)
-        res.json(membres);
+            // formater pour le front
+            const result = membres.map(m => ({
+                id : m.user.id,
+                pseudo: m.user.pseudo,
+                email: m.user.email,
+                avatar: m.user.avatar,
+                role: m.role,
+            }));
+
+            res.json(result);
+
+            // const membres = fakeDB.orgMembers
+            //     .filter(m => m.orgId === req.orgId)
+            //     // map() parcourt chaque membre, puis avec find() va rechercher a l'interieur le user pour recuperer ses infos
+            //     .map(m => {
+            //         const user = fakeDB.users.find(u => u.id === m.userId);
+            //         if (!user)
+            //             return null;
+
+            //         return {
+            //             id: user.id,
+            //             pseudo: user.pseudo,
+            //             email: user.email,
+            //             avatar: user.avatar,
+            //             role: m.role
+            //         };
+            //     })
+            //     // pour enlever du tableau les valeur ou user = null
+            //     .filter(Boolean);
+            // // et on renvoie ce nouveau tableau au front (ca depend des infos qu'il a besoin)
+            // res.json(membres);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     });
 
 // changer un role, par ex tu passes de admin a membre
-router.patch('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermissionOrga('change_role'),
-    (req, res) => {
-        // cherche quel utilisateur on veut modifier avec req.params.userId (en recuperant sur l'URL)
-        // on utilise Number() car l'URL est en char et on veut un num
-        const cible = Number(req.params.userId);
-        const { role } = req.body;
-        const roles = [
-            'Admin',
-            'Member'
-        ];
+router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembership, checkPermissionOrga('change_role'),
+    async (req, res) => {
+        try {
+            // cherche quel utilisateur on veut modifier avec req.params.userId (en recuperant sur l'URL)
+            // on utilise Number() car l'URL est en char et on veut un num
+            const cible = Number(req.params.userId);
+            if (!Number.isInteger(cible) || cible <= 0)
+                return res.status(400).json({ error: 'Invalid user id' });
 
-        if (!roles.includes(role))
-            return res.status(400).json({ error: 'Invalid role' });
+            const { role } = req.body;
+            const roles = [
+                'Admin',
+                'Member'
+            ];
 
-        // recherche le bon user dans la bonne orga
-        const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
-        if (!membre)
-            return res.status(404).json({ error: 'Member not found' });
+            if (!roles.includes(role))
+                return res.status(400).json({ error: 'Invalid role' });
 
-        // verifie qu'il y a tjs au moins 1 admin sur l'orga
-        if (membre.role === 'Admin' && role !== 'Admin') {
-            const admins = fakeDB.orgMembers.filter(
-                m => m.orgId === req.orgId && m.role === 'Admin'
-            );
-            if (admins.length === 1) {
-                return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+            // verifier que la cible est bien dans l'orga
+            const membre = await prisma.member.findUnique({
+                where: { userId_orgId:
+                    { 
+                        userId: cible,
+                        orgId: req.orgId
+                    }
+                },
+            });
+            // const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
+            if (!membre)
+                return res.status(404).json({ error: 'Member not found' });
+
+            // verifie qu'il y a tjs au moins 1 admin sur l'orga
+            if (membre.role === 'Admin' && role !== 'Admin') {
+                const nbAdmins = await prisma.member.count({
+                    where: {
+                        orgId: req.orgId,
+                        role: 'Admin'},
+                });
+
+                if (nbAdmins === 1)
+                    return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+                // const admins = fakeDB.orgMembers.filter(
+                //     m => m.orgId === req.orgId && m.role === 'Admin'
+                // );
+                // if (admins.length === 1) {
+                //     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+                // }
             }
-        }
-        // modifie directement l'objet dans fakeDB
-        membre.role = role;
 
-        res.json({
-            message: 'Role modified',
-            membre
-        });
+            const updated = await prisma.member.update({
+                where: {
+                    userId_orgId: {
+                        userId: cible,
+                        orgId: req.orgId
+                    }
+                },
+                data: { role },
+            });
+
+            // // modifie directement l'objet dans fakeDB
+            // membre.role = role;
+
+            res.json({
+                message: 'Role updated',
+                membre: updated
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     });
 
 // supprimer un membre d'une orga
-router.delete('/organisations/:orgId/membres/:userId', authenticate, loadMembership, checkPermissionOrga('delete_member'),
-    (req, res) => {
-        const cible = Number(req.params.userId);
+router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembership, checkPermissionOrga('delete_member'),
+    async (req, res) => {
+        try {
+            const cible = Number(req.params.userId);
+            if (!Number.isInteger(cible) || cible <= 0)
+                return res.status(400).json({ error: 'Invalid user id' });
 
-        const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
-        if (!membre)
-            return res.status(404).json({ error: 'Member not found' });
+            const membre = await prisma.member.findUnique({
+                where: { userId_orgId: {
+                    userId: cible,
+                    orgId: req.orgId
+                    }
+                },
+            });
 
-        // verifie qu'il y a tjs au moins 1 admin dans l'orga
-        if (membre.role === 'Admin') {
-            const admins = fakeDB.orgMembers.filter(
-                m => m.orgId === req.orgId && m.role === 'Admin'
-            );
-            if (admins.length === 1) {
-                return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+            // const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
+            if (!membre)
+                return res.status(404).json({ error: 'Member not found' });
+
+            // verifie qu'il y a tjs au moins 1 admin dans l'orga
+            if (membre.role === 'Admin') {
+                const nbAdmins = await prisma.member.count({
+                    where: {
+                        orgId: req.orgId,
+                        role: 'Admin'
+                    },
+                });
+
+                if (nbAdmins === 1)
+                    return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+
+                // const admins = fakeDB.orgMembers.filter(
+                //     m => m.orgId === req.orgId && m.role === 'Admin'
+                // );
+                // if (admins.length === 1) {
+                //     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+                // }
             }
+
+            await prisma.member.delete({
+                where: {
+                    userId_orgId: {
+                        userId: cible,
+                        orgId: req.orgId
+                    }
+                },
+            });
+            // fakeDB.orgMembers = fakeDB.orgMembers.filter(m => !(m.orgId === req.orgId && m.userId === cible));
+
+            res.json({ message: 'Member deleted' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
         }
-
-        fakeDB.orgMembers = fakeDB.orgMembers.filter(m => !(m.orgId === req.orgId && m.userId === cible));
-
-        res.json({ message: 'Member deleted' });
     });
 
 export default router;
