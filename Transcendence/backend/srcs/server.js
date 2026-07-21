@@ -42,10 +42,10 @@ app.use(express.json())
 
 // // Routes REST authentification / organisation
 app.use('/api', authRouter);
-// app.use(orgaRouter);
-// app.use(invitationRouter);
-// app.use(projectRouter);
-// app.use(taskRouter);
+// app.use('/api', orgaRouter);
+// app.use('/api', invitationRouter);
+// app.use('/api', projectRouter);
+// app.use('/api', taskRouter);
 
 // Serveur HTTP brut
 //0695428562

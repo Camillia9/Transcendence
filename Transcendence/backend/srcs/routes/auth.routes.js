@@ -154,20 +154,9 @@ router.get('/auth/google/callback',
         const { token, user } = req.user;
         // en prod : rediriger vers le front avec le token dans l'URL
         // res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+        
         res.json({ token, user });
-
         // renvoyer le token au front (dev 1 lit ca)
-        // ou si un utilisateur complet avec ses relations membres. Avec fakeDB, ca marche pas car on doit modifier la strategie Passport pour ajouter ces infos
-        // res.json({
-        //     token,
-        //     user: {
-        //         id: user.id,
-        //         pseudo: user.pseudo,
-        //         avatar: user.avatar,
-        //         role: user.membres[0].role,
-        //         orgId: user.membres[0].organisationId,
-        //     },
-        // });
     }
 );
 

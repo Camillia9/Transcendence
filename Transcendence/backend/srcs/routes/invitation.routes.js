@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import express from 'express';
 
 import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/checkPermission.js';
-import { fakeDB, newId } from '../fakeDB.js';
+// import { fakeDB, newId } from '../fakeDB.js';
+import prisma from '../prisma.js';
 
 const router = express.Router();
 
@@ -14,87 +15,127 @@ const router = express.Router();
 // const { orgId } = req.user; = recupere l'orga
 router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership, checkPermissionOrga('invit_member'), 
     async (req, res) => {
-        const { email } = req.body;
-        if (!email)
-            return res.status(400).json({ error: 'Email required '});
+        try {
+            const { email } = req.body;
+            if (!email)
+                return res.status(400).json({ error: 'Email required '});
 
-        const user = fakeDB.users.find(u => u.email === email);
-        if (user) {
-            const alreadyMember = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === user.id);
-            if (alreadyMember)
-                return res.status(409).json({ error: 'User is already a member'});
+            const user = await prisma.user.findUnique({
+                where: { email, },
+            });
+
+            if (user) {
+                const alreadyMember = await prisma.member.findUnique({
+                    where: {
+                        userId_orgId: {
+                            userId: user.id,
+                            orgId: req.orgId,
+                        },
+                    },
+                });
+                if (alreadyMember)
+                    return res.status(409).json({ error: 'User is already a member'});
+            }
+
+            // creation de l'identifiant de l'invitation
+            // Date.now() = donne l'heure actuelle en millisecondes
+            const inviteToken = crypto.randomBytes(32).toString('hex');
+            const expiration = new Date(Date.now() + 24 * 60 * 60 * 1000);//24h
+
+            const invitation = await prisma.invitation.create({
+                data: {
+                    email,
+                    token: inviteToken,
+                    expireAt: expiration,
+                    organisation: req.orgId,
+                },
+            });
+
+            // envoyer l'email (utiliser nodemailer)
+            // Le lien : https://taskboard.app/rejoindre/${inviteToken}
+
+            return res.json({
+                message: `Invitation sent to ${email}`,
+                token: invitation.inviteToken,
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
         }
-        
-        // creation de l'identifiant de l'invitation
-        // Date.now() = donne l'heure actuelle en millisecondes
-        const inviteToken = crypto.randomBytes(32).toString('hex');
-        const expiration = new Date(Date.now() + 24 * 60 * 60 * 1000);//24h
-
-        fakeDB.invitations.push({
-            id: newId(),
-            email,
-            orgId: req.orgId,
-            token: inviteToken,
-            createdAt: new Date(),
-            expireAt: expiration
-        });
-
-        // // sauvegarde en base de donnees (dev5 fournit le modele invitation)
-        // // await car le code attend que l'insertion soit terminer avant de continuer
-        // await prisma.invitation.create({
-        //     data: { email, orgId, token: inviteToken, expireAt: expiration }
-        // });
-
-        // envoyer l'email (utiliser nodemailer)
-        // Le lien : https://taskboard.app/rejoindre/${inviteToken}
-
-        res.json({
-            message: `Invitation sent to ${email}`,
-            token: inviteToken
-        });
     }
 );
 
 // rejoindre une organisation
 router.post('/organisations/rejoindre/:token', authenticate,
-    (req, res) => {
-        // recuperer le token dans l'URL
-        const { token } = req.params;
+    async (req, res) => {
+        try {
+            // recuperer le token dans l'URL
+            const { token } = req.params;
 
-        // rechercher l'invitation
-        const invitation = fakeDB.invitations.find(i => i.token === token);
-        if (!invitation)
-            return res.status(404).json({ error: 'Invitation not found' });
+            // rechercher l'invitation
+            const invitation = await prisma.invitation.findUnique({
+                where: {
+                    token,
+                },
+            });
 
-        // verifier que l'invitation n'a pas expirer
-        if (invitation.expireAt < new Date())
-            return res.status(400).json({ error: 'Invitation expired' });
+            if (!invitation)
+                return res.status(404).json({ error: 'Invitation not found' });
 
-        // recuperer l'utilisateur connecter
-        const user = fakeDB.users.find(u => u.id === req.user.userId);
-        if(!user)
-            return res.status(404).json({ error: 'User not found' });
+            // verifier que l'invitation n'a pas expirer
+            if (invitation.expireAt < new Date())
+                return res.status(400).json({ error: 'Invitation expired' });
 
-        // verifier que l'email correspond
-        if (user.email !== invitation.email)
-            return res.status(403).json({ error: 'This invitation is not for you' });
+            // recuperer l'utilisateur connecter
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: req.user.userId,
+                },
+            });
 
-        // verifier qu'il n'est pas deja membre de l'orga (au cas ou si envoie plusieurs invit)
-        const alreadyMember = fakeDB.orgMembers.find(m => m.orgId === invitation.orgId && m.userId === user.id);
-        if (alreadyMember)
-            return res.status(409).json({ error: 'User is already a member'});
+            if(!user)
+                return res.status(404).json({ error: 'User not found' });
 
-        // ajouter le membre
-        fakeDB.orgMembers.push({
-            userId: user.id,
-            orgId: invitation.orgId,
-            role: 'Member'
-        });
+            // verifier que l'email correspond
+            if (user.email !== invitation.email)
+                return res.status(403).json({ error: 'This invitation is not for you' });
 
-        // supprimer l'invitation
-        fakeDB.invitations = fakeDB.invitations.filter(i => i.token !== token);
+            // verifier qu'il n'est pas deja membre de l'orga (au cas ou si envoie plusieurs invit)
+            const alreadyMember = await prisma.member.findUnique({
+                where: {
+                    userId_orgId: {
+                        userId: user.id,
+                        orgId: invitation.organisation,
+                    },
+                },
+            });
 
-        res.json({ message: 'Welcome to the organisation' });
+            if (alreadyMember)
+                return res.status(409).json({ error: 'User is already a member'});
+
+            // ajouter le membre + supprimer l'invitation
+            await prisma.$transaction(async (tx) => {
+                await tx.member.create({
+                    data: {
+                        userId: user.id,
+                        orgId: invitation.organisation,
+                        role: 'Member',
+                    },
+                });
+
+                await tx.invitation.delete({
+                    where: {
+                        id: invitation.id,
+                    },
+                });
+            });
+
+            return res.json({ message: 'Welcome to the organisation' });
+        
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     }
 );
 

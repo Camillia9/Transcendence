@@ -1,6 +1,5 @@
 import express from 'express';
 import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/checkPermission.js';
-// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../prisma.js';
 
 const router = express.Router();
@@ -33,24 +32,13 @@ router.post('/organisations', authenticate,
                 return { org };
             });
 
-            // ajoute une nouvelle orga dans fakeDB
-            // const orgId = newId();
-            // fakeDB.orgs.push({
-            //     id: orgId,
-            //     orgName,
-            //     createdAt: new Date()
-            // });
-
-            // // le createur devient Admin
-            // // req.user = verifyToken(token); et le JWT contient { userId: 123 }
-            // fakeDB.orgMembers.push({
-            //     userId: req.user.userId,
-            //     orgId,
-            //     role: 'Admin'
-            // });
-            res.status(201).json({ message: 'The organisation is created', organisation: org });
+            return res.status(201).json({ message: 'The organisation is created', organisation: org });
+            
         } catch (error) {
             console.error(error);
+            //protection si 2 utilisateurs cree au meme moment et un passe le orgaAlreadyExist
+            if (error.code == 'P2002')
+                return res.status(400).json({ error: 'Organisation name required' });
             return res.status(500).json({ error: 'Database error' });
         }
 });
@@ -64,11 +52,12 @@ router.get('/organisations/:orgId', authenticate, loadOrgMembership, checkPermis
             const org = await prisma.organisation.findUnique({
                 where: {id: req.orgId},
             });
-            // const org = fakeDB.orgs.find(o => o.id === req.orgId);
+
             if (!org)
                 return res.status(404).json({ error: 'Organisation not found' });
 
-            res.json(org);
+            return res.json(org);
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -85,6 +74,7 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 
             // verifie qu'une autre organisation ne possede pas deja ce nom
             const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name: orgName, }, });
+            
             if (orgaAlreadyExist && orgaAlreadyExist.id !== req.orgId)
                 return res.status(409).json({ error: 'Organisation name already taken' });
 
@@ -94,16 +84,16 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
                 where: { id: req.orgId },
                 data: { name: orgName },
             })
-            // const org = fakeDB.orgs.find(o => o.id === req.orgId);
-            // if (!org)
-            //     return res.status(404).json({ error: 'Organisation not found' });
-            // org.orgName = orgName;
-            res.json({
+
+            return res.json({
                 message: 'Organisation updated',
                 organisation: org
             });
+
         } catch (error) {
             console.error(error);
+            if (error.code === 'P2002')
+                return res.status(409).json({ error: 'Organisation name already taken' });
             return res.status(500).json({ error: 'Database error' });
         }
     });
@@ -111,15 +101,12 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 // supprimer mon organisation et donc de ses membres aussi
 router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
     async (req, res) => {
-        try {
-            // //remplace l'ancien tableau par le tableau sans celui rechercher
-            // fakeDB.orgs = fakeDB.orgs.filter(o => o.id !== req.orgId);
-            // fakeDB.orgMembers = fakeDB.orgMembers.filter(m => m.orgId != req.orgId);
-            
+        try {     
             // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
             await prisma.organisation.delete({ where: { id: req.orgId }});
             
-            res.json({ message: 'Organisation deleted' });
+            return res.json({ message: 'Organisation deleted' });
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -140,6 +127,7 @@ router.get('/organisations/:orgId/membres', authenticate, loadOrgMembership, che
             });
 
             // formater pour le front
+            // map() parcourt chaque membre
             const result = membres.map(m => ({
                 id : m.user.id,
                 pseudo: m.user.pseudo,
@@ -148,28 +136,8 @@ router.get('/organisations/:orgId/membres', authenticate, loadOrgMembership, che
                 role: m.role,
             }));
 
-            res.json(result);
+            return res.json(result);
 
-            // const membres = fakeDB.orgMembers
-            //     .filter(m => m.orgId === req.orgId)
-            //     // map() parcourt chaque membre, puis avec find() va rechercher a l'interieur le user pour recuperer ses infos
-            //     .map(m => {
-            //         const user = fakeDB.users.find(u => u.id === m.userId);
-            //         if (!user)
-            //             return null;
-
-            //         return {
-            //             id: user.id,
-            //             pseudo: user.pseudo,
-            //             email: user.email,
-            //             avatar: user.avatar,
-            //             role: m.role
-            //         };
-            //     })
-            //     // pour enlever du tableau les valeur ou user = null
-            //     .filter(Boolean);
-            // // et on renvoie ce nouveau tableau au front (ca depend des infos qu'il a besoin)
-            // res.json(membres);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -204,7 +172,7 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
                     }
                 },
             });
-            // const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
+
             if (!membre)
                 return res.status(404).json({ error: 'Member not found' });
 
@@ -218,12 +186,6 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
 
                 if (nbAdmins === 1)
                     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-                // const admins = fakeDB.orgMembers.filter(
-                //     m => m.orgId === req.orgId && m.role === 'Admin'
-                // );
-                // if (admins.length === 1) {
-                //     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-                // }
             }
 
             const updated = await prisma.member.update({
@@ -236,10 +198,7 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
                 data: { role },
             });
 
-            // // modifie directement l'objet dans fakeDB
-            // membre.role = role;
-
-            res.json({
+            return res.json({
                 message: 'Role updated',
                 membre: updated
             });
@@ -265,7 +224,6 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                 },
             });
 
-            // const membre = fakeDB.orgMembers.find(m => m.orgId === req.orgId && m.userId === cible);
             if (!membre)
                 return res.status(404).json({ error: 'Member not found' });
 
@@ -280,13 +238,6 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
 
                 if (nbAdmins === 1)
                     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-
-                // const admins = fakeDB.orgMembers.filter(
-                //     m => m.orgId === req.orgId && m.role === 'Admin'
-                // );
-                // if (admins.length === 1) {
-                //     return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-                // }
             }
 
             await prisma.member.delete({
@@ -297,9 +248,9 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     }
                 },
             });
-            // fakeDB.orgMembers = fakeDB.orgMembers.filter(m => !(m.orgId === req.orgId && m.userId === cible));
 
-            res.json({ message: 'Member deleted' });
+            return res.json({ message: 'Member deleted' });
+            
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });

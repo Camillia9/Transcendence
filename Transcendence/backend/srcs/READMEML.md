@@ -593,7 +593,8 @@ npx prisma dev -> commande sert à lancer Prisma Postgres local (le service pris
 
 npx prisma migrate dev --name init -> synchronise la database avec mon schema prisma
 
-npx prisma migrate dev --name update_schema -> va generer que les changements necessaire
+podman compose exec backend npx prisma migrate dev --name update_schema -> va generer que les changements necessaire 
+mettre podman compose exec backend a partir de Transcendence car l'url est dans le .env du dossier et pas dans le back
 
 npx prisma generate -> regenerer le client apres la migration ou a chaque modification du schema prisma
 
@@ -646,3 +647,44 @@ let user = fakeDB.users.find(u => u.email === email);
 pour creer user
 const userId = newId();
 fakeDB.users.push({ id: userId, pseudo, email, passwordHash: null, avatar, createdAt: new Date() });
+
+supprimer mon organisation et donc de ses membres aussi
+//remplace l'ancien tableau par le tableau sans celui rechercher
+fakeDB.orgs = fakeDB.orgs.filter(o => o.id !== req.orgId);
+fakeDB.orgMembers = fakeDB.orgMembers.filter(m => m.orgId != req.orgId);
+
+voir les membres d'une organisation
+const membres = fakeDB.orgMembers
+    .filter(m => m.orgId === req.orgId)
+    // map() parcourt chaque membre, puis avec find() va rechercher a l'interieur le user pour recuperer ses infos
+    .map(m => {
+        const user = fakeDB.users.find(u => u.id === m.userId);
+        if (!user)
+            return n
+        return {
+            id: user.id,
+            pseudo: user.pseudo,
+            email: user.email,
+            avatar: user.avatar,
+            role: m.role
+        };
+    })
+    // pour enlever du tableau les valeur ou user = null
+    .filter(Boolean);
+// et on renvoie ce nouveau tableau au front (ca depend des infos qu'il a besoin)
+res.json(membres);
+
+
+voir toutes les projets accessibles par l'utilisateur
+const projectIds = fakeDB.projectMembers
+    .filter(pm => pm.userId === req.user.userId)
+    .map(pm => pm.projectId);
+const projects = fakeDB.projets.filter(p => projectIds.includes(p.id));
+
+
+voir une task precise
+const task = fakeDB.tasks.find(
+    t =>
+        t.id === Number(req.params.taskId) &&
+        t.projectId === Number(req.params.projectId)
+);

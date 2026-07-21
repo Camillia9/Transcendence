@@ -132,7 +132,7 @@ model Conversation {
   name                String?
   type                TypeConversation     @default(Private)
   projectId           Int?
-  project             Project?             @relation(fields: [projectId], references: [id])
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   conversationMembers ConversationMember[]
   messages            Message[]
 }

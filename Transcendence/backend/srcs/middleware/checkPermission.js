@@ -1,17 +1,16 @@
 import { verifyToken } from '../auth/jwt.utils.js';
 import prisma from '../prisma.js';
-// import { fakeDB } from '../fakeDB.js';
 
 //table des droits par role
+// create_project dans orga car a la creation le role sur le project n'existe pas
 const ORGA_PERMISSIONS = {
-    Admin: ['view_member', 'edit_orga', 'delete_orga', 'change_role', 'delete_member', 'invit_member'],
+    Admin: ['view_member', 'edit_orga', 'delete_orga', 'change_role', 'delete_member', 'invit_member', 'create_project'],
 
     Member: ['view_member'],
-
 };
 
 const PROJECT_PERMISSIONS = {
-    Manager:['create_task', 'view_task', 'edit_task', 'move_task', 'delete_task', 'assign_task', 'create_project', 'view_project', 'edit_project', 'delete_project'],
+    Manager:['create_task', 'view_task', 'edit_task', 'move_task', 'delete_task', 'assign_task', 'view_project', 'edit_project', 'delete_project'],
 
     User: ['create_task', 'view_task', 'edit_task', 'move_task', 'delete_task', 'view_project'],
 };
@@ -72,7 +71,7 @@ export async function loadOrgMembership(req, res, next) {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ error: "Database error" });
     }
 }
 
@@ -120,7 +119,7 @@ export async function loadProject(req, res, next) {
 
     } catch(error) {
         console.error(error);
-        res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ error: "Database error" });
     }
 }
 
@@ -139,9 +138,10 @@ export async function loadTask(req, res, next) {
         req.task = task;
 
         next();
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Database error' });
+        return res.status(500).json({ error: 'Database error' });
     }
 }
 

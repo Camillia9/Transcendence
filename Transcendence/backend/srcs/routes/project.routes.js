@@ -1,12 +1,11 @@
 import express from 'express';
-import { authenticate, loadOrgMembership, checkPermissionProject, loadProject} from '../middleware/checkPermission.js';
-// import { fakeDB, newId } from '../fakeDB.js';
+import { authenticate, loadOrgMembership, checkPermissionOrga, checkPermissionProject, loadProject} from '../middleware/checkPermission.js';
 import prisma from '../prisma.js';
 
 const router = express.Router();
 
 // creer un projet
-router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, checkPermissionProject('create_project'),
+router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, checkPermissionOrga('create_project'),
     async (req, res) => {
         try {
             const { title, description, deadline } = req.body;
@@ -34,24 +33,8 @@ router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, c
                 return { project };
             });
 
-            // const project = {
-            //     id: newId(),
-            //     name,
-            //     description: description || '',
-            //     createdBy: req.user.userId,
-            //     createdAt: new Date()
-            // };
+            return res.status(201).json(project);
 
-            // fakeDB.projets.push(project);
-
-            // // ajoute le createur comme membre du projet
-            // fakeDB.projectMembers.push({
-            //     projectId: project.id,
-            //     userId: req.user.userId,
-            //     role: 'Manager'
-            // });
-
-            res.status(201).json(project);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -60,12 +43,13 @@ router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, c
 );
 
 // voir toutes les projets accessibles par l'utilisateur
+// peut etre rajouter orderBy: { createdAt: 'desc' } ou orderBy: { title: 'asc'}
 router.get('/projects', authenticate,
     async (req, res) => {
         try {
             const projects = await prisma.project.findMany({
                 where: { 
-                    members: {
+                    projectMembers: {
                         some: {
                             userId: req.user.userId
                         }
@@ -73,13 +57,8 @@ router.get('/projects', authenticate,
                 }
             });
 
-            // const projectIds = fakeDB.projectMembers
-            //     .filter(pm => pm.userId === req.user.userId)
-            //     .map(pm => pm.projectId);
+            return res.json(projects);
 
-            // const projects = fakeDB.projets.filter(p => projectIds.includes(p.id));
-
-            res.json(projects);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -91,7 +70,8 @@ router.get('/projects/:projectId', authenticate, loadProject, checkPermissionPro
     async (req, res) => {
         try {
             // req.project : propriete partager entre tt les middlewares et la route
-            res.json(req.project);
+            return res.json(req.project);
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -121,10 +101,11 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
             // if (description)
             //     req.project.description = description;
         
-            res.json({
+            return res.json({
                 message: 'Project updated',
                 project
             });
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
@@ -135,20 +116,10 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
 router.delete('/projects/:projectId', authenticate, loadProject, checkPermissionProject('delete_project'),
     async (req, res) => {
         try {
-            const projectId = req.project.id;
-
             await prisma.project.delete({ where: { id: req.project.id } });
 
-            // // supprime le projet
-            // fakeDB.projets = fakeDB.projets.filter(p => p.id !== projectId);
+            return res.json({ message: 'Project deleted' });
 
-            // // supprime les tasks lier
-            // fakeDB.tasks = fakeDB.tasks.filter(t => t.projectId !== projectId);
-
-            // // supprime les membres du projet
-            // fakeDB.projectMembers = fakeDB.projectMembers.filter(pm => pm.projectId !== projectId);
-
-            res.json({ message: 'Project deleted' });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
