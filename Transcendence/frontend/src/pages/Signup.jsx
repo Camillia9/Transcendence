@@ -59,7 +59,7 @@ function Signup() {
 
     try {
       // Appel API : envoie les champs d'inscription, reçoit { token, user }
-      const data = await signupRequest({ username, email, password })
+      const data = await signupRequest({ pseudo: username, email, password })
 
       localStorage.setItem('token', data.token)
       login(data.user)

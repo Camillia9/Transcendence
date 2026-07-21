@@ -1,7 +1,7 @@
 import { mockUsers } from "../data/mockUsers"
-// import { apiRequest } from "./client"
+ import { apiRequest } from "./client"
 
-const USE_MOCK = true
+const USE_MOCK = false
 
 // Connexion: envoie identifiant + mot de passe, reçoit { token, user }
 export async function loginRequest(credentials) {
@@ -12,10 +12,10 @@ export async function loginRequest(credentials) {
 			user: mockUsers[0]
 		}
 	}
-  //return await apiRequest('/api/auth/login', {
-  //  method: 'POST',
-  //  body: JSON.stringify(credentials),
-  //})
+  return await apiRequest('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  })
 }
 
 // Inscription: envoie les champs, recois { token, user }
@@ -26,9 +26,9 @@ export async function signupRequest(data) {
       user: { id: 99, pseudo: data.username, email: data.email}
     }
   }
-  //return await apiRequest('/api/auth/register', {
-  //  method: 'POST',
-  //  body: JSON.stringify(data),
-  //})
+  return await apiRequest('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }
 
