@@ -49,10 +49,15 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
           {/*Champs Deadline*/}
           <div className="flex flex-col gap-2">
             <label className="text-xs text-gray-400 uppercase tracking-wide">Deadline</label>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <IconCalendar size={16} className="text-gray-400" />
-                {task.deadline ? new Date(task.deadline).toLocaleDateString('fr-FR') : 'Aucune Deadline'}
-              </div>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <IconCalendar size={16} className="text-gray-400" />
+              <input
+                type="date"
+                value={task.deadline ? task.deadline.slice(0, 10) : ''}
+                onChange={(e) => onUpdate({ ...task, deadline: e.target.value || null })}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700 outline-none"
+              />
+            </div>
           </div>
           {/*Champs Assignation*/}
           <div className="flex flex-col gap-2">
