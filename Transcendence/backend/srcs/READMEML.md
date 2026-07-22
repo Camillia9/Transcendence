@@ -688,3 +688,9 @@ const task = fakeDB.tasks.find(
         t.id === Number(req.params.taskId) &&
         t.projectId === Number(req.params.projectId)
 );
+
+
+comportement de drag & drop :
+✅ on ne peut pas réordonner les tâches dans une même colonne ;
+✅ lorsqu'une tâche change de colonne, elle est toujours ajoutée à la fin de la nouvelle colonne ;
+mais on ne peut pas déplacer une tâche à n'importe quelle position dans une colonne ou entre colonnes.

@@ -121,128 +121,63 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, lo
 );
 
 // move task
-// rajouter verif si la position est trop grande par rapport a ce qu'il y a de base, par ex on me dit position 50 alors que yavait que 5 taches
 router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProject, loadTask, checkPermissionProject('move_task'), canManageTask,
     async (req, res) => {
         try {
-            const { status, position }= req.body;
+            const { status }= req.body;
 
-            if (!Number.isInteger(position) || position < 0)
-                return res.status(400).json({ error: 'Invalid position' });
-            
             const allowed = ['ToDo', 'Doing', 'Blocked', 'Done'];
             
             if (!allowed.includes(status))
                 return res.status(400).json({ error: 'Invalid status' });
 
-            const oldStatus = req.task.status;
-            const oldPosition = req.task.position;
-
-            // rien ne change 
-            if (oldStatus === status && oldPosition === position)
+            // rien ne change, on est sur la meme colonne 
+            if (status === req.task.status)
                 return res.json({
-                    message: 'Task already in this position',
+                    message: 'Task already in this column',
                     task: req.task,
                 });
 
+            // changement de colonne
             const updatedTask = await prisma.$transaction(async (tx) => {
-                // cas 1: deplacement dans la meme colonne
-                if (oldStatus === status) {
-                    // Descendre la tâche
-                    if (position > oldPosition) {
-                        await tx.task.updateMany({
-                            where: {
-                                projectId: req.project.id,
-                                status,
-                                position: {
-                                    gt: oldPosition,
-                                    lte: position,
-                                },
-                            },
-                            data: {
-                                position: {
-                                    decrement: 1,
-                                },
-                            },
-                        });
-                    }
-
-                    // Monter la tâche
-                    else if (position < oldPosition) {
-                        await tx.task.updateMany({
-                            where: {
-                                projectId: req.project.id,
-                                status,
-                                position: {
-                                    gte: position,
-                                    lt: oldPosition,
-                                },
-                            },
-                            data: {
-                                position: {
-                                    increment: 1,
-                                },
-                            },
-                        });
-                    }
-                }
-
-                // Cas 2 : changement de colonne
-                else {
-
-                    // Refermer le trou dans l'ancienne colonne
-                    await tx.task.updateMany({
-                        where: {
-                            projectId: req.project.id,
-                            status: oldStatus,
-                            position: {
-                                gt: oldPosition,
-                            },
+                // Refermer le trou dans l'ancienne colonne
+                // gt = greater than
+                await tx.task.updateMany({
+                    where: {
+                        projectId: req.project.id,
+                        status: req.task.status,
+                        position: {
+                            gt: req.task.position,
                         },
-                        data: {
-                            position: {
-                                decrement: 1,
-                            },
+                    },
+                    data: {
+                        position: {
+                            decrement: 1,
                         },
-                    });
+                    },
+                });
 
-                    // Décaler les tâches de la nouvelle colonne
-                    await tx.task.updateMany({
-                        where: {
-                            projectId: req.project.id,
-                            status,
-                            position: {
-                                gte: position,
-                            },
-                        },
-                        data: {
-                            position: {
-                                increment: 1,
-                            },
-                        },
-                    });
-                }
+                // recuperer la derniere position de la nouvelle colonne
+                const count = await tx.task.count({
+                    where: {
+                        projectId: req.project.id,
+                        status,
+                    },
+                });
 
                 // Mettre à jour la tâche déplacée
-                return await tx.task.update({
+                // on met un return pour quitter transaction et pour envoyer le resultat de transaction
+                return tx.task.update({
                     where: {
                         id: req.task.id,
                     },
                     data: {
                         status,
-                        position,
+                        position: count,
                     },
                 });
 
             });
-
-            // const updatedTask = await prisma.task.update({
-            //     where: { id: req.task.id },
-            //     data: {
-            //         status,
-            //         position,
-            //     },
-            // });
 
             return res.json({
                 message: 'Task moved',
@@ -333,7 +268,26 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
 router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, loadTask, checkPermissionProject('delete_task'), canManageTask,
     async (req, res) => {
         try {
-            await prisma.task.delete({ where: { id: req.task.id }});
+            await prisma.$transaction(async (tx) => {
+                await tx.task.delete({
+                    where: { id: req.task.id }
+                });
+
+                await tx.task.updateMany({
+                    where: {
+                        projectId: req.project.id,
+                        status: req.task.status,
+                        position: {
+                            gt: req.task.position,
+                        },
+                    },
+                    data: {
+                        position: {
+                            decrement: 1,
+                        },
+                    },
+                });
+            });
 
             return res.json({ message: 'Task deleted' });
 
