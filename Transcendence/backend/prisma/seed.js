@@ -2,6 +2,7 @@ import { PrismaClient } from '../generated/prisma/index.js';
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import "dotenv/config";
+import bcrypt from 'bcrypt'
 
 const { Pool } = pg;
 
@@ -67,7 +68,7 @@ async function main() {
     data:{
       pseudo:"alice",
       email:"alice@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("alice123", 10),
     }
   });
 
