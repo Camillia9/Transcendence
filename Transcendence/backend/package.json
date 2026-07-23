@@ -14,10 +14,12 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
     "jsonwebtoken": "^9.0.3",
+    "otplib": "^13.4.1",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "prisma": "^7.8.0",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

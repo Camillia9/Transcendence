@@ -694,3 +694,61 @@ comportement de drag & drop :
 ✅ on ne peut pas réordonner les tâches dans une même colonne ;
 ✅ lorsqu'une tâche change de colonne, elle est toujours ajoutée à la fin de la nouvelle colonne ;
 mais on ne peut pas déplacer une tâche à n'importe quelle position dans une colonne ou entre colonnes.
+
+
+double authentification
+on doit installer : npm install otplib qrcode
+otplib : genere les secrets et verifie les codes
+qrcode : transforme le secret en QR code
+
+voir si ca marche avec la derniere version de chrome
+F12 ou ctrl + shift + I 
+puis console, ne pas voir de rouge sur javascript
+et network pour voir si ya des erreurs
+Ctrl + shift + M pour voir si c'est responsive, ca va changer la taille d'ecran
+
+
+register : pas de 2FA
+login : pas de 2FA
+si on veut le 2FA, le user doit activer l'option dans ses parametres et a la prochaine co, il y aura
+si on veut github + 2FA par ex, on github va authentifier le user, puis on va faire le 2FA puis generate token
+
+Utilisateur normal sans 2FA
+POST /auth/login
+
+password OK
+↓
+JWT
+↓
+connexion
+
+Utilisateur avec 2FA
+POST /auth/login
+
+password OK
+↓
+twoFactorRequired:true
+↓
+POST /auth/login/2fa
+
+code TOTP OK
+↓
+JWT
+↓
+connexion
+
+
+Google/GitHub avec 2FA
+
+Google/GitHub OAuth
+↓
+user trouvé
+↓
+twoFactorEnabled ?
+        oui
+        ↓
+twoFactorRequired:true
+        ↓
+/auth/login/2fa
+        ↓
+JWT
