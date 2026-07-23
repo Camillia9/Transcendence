@@ -19,6 +19,8 @@ model User {
   langue              Language             @default(fr)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+  twoFactorEnabled    Boolean              @default(false)
+  twoFactorSecret     String?
   assignedTasks       Task[]               @relation("TaskAssignee")
   conversationMembers ConversationMember[]
   invitations         Invitation[]

@@ -6,11 +6,14 @@ import 'dotenv/config';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import passport from 'passport';
+import { generateSecret, generateURI, verify } from 'otplib';
+import QRCode from 'qrcode';
 
 import googleStrategy from '../auth/google.strategy.js';
 import gitHubStrategy from '../auth/github.strategy.js';
 import { generateToken } from '../auth/jwt.utils.js';
 import prisma from '../prisma.js';
+import { authenticate } from '../middleware/checkPermission.js';
 
 const router = express.Router();
 
@@ -107,6 +110,14 @@ router.post('/auth/login', async (req, res) => {
         if (!passwordOk) {
             return res.status(401).json({ error: 'Incorrect password'});
         }
+
+        if (user.twoFactorEnabled) {
+            return res.json({
+                twoFactorRequired: true,
+                userId: user.id
+            });
+        }
+
         const token = generateToken(user);
 
         res.json({
@@ -151,11 +162,18 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
     passport.authenticate('google', { session:false, failureRedirect: '/login'}), 
     (req, res) => {
+        if (req.user.twoFactorRequired) {
+            return res.json({
+                twoFactorRequired: true,
+                userId: req.user.user.id
+            });
+        }
+
         const { token, user } = req.user;
         // en prod : rediriger vers le front avec le token dans l'URL
         // res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
         
-        res.json({ token, user });
+        return res.json({ token, user });
         // renvoyer le token au front (dev 1 lit ca)
     }
 );
@@ -169,8 +187,15 @@ router.get('/auth/github',
 router.get('/auth/github/callback',
     passport.authenticate('github', { session: false, failureRedirect: '/login' }),
     (req, res) => {
+        if (req.user.twoFactorRequired) {
+            return res.json({
+                twoFactorRequired: true,
+                userId: req.user.user.id
+            });
+        }
+
         const { token, user } = req.user;
-        res.json({ token, user });
+        return res.json({ token, user });
     }
 );
 
@@ -184,6 +209,128 @@ router.get('/auth/github/callback',
 // pour se deconnecter, il suffira de supprimer le token coter client
 router.post('/auth/logout', (req, res) => {
     res.json({ message: 'Successfully logged out'});
+});
+
+
+// activer la 2FA
+router.post('/auth/2fa/setup', authenticate, async (req, res) => {
+    try {
+        const secret = generateSecret();
+        
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.userId
+            }
+        });
+
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        
+        await prisma.user.update({
+            where: {
+                id: req.user.userId
+            },
+            data: {
+                twoFactorSecret: secret
+            }
+        });
+    
+        const otpauth = generateURI({
+            issuer: 'Transcendence',
+            label: user.email,
+            secret
+        });
+    
+        const qrCode = await QRCode.toDataURL(otpauth);
+    
+        return res.json({ qrCode });
+
+    } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// verifier l'activation
+router.post('/auth/2fa/verify', authenticate, async(req, res) => {
+    try {
+        const { code } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.userId
+            }
+        });
+
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+
+        if (!user.twoFactorSecret)
+            return res.status(400).json({ error: "2FA not configured" });
+
+        const valid = await verify({
+            token: code,
+            secret: user.twoFactorSecret
+        });
+
+        if (!valid)
+            return res.status(400).json({ error: "Invalid code" });
+
+        await prisma.user.update({
+            where: {
+                id: user.id
+            },
+            data: {
+                twoFactorEnabled: true
+            }
+        });
+
+        return res.json({ message: "2FA enabled" });
+
+    } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// validation
+router.post('/auth/login/2fa', async(req, res) => {
+    try {
+        const { userId, code} = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+
+        if (!user.twoFactorSecret)
+            return res.status(400).json({ error: "2FA not configured" });
+
+        if (!user.twoFactorEnabled)
+            return res.status(400).json({ error: "2FA is not enabled" });
+
+        const valid = await verify({
+            token: code,
+            secret: user.twoFactorSecret
+        });
+
+        if (!valid)
+            return res.status(401).json({ error: 'Invalid code' });
+
+        const token = generateToken(user);
+
+        return res.json({
+            token,
+            user: { id: user.id, pseudo: user.pseudo, email: user.email }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // on exporte tte ces routes pour pouvoir les utiliser dans le serveur principal

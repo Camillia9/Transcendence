@@ -93,6 +93,18 @@ const googleStrategy = new GoogleStrategy(
                     },
                 });
             }
+
+            if (user.twoFactorEnabled) {
+                return done (null, {
+                    twoFactorRequired: true,
+                    user: {
+                        id: user.id,
+                        pseudo: user.pseudo,
+                        email: user.email,
+                        avatar: user.avatar
+                    }
+                });
+            }
             
             const token = generateToken( user );
 
