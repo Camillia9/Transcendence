@@ -4,6 +4,7 @@ import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
 import { getUsers } from "../api/users";
+import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -23,6 +24,8 @@ const COLUMNS = [
 ];
 
 function KanbanPage() {
+
+  const { user } = useAuth()
 
   const socket = useSocket()
   const { id } = useParams()
@@ -188,9 +191,13 @@ function KanbanPage() {
   if (!project) return <p>Chargement…</p>
 
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
+  const memberships = project.projectMembers ?? []
+  const members = memberships.map(m => m.user)
+  const myRole = memberships.find(m => m.user.id === user?.id)?.role
 
-const visibleTasks = project.role === 'Manager' ?
-    tasks : tasks.filter(t => t.assignedToId === CURRENT_USER)
+  const visibleTasks = myRole=== 'Manager'
+    ? tasks
+    : tasks.filter(t => t.assignedToId === user?.id)
 
 
   return (
@@ -198,7 +205,7 @@ const visibleTasks = project.role === 'Manager' ?
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-primary-900">{project.name}</h1>
+        <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
       </div>
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -233,9 +240,9 @@ const visibleTasks = project.role === 'Manager' ?
 
       <TaskPanel
         task={selectedTask}
-        userRole={project.role}
-        currentUser={CURRENT_USER}
-        members={getUsers()}
+        userRole={myRole}
+        currentUser={user?.id}
+        members={members}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
         onDelete={handleDeleteTask}

@@ -31,7 +31,7 @@ function Home() {
     setProjectToEdit(project)
     setNewName(project.name)
     setNewDeadline(project.deadline || '')
-    setNewMembers(project.members.join(', ')) // join() modie le tableau ["alice", "bob"] en ["alice, bob"]. Inverse de split
+    setNewMembers((project.projectMembers ?? []).map(m => m.user.pseudo).join(', ')) // join() modie le tableau ["alice", "bob"] en ["alice, bob"]. Inverse de split
     setShowNewProject(true)
   }
   // Lorsqu'on appuie sur la ben. Elle ne supprime pas le projet, le memorise juste pour afficher le modal de confirmation

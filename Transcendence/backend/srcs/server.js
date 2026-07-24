@@ -45,7 +45,7 @@ app.use('/api', authRouter);
 // app.use('/api', orgaRouter);
 // app.use('/api', invitationRouter);
 app.use('/api', projectRouter);
-// app.use('/api', taskRouter);
+ app.use('/api', taskRouter);
 
 // Serveur HTTP brut
 //0695428562

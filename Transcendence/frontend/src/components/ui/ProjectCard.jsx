@@ -2,17 +2,27 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { getProgressColor } from "../../utils/progressColor"
+import { useAuth } from "../../context/AuthContext"
 
 export default function ProjectCard({ project, onEdit, onDelete }) {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false) // Gere le survol
 
-  const done  = project.tasks?.done  ?? 0
-  const total = project.tasks?.total ?? 0
+  // Les taches sont recus : [{ status }, { status }...]
+  const tasks = project.tasks ?? []
+  const total = tasks.length
+  const done  = tasks.filter(t => t.status === 'Done').length
+
   const { accent, tint, soft, text } = getProgressColor(done, total)
   const pct = total === 0 ? 0 : Math.round(done / total * 100)
 
-  const members = project.members ?? []
+  // Les membres: ils ont comme entree : { role, user: { id, pseudo, avatar }}
+  const memberships = project.projectMembers ?? []
+  const members = memberships.map(m => m.user)
+
+  // Mon role 
+  const myRole = memberships.find(m => m.user.id === user?.id)?.role
 
   return (
     <div
@@ -23,7 +33,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
     >
       {/*Icones au survol pour le manager*/}
       {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
-      {hovered && project.role === 'Manager' && (
+      {hovered && myRole === 'Manager' && (
         <div className="absolute top-3 right-3 flex gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(project)}}
@@ -50,10 +60,10 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
         </h3>
         {/* Transition au survol*/}
         <span
-          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && project.role === 'Manager' ? 'mr-12' : ''}`}
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && myRole === 'Manager' ? 'mr-12' : ''}`}
           style={{ backgroundColor: soft, color: text }}
         >
-          {project.role}
+          {myRole}
         </span>
       </div>
 
@@ -78,8 +88,8 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       <div className="flex items-center justify-between mt-auto">
         <span className="text-xs text-gray-400">
           {project.deadline
-          ? `📅 {new Date(project.deadline).toLocaleDateString('fr-FR')}`
-          : '📅 Aucune échéance'}
+           ? `📅 ${new Date(project.deadline).toLocaleDateString('fr-FR')}`
+           : '📅 Aucune échéance'}
 			{/*project.deadline : project.deadline: date brut. On la transfore en objet JS(new). Format en fr(toLocal())*/}
         </span>
 		{/*On affiche seulement les 3 premier membres. On leurs cree un avatar chacun(map)*/}
@@ -87,11 +97,11 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           {members.slice(0, 3).map((member, i) => (
             <div
               key={i}
-              title={member}
+              title={member.pseudo}
               className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium"
               style={{ backgroundColor: soft, color: text }}
             >
-              {member[0]}
+              {member.pseudo[0]}
             </div>
           ))}
           {members.length > 3 && (
