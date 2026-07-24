@@ -56,6 +56,32 @@ router.get('/projects/:projectId/tasks', authenticate, loadProject, checkPermiss
             const tasks = await prisma.task.findMany({
                 where: { projectId: req.project.id },
                 orderBy: [{ status: 'asc' }, { position: 'asc' }],
+                include: {
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true
+                        }
+                    },
+                    createdBy: {
+                        select: {
+                            id: true,
+                            pseudo: true
+                        }
+                    },
+                    comments: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true
+                                }
+                            }
+                        }
+                    }
+                }
             })
 
             return res.json(tasks);
@@ -69,8 +95,46 @@ router.get('/projects/:projectId/tasks', authenticate, loadProject, checkPermiss
 
 // voir une task precise
 router.get('/projects/:projectId/tasks/:taskId', authenticate, loadProject, loadTask, checkPermissionProject('view_task'),
-    (req, res) => {
-        return res.json(req.task);
+    async (req, res) => {
+        try {
+            const task = await prisma.task.findUnique({
+                where: {
+                    id: req.task.id
+                },
+                include: {
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true
+                        }
+                    },
+                    createdBy: {
+                        select: {
+                            id: true,
+                            pseudo: true
+                        }
+                    },
+                    comments: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            return res.json(task);
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
     }
 );
 
@@ -95,6 +159,35 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, lo
                     ...(validPriority !== undefined && { priority: validPriority }),
                     ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
                 },
+                include: {
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true
+                        }
+                    },
+                    createdBy: {
+                        select: {
+                            id: true,
+                            pseudo: true
+                        }
+                    },
+                    comments: {
+                        orderBy: {
+                            createdAt: 'asc'
+                        },
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             // if (title)
@@ -194,28 +287,31 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
 router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProject, loadTask, checkPermissionProject('assign_task'),
     async (req, res) => {
         try {
-            const userId = Number(req.body.userId);
+            // soit on ecrit const { userId } = req.body; ou const userId = req.body.userId;
+            const { userId } = req.body;
 
-            if (!Number.isInteger(userId) || userId <= 0)
-                return res.status(400).json({ error: 'Invalid userId' });
+            if (userId !== null && userId !== undefined) {
+                if (!Number.isInteger(userId) || userId <= 0)
+                    return res.status(400).json({ error: 'Invalid userId' });
 
-            // verifie que l'utilisateur assigner existe
-            const user = await prisma.user.findUnique({ where: { id: userId }, });
-            if (!user)
-                return res.status(404).json({ error: 'User not found' });
+                // verifie que l'utilisateur assigner existe
+                const user = await prisma.user.findUnique({ where: { id: userId }, });
+                if (!user)
+                    return res.status(404).json({ error: 'User not found' });
 
-            // verifie que l'utilisateur assigner appartient au projet
-            const projectMember = await prisma.projectMember.findUnique({
-                where: {
-                    userId_projectId: {
-                        userId,
-                        projectId: req.project.id,
+                // verifie que l'utilisateur assigner appartient au projet
+                const projectMember = await prisma.projectMember.findUnique({
+                    where: {
+                        userId_projectId: {
+                            userId,
+                            projectId: req.project.id,
+                        },
                     },
-                },
-            });
+                });
 
-            if (!projectMember)
-                return res.status(403).json({ error: 'User is not a member of this project' });
+                if (!projectMember)
+                    return res.status(403).json({ error: 'User is not a member of this project' });
+            }
 
             // assigne la tache et recupere la tache modifier
             const updatedTask = await prisma.$transaction(async (tx) => {
@@ -234,24 +330,33 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                                 avatar: true,
                             },
                         },
+                        createdBy: {
+                            select: {
+                                id: true,
+                                pseudo: true
+                            },
+                        },
                     },
                 });
 
-                // cree une notification
-                await tx.notification.create({
-                    data: {
-                        type: 'Assignment',
-                        content: `You have been assigned to the task "${task.title}"`,
-                        userId,
-                        projectId: req.project.id,
-                        taskId: task.id,
-                    },
-                });
+                if (userId !== null && userId !== undefined) {
+                    // cree une notification
+                    await tx.notification.create({
+                        data: {
+                            type: 'Assignment',
+                            content: `You have been assigned to the task "${task.title}"`,
+                            userId,
+                            projectId: req.project.id,
+                            taskId: task.id,
+                        },
+                    });
+                }
+
                 return task;
             });
 
             return res.status(200).json ({
-                message: 'Task assigned',
+                message: 'Task assignment updated',
                 task: updatedTask,
             });
         } catch (error) {
