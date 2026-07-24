@@ -1,5 +1,5 @@
-import { verifyToken } from '../auth/jwt.utils.js';
-import prisma from '../prisma.js';
+import { verifyToken } from './jwt.utils.js';
+import prisma from './prisma.js';
 
 //table des droits par role
 // create_project dans orga car a la creation le role sur le project n'existe pas

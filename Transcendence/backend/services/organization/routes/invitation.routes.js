@@ -2,9 +2,9 @@
 import crypto from 'crypto';
 import express from 'express';
 
-import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/checkPermission.js';
-// import { fakeDB, newId } from '../fakeDB.js';
-import prisma from '../prisma.js';
+import { checkPermissionOrga, authenticate, loadOrgMembership } from '../../../shared/checkPermission.js';
+// import { fakeDB, newId } from '../../../shared/fakeDB.js';
+import prisma from '../../../shared/prisma.js';
 
 const router = express.Router();
 

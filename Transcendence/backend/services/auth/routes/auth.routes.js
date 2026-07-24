@@ -9,11 +9,11 @@ import passport from 'passport';
 import { generateSecret, generateURI, verify } from 'otplib';
 import QRCode from 'qrcode';
 
-import googleStrategy from '../auth/google.strategy.js';
-import gitHubStrategy from '../auth/github.strategy.js';
-import { generateToken } from '../auth/jwt.utils.js';
-import prisma from '../prisma.js';
-import { authenticate } from '../middleware/checkPermission.js';
+import googleStrategy from '../strategies/google.strategy.js';
+import gitHubStrategy from '../strategies/github.strategy.js';
+import { generateToken } from '../../../shared/jwt.utils.js';
+import prisma from '../../../shared/prisma.js';
+import { authenticate } from '../../../shared/checkPermission.js';
 
 const router = express.Router();
 

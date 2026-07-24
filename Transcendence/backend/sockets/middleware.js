@@ -1,5 +1,5 @@
 // import jwt, { verify } from 'jsonwebtoken'
-import { verifyToken } from '../auth/jwt.utils.js'
+import { verifyToken } from '../shared/jwt.utils.js'
 
 export function authMiddleware(socket, next) {
     const token = socket.handshake.auth.token

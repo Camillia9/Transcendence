@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../middleware/checkPermission.js';
-import prisma from '../prisma.js';
+import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../../../shared/checkPermission.js';
+import prisma from '../../../shared/prisma.js';
 
 const router = express.Router();
 

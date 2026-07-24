@@ -8,9 +8,9 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // const { nom } = objet;	                            Prend la propriété nom de objet.
 // const { Strategy } = require(...);	                Prend la propriété Strategy renvoyée par require().
 // const { Strategy: GoogleStrategy } = require(...);	Prend Strategy et la renomme en GoogleStrategy.
-import { generateToken } from './jwt.utils.js';
+import { generateToken } from '../../../shared/jwt.utils.js';
 
-import prisma from '../prisma.js';
+import prisma from '../../../shared/prisma.js';
 
 // module.exports = ce que ce fichier fournit aux autres fichiers
 // callbackURL: l'adressse ou google renvoie l'utilisateur apres la connexion

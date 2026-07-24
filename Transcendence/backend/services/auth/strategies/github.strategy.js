@@ -1,6 +1,6 @@
 import { Strategy as GitHubStrategy } from 'passport-github2';
-import { generateToken } from './jwt.utils.js';
-import prisma from '../prisma.js';
+import { generateToken } from '../../../shared/jwt.utils.js';
+import prisma from '../../../shared/prisma.js';
 
 const gitHubStrategy = new GitHubStrategy (
     {

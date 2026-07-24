@@ -1,4 +1,4 @@
-import prisma from '../../prisma.js';
+import prisma from '../../shared/prisma.js';
 
 export function registerChatHandlers(io, socket) {
     const userId = socket.user.userId
