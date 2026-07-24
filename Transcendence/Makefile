@@ -22,7 +22,8 @@ down:
 	$(COMPOSE_CMD) down
 
 fclean:
-	$(COMPOSE_CMD) down -v
+	$(COMPOSE_CMD) down -v --rmi --remove-orphans
+	docker system prune -af --volumes
 
 stop:
 	$(COMPOSE_CMD) stop
@@ -36,4 +37,8 @@ ps:
 logs:
 	$(COMPOSE_CMD) logs -f
 
-.PHONY: all up down stop start ps logs
+re: down up
+
+rebuild: fclean up
+
+.PHONY: all up down fclean stop start ps logs re rebuild
