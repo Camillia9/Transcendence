@@ -54,6 +54,24 @@ router.get('/projects', authenticate,
                             userId: req.user.userId
                         }
                     }
+                },
+                include: {
+                    projectMembers: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true
+                                }
+                            }
+                        }
+                    },
+                    tasks: {
+                        select: {
+                            status: true
+                        }
+                    }
                 }
             });
 
@@ -66,11 +84,55 @@ router.get('/projects', authenticate,
 });
 
 // voir un projet precis
+// select : choisit les champs qu'on veut recuperer
+// include: ajoute des relations en gardant les champs du modele principal
 router.get('/projects/:projectId', authenticate, loadProject, checkPermissionProject('view_project'),
     async (req, res) => {
         try {
+            const project = await prisma.project.findUnique({
+                where: {
+                    id: req.project.id
+                },
+                include: {
+                    projectMembers: {
+                        select: {
+                            role: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true,
+                                    statut: true,
+                                }
+                            }
+                        }
+                    },
+                    tasks: {
+                        orderBy: [
+                            { status: 'asc' },
+                            { position: 'asc' }
+                        ],
+                        include: {
+                            comments: {
+                                orderBy: {
+                                    createdAt: 'asc'
+                                },
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            pseudo: true,
+                                            avatar: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
             // req.project : propriete partager entre tt les middlewares et la route
-            return res.json(req.project);
+            return res.json(project);
 
         } catch (error) {
             console.error(error);

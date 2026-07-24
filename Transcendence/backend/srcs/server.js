@@ -44,7 +44,7 @@ app.use(express.json())
 app.use('/api', authRouter);
 // app.use('/api', orgaRouter);
 // app.use('/api', invitationRouter);
-// app.use('/api', projectRouter);
+app.use('/api', projectRouter);
 // app.use('/api', taskRouter);
 
 // Serveur HTTP brut
