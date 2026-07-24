@@ -37,8 +37,8 @@ app.use(cors({
 app.use(express.json())
 
 // // Passport OAuth
-// passport.use(googleStrategy);
-// passport.use(gitHubStrategy);
+passport.use(googleStrategy);
+passport.use(gitHubStrategy);
 
 // // Routes REST authentification / organisation
 app.use('/api', authRouter);

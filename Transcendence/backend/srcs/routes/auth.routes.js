@@ -21,42 +21,43 @@ const router = express.Router();
 // POST /auth/register
 // Body : { pseudo, email, password}
 router.post('/auth/register', async (req, res) => {
-    const { pseudo, email, password } = req.body;
-
-    // peut etre rajouter mettre le mail et pseudo en minuscule pour normaliser ici et dans login
-    if (!pseudo || !email || !password)
-        return res.status(400).json({ error: 'pseudo, email and password are required' });
-
-    // soit utilise une biblio avec un validateur d'email comme zod, joi ou validator.js
-    // soit on veut pas rajouter de dependance et on fait un regex simple (= regular expression / respecte la forme) qui va verifier juste qqch@qqch.qqch
-    // ^ → début de la chaîne.
-    // [^\s@]+ → un ou plusieurs caractères qui ne sont ni un espace (\s) ni @.
-    // $ → fin de la chaîne.
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-   if (!emailRegex.test(email))
-        return res.status(400).json({ error: 'Invalid email format' });
-   
-    if (pseudo.length < 3)
-        return res.status(400).json({ error: 'Username must be at least 3 characters' });
-
-    if (password.length < 6)
-        return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    
-    const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
-        prisma.user.findUnique({ where: { email }}),
-        prisma.user.findUnique({ where: { pseudo }}),
-    ]);
-    // verfier que l'email et le pseudo n'existent pas deja car doit etre unique selon le schema prisma
-    if (emailAlreadyExist)
-        return res.status(409).json({ error: 'Email already used' });
-    if (pseudoAlreadyExist)
-         return res.status(409).json({ error: 'Pseudo already used' });
-
-    // chiffrer le mot de passe
-    const passwordHash = await bcrypt.hash(password, 10);
-
     try{
+        const { pseudo, email, password } = req.body;
+        
+        // peut etre rajouter mettre le mail et pseudo en minuscule pour normaliser ici et dans login
+        if (!pseudo || !email || !password)
+            return res.status(400).json({ error: 'pseudo, email and password are required' });
+    
+        // soit utilise une biblio avec un validateur d'email comme zod, joi ou validator.js
+        // soit on veut pas rajouter de dependance et on fait un regex simple (= regular expression / respecte la forme) qui va verifier juste qqch@qqch.qqch
+        // ^ → début de la chaîne.
+        // [^\s@]+ → un ou plusieurs caractères qui ne sont ni un espace (\s) ni @.
+        // $ → fin de la chaîne.
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+        if (!emailRegex.test(email))
+            return res.status(400).json({ error: 'Invalid email format' });
+    
+        if (pseudo.length < 3)
+            return res.status(400).json({ error: 'Username must be at least 3 characters' });
+    
+        if (password.length < 6)
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        
+        const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
+            prisma.user.findUnique({ where: { email }}),
+            prisma.user.findUnique({ where: { pseudo }}),
+        ]);
+        // verfier que l'email et le pseudo n'existent pas deja car doit etre unique selon le schema prisma
+        if (emailAlreadyExist)
+            return res.status(409).json({ error: 'Email already used' });
+        if (pseudoAlreadyExist)
+             return res.status(409).json({ error: 'Pseudo already used' });
+    
+        // chiffrer le mot de passe
+        const passwordHash = await bcrypt.hash(password, 10);
+
+  
         const user = await prisma.user.create({
             data: {
                 pseudo,
@@ -171,7 +172,7 @@ router.get('/auth/google/callback',
 
         const { token, user } = req.user;
         // en prod : rediriger vers le front avec le token dans l'URL
-        // res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+        res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
         
         return res.json({ token, user });
         // renvoyer le token au front (dev 1 lit ca)
@@ -195,6 +196,8 @@ router.get('/auth/github/callback',
         }
 
         const { token, user } = req.user;
+        res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+        
         return res.json({ token, user });
     }
 );
@@ -332,6 +335,11 @@ router.post('/auth/login/2fa', async(req, res) => {
         return res.status(500).json({ error: 'Database error' });
     }
 });
+
+// desactivation de la 2fa avec demande de mdp
+router.post('/auth/2fa/disable', async(req, res) => {
+
+})
 
 // on exporte tte ces routes pour pouvoir les utiliser dans le serveur principal
 export default router;

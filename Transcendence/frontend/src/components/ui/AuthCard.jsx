@@ -8,13 +8,11 @@ function AuthCard({ title, subtitle, swapText, swapTo, children }) {
 	const navigate = useNavigate()
 
 	const handleGoogle = () => {
-		// A brancher reellemnt
-		console.log('Google OAuth')
+		window.location.href = 'http://localhost:3000/api/auth/google'
 	}
 
 	const handleGithub = () => {
-		// A brancher reellemnt
-		console.log('Github OAuth')
+		window.location.href = 'http://localhost:3000/api/auth/github'
 	}
 
 	return (

@@ -13,12 +13,12 @@ import { generateToken } from './jwt.utils.js';
 import prisma from '../prisma.js';
 
 // module.exports = ce que ce fichier fournit aux autres fichiers
-// callbackURL: l'adressse ou google renvoie l'utilisateur apres la connexion
+// callbackURL: l'adressse ou google renvoie l'utilisateur apres la connexion (google veut un chemin absolu et accepte pas relatif)
 const googleStrategy = new GoogleStrategy(
     {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/auth/google/callback',
+        callbackURL: 'http://localhost:3000/api/auth/google/callback',
     },
 
     // accessToken = jeton donner par google qui permet d'acceder aux API google
