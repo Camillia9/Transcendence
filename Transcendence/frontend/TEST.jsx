@@ -1,33 +1,28 @@
-import { mockUsers } from "../mocks/mockUsers" // adapte le chemin au tien
-// import { apiRequest } from "./client"  (à décommenter quand la route existera)
-
-const USE_MOCK = true
-
-// Connexion : envoie identifiant + mot de passe, reçoit { token, user }
-export async function loginRequest(credentials) {
-  if (USE_MOCK) {
-    // On simule la réponse du back : un faux token + un utilisateur
-    return {
-      token: 'fake-jwt-token',
-      user: mockUsers[0], // en mock, on "se connecte" en tant qu'Alice
-    }
+const handleSubmitProject = async () => {
+  const errors = validateNewProject()
+  if (Object.keys(errors).length > 0) {
+    setNewErrors(errors)
+    return
   }
-  // return await apiRequest('/api/auth/login', {
-  //   method: 'POST',
-  //   body: JSON.stringify(credentials),
-  // })
-}
 
-// Inscription : envoie les champs, reçoit { token, user }
-export async function signupRequest(data) {
-  if (USE_MOCK) {
-    return {
-      token: 'fake-jwt-token',
-      user: { id: 99, pseudo: data.username, email: data.email },
+  if (projectToEdit) {
+    // MODE EDITION
+    try {
+      const updated = await updateProject(projectToEdit.id, {
+        title: newName.trim(),
+        deadline: newDeadline || null,
+      })
+      // updated est "à plat" : on fusionne pour garder membres et tâches
+      setProjects(projects.map(p =>
+        p.id === projectToEdit.id ? { ...p, ...updated } : p
+      ))
+    } catch (error) {
+      setNewErrors({ global: "Impossible de modifier le projet" })
+      return
     }
+  } else {
+    // ... ta création locale, on n'y touche pas (étape 4)
   }
-  // return await apiRequest('/api/auth/register', {
-  //   method: 'POST',
-  //   body: JSON.stringify(data),
-  // })
+
+  handleCloseNewProject()
 }

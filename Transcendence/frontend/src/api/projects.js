@@ -18,3 +18,23 @@ export async function getProjectById(projectId) {
 		return mockProjects.find(p => p.id === projectId)
 	return await apiRequest(`/projects/${projectId}`)
 }
+
+export async function updateProject(projectId, data) {
+	if (USE_MOCK)
+		return { ...USE_MOCK, data, id: projectId}
+
+	const response = await apiRequest(`/projects/${projectId}`, {
+		method: 'PATCH',
+		body: JSON.stringify(data),
+	})
+	return response.project // le back enveloppe : { message, project }
+}
+
+export async function deleteProject(projectId) {
+	if (USE_MOCK)
+		return { message: 'Project deleted' }
+
+	return await apiRequest(`/projects/${projectId}`, {
+		method: 'DELETE'
+	})
+}

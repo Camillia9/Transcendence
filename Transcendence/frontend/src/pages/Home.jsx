@@ -5,7 +5,7 @@ import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
 import { getHealth } from "../api/health";
-import { getProjects } from "../api/projects";
+import { getProjects, updateProject, deleteProject } from "../api/projects";
 
 function Home() {
   // L'etat: Le projet qu'on veut supp
@@ -29,9 +29,8 @@ function Home() {
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (project) => {
     setProjectToEdit(project)
-    setNewName(project.name)
-    setNewDeadline(project.deadline || '')
-    setNewMembers((project.projectMembers ?? []).map(m => m.user.pseudo).join(', ')) // join() modie le tableau ["alice", "bob"] en ["alice, bob"]. Inverse de split
+    setNewName(project.title)
+    setNewDeadline(project.deadline ? project.deadline.slice(0, 10) : '')
     setShowNewProject(true)
   }
   // Lorsqu'on appuie sur la ben. Elle ne supprime pas le projet, le memorise juste pour afficher le modal de confirmation
@@ -39,9 +38,14 @@ function Home() {
     setProjectToDelete(project)
   }
   // Lorsqu'on confirme vouloir supp le projet sur le modal
-  const confirmDelete = () => {
-    setProjects(projects.filter(p => p.id !== projectToDelete.id)) // garde tout le projets (le tableau) sauf celui-ci
-    setProjectToDelete(null)
+  const confirmDelete = async () => {
+    try {
+      await deleteProject(projectToDelete.id)
+      setProjects(projects.filter(p => p.id !== projectToDelete.id)) // garde tout le projets (le tableau) sauf celui-ci
+      setProjectToDelete(null)
+    } catch (error) {
+      console.error('Impossible de supprimer le projet', error)
+    }
   }
 
   const handleCloseNewProject = () => {
@@ -76,7 +80,7 @@ function Home() {
   }
 
   // Fonction appelle lorsqu'on soumet le formulaire du nouveauProjet
-  const handleSubmitProject = () => {
+  const handleSubmitProject = async () => {
     /*Object.keys prend un objet et renvoie un tableau contenant les noms de ses proprietes
     // ex:  const errors = {
       name: "Le nom est obligatoire",
@@ -92,13 +96,18 @@ function Home() {
     if (projectToEdit) {
       // MODE EDITION (remplace projet existant)
       // Updated : recopie tout le projet d'origine en modifiant seulelemt :
-      const updated = {
-        ...projectToEdit,
-        name: newName.trim(),
-        deadline: newDeadline || null,
-        members: newMembers ? newMembers.split(',').map(m => m.trim()).filter(m => m !== '') : [],
+      try {
+        const updated = await updateProject(projectToEdit.id, {
+          title: newName.trim(),
+          deadline: newDeadline || null,
+        })
+        setProjects(projects.map(p =>
+          p.id === projectToEdit.id ? { ...p, ...updated } : p // « pars de l'ancien projet complet, puis les écrase avec les champs revenus du back ».
+        ))
+      } catch (error) {
+        setNewErrors({ global: "Impossible de modifier le projet" })
+        return
       }
-      setProjects(projects.map(p => p.id === projectToEdit.id ? updated : p))
       // Sert a parcourir tout les projets pour modifier celui qu'on veut. 
     } else {
       // Cree l'objet du nouveau projet (Localement. Remplacer par un appel API)
@@ -229,18 +238,25 @@ function Home() {
             </div>
 
             {/*Entree des membres */}
-            <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">
-                Ajout de membres (separation par virgule !)
-              </label>
-              <Input
-                type="text"
-                value={newMembers}
-                onChange={(e) => setNewMembers(e.target.value)}
-                placeholder="Clara, Vincent, Remy"
-                light
-              />
-            </div>
+            {/*Masquer en mode edition */}
+            {!projectToEdit && (
+              <div className="flex flex-col gap-1 mb-4">
+                <label className="text-sm text-gray-500">
+                  Ajout de membres (separation par virgule !)
+                </label>
+                <Input
+                  type="text"
+                  value={newMembers}
+                  onChange={(e) => setNewMembers(e.target.value)}
+                  placeholder="Clara, Vincent, Remy"
+                  light
+                />
+              </div>
+            )}
+
+            {newErrors.global && (
+              <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
+            )}
 
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
