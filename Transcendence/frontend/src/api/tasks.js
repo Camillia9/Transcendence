@@ -53,3 +53,14 @@ export async function moveTask(projectId, taskId, status) {
 	})
 	return response.task
 }
+
+export async function createTask(projectId, data) {
+	if (USE_MOCK)
+		return{ ...data, id: Date.now() }
+
+	const response = await apiRequest(`/projects/${projectId}/tasks`, {
+		method: 'POST',
+		body: JSON.stringify(data),
+	})
+	return response // cette route renvoie la tache directement (201) : res.status(201).json(task)
+}
