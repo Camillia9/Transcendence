@@ -22,3 +22,12 @@ export async function updateTask(projectId, taskId, data) {
 	})
 	return response.task // le back enveloppe { message, task }
 }
+
+export async function deleteTask(projectId, taskId) {
+	if (USE_MOCK)
+		return { message: 'Task deleted' }
+
+	return await apiRequest(`/projects/${projectId}/tasks/${taskId}`, {
+		method: 'DELETE',
+	})
+}

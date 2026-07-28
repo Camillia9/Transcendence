@@ -44,3 +44,13 @@ const handleUpdateTask = async (updatedTask) => {
     console.error('Impossible de modifier la tache', error)
   }
 }
+
+const handleDeleteTask = async (taskId) => {
+  try {
+    await deleteTask(projectId, taskId)
+    setTasks(tasks.filter(t => t.id !== taskId)) // on retire de l'écran
+    setSelectedTask(null)                        // et on ferme le panneau
+  } catch (error) {
+    console.error('Impossible de supprimer la tache', error)
+  }
+}

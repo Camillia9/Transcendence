@@ -13,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -194,9 +194,14 @@ function KanbanPage() {
     handleCloseNewTask()
   }
 
-  const handleDeleteTask = (taskId) => {
-    setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
-    setSelectedTask(null) // et on ferme le panneau
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(projectId, taskId)
+      setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
+      setSelectedTask(null) // et on ferme le panneau
+    } catch (error) {
+      console.error('Impossible de supprimer la tache', error)
+    }
   }
 
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
