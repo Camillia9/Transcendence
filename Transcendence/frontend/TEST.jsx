@@ -26,3 +26,21 @@ const handleSubmitProject = async () => {
 
   handleCloseNewProject()
 }
+
+const handleUpdateTask = async (updatedTask) => {
+  // 1. Mise à jour immédiate de l'écran (ressenti instantané)
+  setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
+  setSelectedTask(updatedTask)
+
+  // 2. On envoie au back UNIQUEMENT les champs que la route accepte
+  try {
+    await updateTask(projectId, updatedTask.id, {
+      title: updatedTask.title,
+      description: updatedTask.description,
+      priority: updatedTask.priority,
+      deadline: updatedTask.deadline,
+    })
+  } catch (error) {
+    console.error('Impossible de modifier la tache', error)
+  }
+}

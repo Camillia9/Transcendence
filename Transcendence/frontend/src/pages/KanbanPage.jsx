@@ -13,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks } from "../api/tasks";
+import { getTasks, updateTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -145,9 +145,22 @@ function KanbanPage() {
   )
 
   // Maj de la tache depuis le paneau (panel)
-  const handleUpdateTask = (updateTask) => {
-    setTasks(tasks.map(t => t.id === updateTask.id ? updateTask : t))
-    setSelectedTask(updateTask)
+  const handleUpdateTask = async (updatedTask) => {
+    // MaJ imediate a l'ecran
+    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
+    setSelectedTask(updatedTask)
+
+    // On envoie au back uniquement les champs que la route accepte
+    try {
+      await updateTask(projectId, updatedTask.id, {
+        title: updatedTask.title,
+        description: updatedTask.description,
+        priority: updatedTask.priority,
+        deadline: updatedTask.deadline,
+      })
+    } catch (error) {
+      console.error('Impossible de modifier la tache', error)
+    }
   }
 
   // Remettre tout au propre lorsqu'on a fini de cree la tache
