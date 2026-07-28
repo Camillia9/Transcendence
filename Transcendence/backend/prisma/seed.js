@@ -77,7 +77,7 @@ async function main() {
     data:{
       pseudo:"bob",
       email:"bob@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("bob123", 10),
     }
   });
 
@@ -86,7 +86,7 @@ async function main() {
     data:{
       pseudo:"charlie",
       email:"charlie@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("charlie123", 10),
     }
   });
 

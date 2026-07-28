@@ -10,7 +10,7 @@ const COLUMN_OPTIONS = [
   { value: 'Blocked',     label: 'En attente' },
 ]
 
-function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onDelete }) {
+function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete }) {
   if (!task) return null
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
@@ -70,7 +70,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
                 <select
                 // Champs select: affiche une selection de choix deroulante
                   value={task.assignedToId ?? ''} // si task.assignedToId = null : ''
-                  onChange={(e) => onUpdate({...task, assignedToId: e.target.value ? Number(e.target.value) : null})} // met a jour l'assignation instantanement. null si personne n'est assignee = ''
+                  onChange={(e) => onAssign(task.id, e.target.value ? Number(e.target.value) : null)} // met a jour l'assignation instantanement. null si personne n'est assignee = ''
                   className="text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1"
                 >
                   <option value="">Non assigne</option> 

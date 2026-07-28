@@ -13,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -204,6 +204,19 @@ function KanbanPage() {
     }
   }
 
+  const handleAssignTask = async (taskId, userId) => {
+    // mAj instante a l'ecran 
+    const updated = { ...selectedTask, assignedToId: userId }
+    setTasks(tasks.map(t => t.id === taskId ? updated : t))
+    setSelectedTask(updated)
+
+    try {
+      await assignTask(projectId, taskId, userId)
+    } catch (error) {
+      console.error('Impossible d\'assigner la tache', error)
+    }
+  }
+
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
   // Si on ne met pas cela, ca plante. 
   if (!project) return <p>Chargement…</p>
@@ -263,6 +276,7 @@ function KanbanPage() {
         members={members}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
+        onAssign={handleAssignTask}
         onDelete={handleDeleteTask}
       />
       <Modal

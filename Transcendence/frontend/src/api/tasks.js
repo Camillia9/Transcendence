@@ -31,3 +31,14 @@ export async function deleteTask(projectId, taskId) {
 		method: 'DELETE',
 	})
 }
+
+export async function assignTask(projectId, taskId, userId) {
+	if (USE_MOCK)
+		return { assignedToId, id: taskId }
+
+	const response = await apiRequest(`/projects/${projectId}/tasks/${taskId}/assign`, {
+		method: 'PATCH',
+		body: JSON.stringify({userId}),
+	})
+	return response.task
+}
