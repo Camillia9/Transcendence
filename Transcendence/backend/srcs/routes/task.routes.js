@@ -230,17 +230,31 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                     message: 'Task already in this column',
                     task: req.task,
                 });
+            
+            const oldStatus = req.task.status;
+            const oldPosition = req.task.position;
+            const TEMP_POSITION = -1;
 
             // changement de colonne
             const updatedTask = await prisma.$transaction(async (tx) => {
+                // sort temporairement la tache de la colonne en mettant a position -1
+                await tx.task.update({
+                    where: {
+                        id: req.task.id,
+                    },
+                    data: {
+                        position: TEMP_POSITION,
+                    },
+                });
+
                 // Refermer le trou dans l'ancienne colonne
                 // gt = greater than
                 await tx.task.updateMany({
                     where: {
                         projectId: req.project.id,
-                        status: req.task.status,
+                        status: oldStatus,
                         position: {
-                            gt: req.task.position,
+                            gt: oldPosition,
                         },
                     },
                     data: {
@@ -251,7 +265,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                 });
 
                 // recuperer la derniere position de la nouvelle colonne
-                const count = await tx.task.count({
+                const newPosition = await tx.task.count({
                     where: {
                         projectId: req.project.id,
                         status,
@@ -266,7 +280,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                     },
                     data: {
                         status,
-                        position: count,
+                        position: newPosition,
                     },
                 });
 

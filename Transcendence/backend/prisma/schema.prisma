@@ -8,28 +8,32 @@ datasource db {
 }
 
 model User {
-  id                  Int                  @id @default(autoincrement())
-  pseudo              String               @unique
-  email               String?              @unique
-  passwordHash        String?
-  githubId            String?              @unique
-  googleId            String?              @unique
-  avatar              String?
-  statut              UserStatus           @default(Online)
-  langue              Language             @default(fr)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  twoFactorEnabled    Boolean              @default(false)
-  twoFactorSecret     String?
-  assignedTasks       Task[]               @relation("TaskAssignee")
-  conversationMembers ConversationMember[]
-  invitations         Invitation[]
-  members             Member[]
-  messages            Message[]
-  notifications       Notification[]
-  projectMembers      ProjectMember[]
-  createdTasks        Task[]               @relation("TaskCreator")
-  comments            Comment[]
+  id                    Int                  @id @default(autoincrement())
+  pseudo                String               @unique
+  email                 String?              @unique
+  passwordHash          String?
+  githubId              String?              @unique
+  googleId              String?              @unique
+  avatar                String?
+  statut                UserStatus           @default(Online)
+  langue                Language             @default(fr)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  twoFactorEnabled      Boolean              @default(false)
+  twoFactorSecret       String?
+  assignedTasks         Task[]               @relation("TaskAssignee")
+  conversationMembers   ConversationMember[]
+  invitations           Invitation[]
+  members               Member[]
+  messages              Message[]
+  notificationsReceived Notification[]       @relation("NotificationReceiver")
+  notificationsSent     Notification[]       @relation("NotificationActor")
+  projectMembers        ProjectMember[]
+  createdTasks          Task[]               @relation("TaskCreator")
+  comments              Comment[]
+  messageReads          MessageRead[]
+  friends               Friend[]             @relation("UserFriends")
+  friendOf              Friend[]             @relation("UserFriendsTarget")
 }
 
 model Organisation {
@@ -119,6 +123,7 @@ model Notification {
   id        Int              @id @default(autoincrement())
   type      TypeNotification
   content   String
+  actorId   Int
   userId    Int
   projectId Int?
   taskId    Int?
@@ -126,7 +131,8 @@ model Notification {
   createdAt DateTime         @default(now())
   project   Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   task      Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actor     User             @relation("NotificationActor", fields: [actorId], references: [id])
+  user      User             @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
@@ -140,14 +146,14 @@ model Conversation {
 }
 
 model Message {
-  id             Int          @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   content        String
   userId         Int
   conversationId Int
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  reads          MessageRead[]
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ConversationMember {
@@ -157,6 +163,17 @@ model ConversationMember {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, conversationId])
+}
+
+model MessageRead {
+  messageId Int
+  userId    Int
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
 }
 
 model Comment {
@@ -169,6 +186,17 @@ model Comment {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  createdAt DateTime @default(now())
+  user      User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("UserFriendsTarget", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
 }
 
 enum OrganisationRole {
