@@ -176,7 +176,7 @@ async function main() {
 
       priority:Priority.Urgent,
       status:Colonne.Doing,
-      position:1,
+      position:0,
 
       projectId:project.id,
 
@@ -194,7 +194,7 @@ async function main() {
 
       priority:Priority.Normal,
       status:Colonne.ToDo,
-      position:1,
+      position:0,
 
       projectId:project.id,
 

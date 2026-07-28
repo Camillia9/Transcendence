@@ -13,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask, assignTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -92,7 +92,7 @@ function KanbanPage() {
     setActiveTask(task)
   }
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event
     setActiveTask(null)
 
@@ -101,32 +101,25 @@ function KanbanPage() {
     const taskId = active.id
     const newColumn = over.id
     const task = tasks.find(t => t.id === taskId)
-    if (task.status === newColumn) return
+    if (task.status === newColumn) return // meme colonne, rien a faire
 
-    // Calcule de la prochiane position loesqu'on bouge
-    const nextPosition = getNextPosition(projectId, newColumn)
+      // Calcule de la prochiane position loesqu'on bouge ~ jsp si elle sera utilse plus tard
+    //const nextPosition = getNextPosition(projectId, newColumn)
 
-    // Met a jour la position des cartes lorsqu'une est bouge
-    setTasks(tasks.map(t => {
-      // task.map (parcourt toutes les taches une par une, et collecte les reponses dans un nouveau tableau)
-      // Cas 1: La tache deplace -> dans la new colonne, bout de file
-      if (t.id === taskId) {
-        return { ...t, status: newColumn, position: nextPosition }
-      }
-      // Cas 2: les taches derriere elle dans l'ancienne file avance d'un cran
-      if (
-        t.projectId === task.projectId &&
-        t.status === task.status &&
-        t.position === task.position
-      ) {
-        return {...t, position: t.position - 1}
-      }
-      // Cas 3 : Les taches qui ne sont pas dans les colonnes concerenes restent inchange
-      return t
-    }))
+    // Met a jour directement la position des cartes lorsqu'une est bouge
+    setTasks(tasks.map(t =>
+      t.id === taskId ? { ...t, status: newColumn } : t
+    ))
 
     if (socket) {
       socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
+    }
+
+    // le back calcule lui-meme la position
+    try {
+      await moveTask(projectId, taskId, newColumn)
+    } catch (error) {
+      console.error('Impossible de deplacer la tache', error)
     }
   }
 

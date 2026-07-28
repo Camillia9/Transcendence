@@ -42,3 +42,14 @@ export async function assignTask(projectId, taskId, userId) {
 	})
 	return response.task
 }
+
+export async function moveTask(projectId, taskId, status) {
+	if (USE_MOCK)
+		return { id: taskId, status }
+
+	const response = await apiRequest(`/projects/${projectId}/tasks/${taskId}/move`, {
+		method: 'PATCH',
+		body: JSON.stringify({status}),
+	})
+	return response.task
+}
