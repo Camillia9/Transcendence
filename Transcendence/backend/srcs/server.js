@@ -23,6 +23,7 @@ import orgaRouter from './routes/organisation.routes.js';
 import invitationRouter from './routes/invitation.routes.js';
 import projectRouter from './routes/project.routes.js';
 import taskRouter from './routes/task.routes.js';
+import userRouter from './routes/user.routes.js'
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()
@@ -45,8 +46,8 @@ app.use('/api', authRouter);
 // app.use('/api', orgaRouter);
 // app.use('/api', invitationRouter);
 app.use('/api', projectRouter);
- app.use('/api', taskRouter);
-
+app.use('/api', taskRouter);
+app.use('/api', userRouter);
 // Serveur HTTP brut
 //0695428562
 const httpServer = createServer(app);

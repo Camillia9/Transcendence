@@ -1,18 +1,18 @@
 import { mockUsers } from "../data/mockUsers";
-// import { apiRequest } from "./client";
+import { apiRequest } from "./client";
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 export function getUsers() {
   if (USE_MOCK) {
     return mockUsers;
   }
-  // return apiRequest("/users");
+  return apiRequest("/users");
 }
 
 export function getUserById(id) {
   if (USE_MOCK) {
     return mockUsers.find((u) => u.id === id) ?? null;
   }
-  // return apiRequest(`/users/${id}`);
+  return apiRequest(`/users/${id}`);
 }
