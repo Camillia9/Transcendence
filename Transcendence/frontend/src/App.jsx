@@ -11,6 +11,7 @@ import Landing from './pages/Landing'
 import KanbanPage from './pages/KanbanPage'
 import Organisation from './pages/Organisation'
 import Chat from './pages/Chat'
+import FriendsPage from './pages/FriendsPage'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -43,6 +44,7 @@ function App() {
               <Route path="/profil" element={<Profil />} />
               <Route path="/designsystem" element={<DesignSystem />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/friends" element={<FriendsPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/test" element={<Test />} />
                 <Route path="/dashboard" element={<Dashboard />} />
