@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
-import { getConversations, getMessages } from '../api/conversations'
+import { getConversations, getMessages, createConversation } from '../api/conversations'
 import { getUsers } from '../api/users'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
@@ -127,7 +127,18 @@ function Chat() {
   const activeConversation = conversations.find(c => c.id === activeId)
 
   // La liste des utilisateurs (mock pour l'instant), sans MOI (on ne se parle pas à soi-même)
-  const otherUsers = getUsers().filter(u => u.id !== user?.id)
+  const [otherUsers, setOtherUsers] = useState([])
+  useEffect(() => {
+  async function loadUsers() {
+    try {
+      const data = await getUsers()
+      setOtherUsers(data.filter(u => u.id !== user?.id))
+    } catch (e) {
+      console.error('Impossible de charger les utilisateurs', e)
+    }
+  }
+  loadUsers()
+}, [user])
 
   // Filtrée par la recherche : on garde ceux dont le pseudo contient le texte tapé
   const filteredUsers = otherUsers.filter(u =>
@@ -159,8 +170,24 @@ function Chat() {
   }
 
   // TEMPORAIRE — on branchera le vrai back à l'étape 2
-  const handleCreateConversation = () => {
-    console.log('À créer :', { participantIds: selectedIds, type: convType, name: groupName })
+  const handleCreateConversation = async () => {
+    try {
+      const convo = await createConversation(selectedIds, convType, groupName)
+      const other = convo.conversationMembers?.find(m => m.userId !== user?.id)
+      const normalized = {
+        ...convo,
+        name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
+        type: convo.type?.toLowerCase() ?? convType,
+        message: (convo.messages ?? []).map(toUiMsg)
+      }
+      setConversations(prev =>
+        prev.some(c => c.id === normalized.id) ? prev : [normalized, ...prev]
+      )
+      setActiveId(normalized.id)
+      handleCloseNewConv()
+    } catch (e) {
+      console.error('Impossible de creer la conversation', e)
+    }
   }
 
 
