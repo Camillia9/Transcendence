@@ -156,6 +156,18 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
 
             </div>
           )}
+
+          {/*Créé par*/}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-gray-400 uppercase tracking-wide">Créé par</label>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
+                {task.createdBy?.pseudo?.[0] ?? '?'}
+              </div>
+              <span>{task.createdBy?.pseudo ?? 'Inconnu'}</span>
+            </div>
+          </div>
+          
         </div>
       </div>
     </>
