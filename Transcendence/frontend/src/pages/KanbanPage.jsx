@@ -54,16 +54,18 @@ function KanbanPage() {
     }
   }, [socket, projectId])
 
-  // Utilise l'API pour les tachs plutot que le mock
-  useEffect(() => {
-    async function loadTasks() {
-      try {
-        const data = await getTasks(projectId)
-        setTasks(data)
-      } catch (error) {
-        console.error('Impossible de charger les taches')
-      }
+  // Recupere les donnes de la task
+  const loadTasks = async () => {
+    try {
+      const data = await getTasks(projectId)
+      setTasks(data)
+    } catch (error) {
+      console.error('Impossible de charger les taches')
     }
+  }
+
+  // Utilise l'API pour les taches
+  useEffect(() => {
     loadTasks()
   }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
 
@@ -118,6 +120,7 @@ function KanbanPage() {
     // le back calcule lui-meme la position
     try {
       await moveTask(projectId, taskId, newColumn)
+      await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
     } catch (error) {
       console.error('Impossible de deplacer la tache', error)
     }
