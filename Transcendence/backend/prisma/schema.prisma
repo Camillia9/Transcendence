@@ -15,7 +15,8 @@ model User {
   githubId              String?              @unique
   googleId              String?              @unique
   avatar                String?
-  statut                UserStatus           @default(Online)
+  isOnline              Boolean              @default(false)
+  statut                UserStatus           @default(Available)
   langue                Language             @default(fr)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
@@ -237,8 +238,7 @@ enum TypeNotification {
 }
 
 enum UserStatus {
-  Online
-  Offline
+  Available
   Away
   Busy
 }
