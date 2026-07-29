@@ -50,7 +50,7 @@ function TaskCard({ task, onClick }) {
           {task.status === 'Blocked' && (
             <span className="flex items-center gap-1 text-xs text-gray-400">
               <IconMessageCircle size={14} />
-              {task.comments.length}
+              {(task.comments ?? []).length}
             </span>
           )}
 

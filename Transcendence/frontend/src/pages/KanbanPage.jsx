@@ -181,12 +181,6 @@ function KanbanPage() {
         description: null,
         deadline: null,
       })
-
-      // Un user s'auto assigne. Manager non assignee
-      if (myRole !== 'Manager') {
-        await assignTask(projectId, newTask.id, user.id)
-        newTask.assignedToId = user.id 
-      }
       // le back renvoie la task complete
       setTasks([newTask, ...tasks])
       handleCloseNewTask()
