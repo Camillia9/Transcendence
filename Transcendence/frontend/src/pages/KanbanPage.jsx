@@ -13,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask, assignTask, moveTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -86,8 +86,8 @@ function KanbanPage() {
   console.log(selectedTask)
 
   // Fction helper 
-  const getNextPosition = (projId, column) =>
-    tasks.filter(t => t.projectId === projId && t.status === column).length
+  //const getNextPosition = (projId, column) =>
+  //  tasks.filter(t => t.projectId === projId && t.status === column).length
 
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
@@ -167,27 +167,26 @@ function KanbanPage() {
     setNewTaskError('')
   }
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!newTaskTitle.trim()) {
       setNewTaskError('Le titre est obligatoire')
       return
     }
-    const nextPosition = getNextPosition(projectId, newTaskColumn)
-
-    const newTask = {
-      id: Date.now(),
-      projectId: projectId,
-      title: newTaskTitle.trim(),
-      priority: newTaskPriority,
-      status: newTaskColumn,
-      position: nextPosition,
-      createdBy: CURRENT_USER,
-      assignedToId: project.role === 'Manager' ? null : CURRENT_USER,
-      deadline: null,
-      comments: [],
+    //const nextPosition = getNextPosition(projectId, newTaskColumn)
+    try {
+      // On envoie uniquement ce que la route accepte
+      const newTask = await createTask(projectId, {
+        title: newTaskTitle.trim(),
+        priority: newTaskPriority,
+        description: null,
+        deadline: null,
+      }) 
+      // le back renvoie la task complete
+      setTasks([newTask, ...tasks])
+      handleCloseNewTask()
+    } catch (error) {
+      setNewTaskError('Impossible de creer la tache')
     }
-    setTasks([newTask, ...tasks])
-    handleCloseNewTask()
   }
 
   const handleDeleteTask = async (taskId) => {
@@ -233,6 +232,9 @@ function KanbanPage() {
       {/*En tete*/}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
+        <Button onClick={() => setNewTaskColumn('ToDo')}>
+          + Nouvelle tache
+        </Button>
       </div>
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -242,7 +244,7 @@ function KanbanPage() {
               .filter((t) => t.status === col.id) // Parrcourt les taches visible et affiche que celle qui correspondent a sa colonne 
               .sort((a, b) => a.position - b.position) // Range l'ordre des cartes. Si a est negatif -> au dessus, positif -> en dessous
             return (
-              <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
+              <KanbanColumn key={col.id} col={col} colTasks={colTasks}>
                 {colTasks.map(task => (
                   <TaskCard
                     key={task.id}
