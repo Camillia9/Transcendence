@@ -274,7 +274,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
 
                 // Mettre à jour la tâche déplacée
                 // on met un return pour quitter transaction et pour envoyer le resultat de transaction
-                return tx.task.update({
+                const task =  await tx.task.update({
                     where: {
                         id: req.task.id,
                     },
@@ -284,6 +284,33 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                     },
                 });
 
+                // creer une notif pour les managers, et manager qui bouge sa propre tache ne recoit pas de notif
+                const managers = await tx.projectMember.findMany({
+                    where: {
+                        projectId: req.project.id,
+                        role: 'Manager',
+                        userId: {
+                            not: req.user.id,
+                        },
+                    },
+                    select: {
+                        userId: true,
+                    },
+                });
+
+                if (managers.length > 0) {
+                    await tx.notification.createMany({
+                        data: managers.map(manager => ({
+                            type: 'DeplacementTache',
+                            content: `moved the task "${task.title}" from ${oldStatus} to ${status}`,
+                            actorId: req.user.id,
+                            userId: manager.userId,
+                            projectId: req.project.id,
+                            taskId: task.id,
+                        })),
+                    });
+                }
+                return task;
             });
 
             return res.json({
@@ -359,6 +386,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                         data: {
                             type: 'Assignment',
                             content: `You have been assigned to the task "${task.title}"`,
+                            actorId: req.user.id,
                             userId,
                             projectId: req.project.id,
                             taskId: task.id,
