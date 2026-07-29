@@ -24,6 +24,9 @@ import invitationRouter from './routes/invitation.routes.js';
 import projectRouter from './routes/project.routes.js';
 import taskRouter from './routes/task.routes.js';
 import userRouter from './routes/user.routes.js'
+import friendRouter from './routes/friend.js';
+import commentRouter from './routes/comment.routes.js';
+import profilRouter from './routes/profil.js';
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()
@@ -48,6 +51,11 @@ app.use('/api', authRouter);
 app.use('/api', projectRouter);
 app.use('/api', taskRouter);
 app.use('/api', userRouter);
+app.use('/api', commentRouter);
+app.use('/api', friendRouter);
+app.use('/api', profilRouter);
+app.use('/api', invitationRouter);
+
 // Serveur HTTP brut
 //0695428562
 const httpServer = createServer(app);

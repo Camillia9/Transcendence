@@ -38,7 +38,7 @@ router.post('/auth/register', async (req, res) => {
         if (!emailRegex.test(email))
             return res.status(400).json({ error: 'Invalid email format' });
     
-        if (pseudo.length < 3)
+        if (pseudo.trim().length < 3)
             return res.status(400).json({ error: 'Username must be at least 3 characters' });
     
         if (password.length < 6)

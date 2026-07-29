@@ -1,5 +1,8 @@
+import express from 'express';
 import prisma from "../prisma.js";
 import { authenticate } from '../middleware/checkPermission.js';
+
+const router = express.Router();
 
 // recuperer la liste des amis avec leur status
 router.get('/friends', authenticate, async (req, res) => {
@@ -155,3 +158,5 @@ router.get('/users/search', authenticate, async (req, res) => {
         return res.status(500).json({ error: 'Database error' });
     }
 });
+
+export default router;

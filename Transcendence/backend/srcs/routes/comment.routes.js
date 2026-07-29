@@ -129,3 +129,5 @@ router.delete('/projects/:projectId/tasks/:taskId/comments/:commentId', authenti
         }
     }
 );
+
+export default router;
