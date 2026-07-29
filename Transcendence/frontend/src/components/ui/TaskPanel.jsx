@@ -20,7 +20,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
   const assignee = getUserById(task.assignedToId)
 
   // Peut-on supp la tache ?
-  const canDelete = userRole === 'Manager' || task.createdBy === currentUser
+  const canDelete = userRole === 'Manager' || task.createdById === currentUser
 
   // Pour que le manager puisse changer l'assignation d'une tache
   const canAssign = userRole === 'Manager'
@@ -143,12 +143,14 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
                 <div key={comment.id} className="flex flex-col gap-1 bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-primary-900/20 flex items-center justify-center text-xs text-primary-900">
-                      {comment.author[0]}
+                      {comment.user.pseudo[0]}
                     </div>
-                    <span className="text-xs font-medium text-gray-600">{comment.author}</span>
-                    <span className="text-xs text-gray-300 ml-auto">{comment.date}</span>
+                    <span className="text-xs font-medium text-gray-600">{comment.user.pseudo}</span>
+                    <span className="text-xs text-gray-300 ml-auto">
+                      {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600 pl-7">{comment.text}</p>
+                  <p className="text-xs text-gray-600 pl-7">{comment.content}</p>
                 </div>
               ))}
 
