@@ -27,6 +27,13 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
                 validPriority = priority;
             }
 
+            let assignedToId;
+
+            if (req.projectMembership.role === 'Manager')
+                assignedToId = null;
+            else
+                assignedToId = req.user.userId;
+
             const task = await prisma.task.create({
                 data: {
                     title,
@@ -34,9 +41,10 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
                     priority: validPriority,
                     status: 'ToDo',
                     position,
-                    deadline: deadline? new Date(deadline): null,
+                    deadline: deadline ? new Date(deadline): null,
                     projectId: req.project.id,
                     createdById: req.user.userId,
+                    assignedToId,
                 },
             });
 
@@ -303,7 +311,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                         data: managers.map(manager => ({
                             type: 'DeplacementTache',
                             content: `moved the task "${task.title}" from ${oldStatus} to ${status}`,
-                            actorId: req.user.id,
+                            actorId: req.user.userId,
                             userId: manager.userId,
                             projectId: req.project.id,
                             taskId: task.id,
@@ -386,7 +394,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                         data: {
                             type: 'Assignment',
                             content: `You have been assigned to the task "${task.title}"`,
-                            actorId: req.user.id,
+                            actorId: req.user.userId,
                             userId,
                             projectId: req.project.id,
                             taskId: task.id,
