@@ -24,9 +24,9 @@ import invitationRouter from './routes/invitation.routes.js';
 import projectRouter from './routes/project.routes.js';
 import taskRouter from './routes/task.routes.js';
 import userRouter from './routes/user.routes.js'
-import friendRouter from './routes/friend.js';
+import friendRouter from './routes/friend.routes.js';
 import commentRouter from './routes/comment.routes.js';
-import profilRouter from './routes/profil.js';
+import profilRouter from './routes/profil.routes.js';
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()

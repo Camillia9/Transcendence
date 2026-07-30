@@ -1,9 +1,3 @@
-// met à jour la base : status
-// PATCH /users/me/status
-
-// de l'avatar
-
-// de son pseudo
 
 // invitation sil a un compte il recoit une notif d'invitation
 // quand il accepte tt le monde, recoit la notif
@@ -12,9 +6,6 @@
 // quand on supprime un membre a un projet tt le monde recoit
 // quand on ajoute qq1 a un projet tt le monde recoit
 
-// faire route pour les commentaires
-
-// supprimer une personne de l'organisation
 
 import express from 'express';
 import prisma from "../prisma.js";
