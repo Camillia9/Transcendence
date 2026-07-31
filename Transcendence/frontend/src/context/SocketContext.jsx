@@ -9,10 +9,11 @@ export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    if (!user?.token) return
+    const token = localStorage.getItem('token')
+    if (!user || !token) return
 
     const s = io('http://localhost:3000', {
-      auth: { token: user.token }
+      auth: { token }
     })
     setSocket(s)
 

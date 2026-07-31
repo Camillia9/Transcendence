@@ -9,6 +9,7 @@ export function initSockets(io) {
 
     io.on('connection', (socket) => {
         console.log(`Connected : ${socket.user.username}`)
+        socket.join(`user:${socket.user.userId}`)
         registerChatHandlers(io, socket)
         registerKanbanHandlers(io, socket)
         registerNotificationHandlers(io, socket)

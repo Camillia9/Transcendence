@@ -32,6 +32,7 @@ router.post('/', authenticate, async (req, res) => {
 	try {
 		const userId = req.user.userId;
 		const { participantIds, name, type } = req.body;
+		const io = req.app.get('io')
 
 		if (!Array.isArray(participantIds) || participantIds.length === 0)
 			return res.status(400).json({ error: 'participantIds is required' });
@@ -73,7 +74,10 @@ router.post('/', authenticate, async (req, res) => {
 					}
 				}
 			});
-			if (existing) return res.json(existing);
+			if (existing) {
+				io.to(`user:${userId}`).to(`user:${Number(otherId)}`).emit('conversation:new', existing)
+				return res.json(existing);
+			}
 		}
 
 		const convo = await prisma.conversation.create({
@@ -90,6 +94,10 @@ router.post('/', authenticate, async (req, res) => {
 				}
 			}
 		});
+
+		allParticipants.forEach(uid => {
+			io.to(`user:${uid}`).emit('conversation:new', convo)
+		})
 
 		res.status(201).json(convo);
 	} catch (e) {
