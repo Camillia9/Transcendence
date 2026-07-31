@@ -169,15 +169,16 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
             if (!roles.includes(role))
                 return res.status(400).json({ error: 'Invalid role' });
 
-            // verifier que la cible est bien dans l'orga
-            const membre = await prisma.member.findUnique({
-                where: { userId_orgId:
-                    {
-                        userId: cible,
-                        orgId: req.orgId
-                    }
-                },
-            });
+            const updated = await prisma.$transaction(async (tx) => {
+                // verifier que la cible est bien dans l'orga
+                const membre = await prisma.member.findUnique({
+                    where: { userId_orgId:
+                        {
+                            userId: cible,
+                            orgId: req.orgId
+                        }
+                    },
+                });
 
                 if (!membre)
                     throw new Error('MEMBER_NOT_FOUND');
