@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                    Int                  @id @default(autoincrement())
+  pseudo                String               @unique
+  email                 String?              @unique
+  passwordHash          String?
+  githubId              String?              @unique
+  googleId              String?              @unique
+  avatar                String?
+  isOnline              Boolean              @default(false)
+  statut                UserStatus           @default(Available)
+  langue                Language             @default(fr)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  twoFactorEnabled      Boolean              @default(false)
+  twoFactorSecret       String?
+  assignedTasks         Task[]               @relation("TaskAssignee")
+  conversationMembers   ConversationMember[]
+  invitations           Invitation[]
+  members               Member[]
+  messages              Message[]
+  notificationsReceived Notification[]       @relation("NotificationReceiver")
+  notificationsSent     Notification[]       @relation("NotificationActor")
+  projectMembers        ProjectMember[]
+  createdTasks          Task[]               @relation("TaskCreator")
+  comments              Comment[]
+  messageReads          MessageRead[]
+  friends               Friend[]             @relation("UserFriends")
+  friendOf              Friend[]             @relation("UserFriendsTarget")
+}
+
+model Organisation {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  invitations Invitation[]
+  members     Member[]
+  projects    Project[]
+}
+
+model Member {
+  userId       Int
+  orgId        Int
+  role         OrganisationRole @default(Member)
+  organisation Organisation     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, orgId])
+}
+
+model Project {
+  id             Int             @id @default(autoincrement())
+  title          String
+  description    String?
+  deadline       DateTime?
+  orgId          Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  conversations  Conversation[]
+  notifications  Notification[]
+  organisation   Organisation    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  projectMembers ProjectMember[]
+  tasks          Task[]
+}
+
+model ProjectMember {
+  userId    Int
+  projectId Int
+  role      ProjectRole @default(User)
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+}
+
+model Task {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  priority      Priority       @default(Normal)
+  status        Colonne        @default(ToDo)
+  position      Int
+  deadline      DateTime?
+  projectId     Int
+  createdById   Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  assignedToId  Int?
+  notifications Notification[]
+  comments      Comment[]
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
+
+  assignedTo User? @relation("TaskAssignee", fields: [assignedToId], references: [id])
+
+  @@unique([projectId, status, position])
+}
+
+model Invitation {
+  id           Int          @id @default(autoincrement())
+  email        String
+  orgId        Int
+  token        String       @unique
+  inviterId    Int
+  expireAt     DateTime
+  utilisee     Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  acceptedAt   DateTime?
+  inviter      User         @relation(fields: [inviterId], references: [id])
+  organisation Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  type      TypeNotification
+  content   String
+  actorId   Int
+  userId    Int
+  projectId Int?
+  taskId    Int?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  project   Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task      Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actor     User             @relation("NotificationActor", fields: [actorId], references: [id])
+  user      User             @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id                  Int                  @id @default(autoincrement())
+  name                String?
+  type                TypeConversation     @default(Private)
+  projectId           Int?
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationMembers ConversationMember[]
+  messages            Message[]
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  content        String
+  userId         Int
+  conversationId Int
+  createdAt      DateTime      @default(now())
+  reads          MessageRead[]
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ConversationMember {
+  conversationId Int
+  userId         Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, conversationId])
+}
+
+model MessageRead {
+  messageId Int
+  userId    Int
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  createdAt DateTime @default(now())
+  user      User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("UserFriendsTarget", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+}
+
+enum OrganisationRole {
+  Admin
+  Member
+}
+
+enum ProjectRole {
+  Manager
+  User
+}
+
+enum Priority {
+  Low
+  Normal
+  Urgent
+}
+
+enum Colonne {
+  ToDo
+  Doing
+  Blocked
+  Done
+}
+
+enum TypeConversation {
+  Private
+  Group
+}
+
+enum TypeNotification {
+  Assignment
+  Invitation
+  AjoutProjet
+  SuppProjet
+  Commentaire
+  DeplacementTache
+}
+
+enum UserStatus {
+  Available
+  Away
+  Busy
+}
+
+enum Language {
+  fr
+  en
+  cn
+}

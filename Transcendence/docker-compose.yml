@@ -8,13 +8,13 @@ services:
       - /app/node_modules
 
   backend:
-    build: ./backend
+    build: ./services
     depends_on:
       - db #Podman demarre d'abord bd et ensuite backend
     ports:
       - "3000:3000"
     volumes:
-      - ./backend:/app:z
+      - ./services:/app:z
       - /app/node_modules
     environment:
       - FRONTEND_URL=http://localhost:5173

@@ -22,7 +22,7 @@ down:
 	$(COMPOSE_CMD) down
 
 fclean:
-	$(COMPOSE_CMD) down -v --rmi --remove-orphans
+	$(COMPOSE_CMD) down -v --rmi all --remove-orphans
 	docker system prune -af --volumes
 
 stop:
