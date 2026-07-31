@@ -3,6 +3,20 @@ import prisma from '../../../../prisma/prisma.js';
 export function registerChatHandlers(io, socket) {
     const userId = socket.user.userId
 
+    joinAllConversations()
+
+    async function joinAllConversations() {
+        try {
+            const memberships = await prisma.conversationMember.findMany({
+                where: { userId },
+                select: { conversationId: true }
+            })
+            memberships.forEach(m => socket.join(`conversation:${m.conversationId}`))
+        } catch (e) {
+            console.error('Impossible de rejoindre les conversations', e)
+        }
+    }
+
     socket.on('conversation:join', ({ conversationId }) => {
         socket.join(`conversation:${conversationId}`)
     })

@@ -71,15 +71,30 @@ function Chat() {
 
   useEffect(() => {
     if (!socket) return
-    socket.emit('conversation:join', { conversationId: activeId })
+  
     socket.on('message:new', (msg) => {
       receiveMessage(msg.conversationId, toUiMsg(msg))
     })
+  
+    socket.on('conversation:new', (convo) => {
+      const other = convo.conversationMembers?.find(m => m.userId !== user?.id)
+      const normalized = {
+        ...convo,
+        name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
+        type: convo.type?.toLowerCase() ?? 'private',
+        messages: (convo.messages ?? []).map(toUiMsg)
+      }
+      setConversations(prev =>
+        prev.some(c => c.id === normalized.id) ? prev : [normalized, ...prev]
+      )
+      socket.emit('conversation:join', { conversationId: normalized.id })
+    })
+  
     return () => {
-      socket.emit('conversation:leave', { conversationId: activeId })
       socket.off('message:new')
+      socket.off('conversation:new')
     }
-  }, [socket, activeId])
+  }, [socket, user])
 
   useEffect(() => {
     async function loadConversations() {
@@ -178,7 +193,7 @@ function Chat() {
         ...convo,
         name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
         type: convo.type?.toLowerCase() ?? convType,
-        message: (convo.messages ?? []).map(toUiMsg)
+        messages: (convo.messages ?? []).map(toUiMsg)
       }
       setConversations(prev =>
         prev.some(c => c.id === normalized.id) ? prev : [normalized, ...prev]

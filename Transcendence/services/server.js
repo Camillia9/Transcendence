@@ -68,6 +68,7 @@ const io = new Server(httpServer, {
 		methods: ['GET', 'POST'],
 	},
 });
+app.set('io', io)
 
 // Routes REST, toutes les URL /api/conversations/* sont geres par conversationsRouter
 app.use('/api/conversations', conversationsRouter);
