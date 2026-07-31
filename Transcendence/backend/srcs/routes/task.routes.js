@@ -46,6 +46,10 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
                     createdById: req.user.userId,
                     assignedToId,
                 },
+                include: {
+                    assignedTo: true,
+                    createdBy: true,
+                }
             });
 
             return res.status(201).json(task);
