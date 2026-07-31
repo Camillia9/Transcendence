@@ -1,6 +1,5 @@
 import { IconX, IconCalendar, IconUser } from "@tabler/icons-react"
 import { PRIORITIES } from "../../data/priorities"
-import { getUserById } from "../../api/users"
 import Button from "./Button"
 
 const COLUMN_OPTIONS = [
@@ -16,8 +15,8 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
   const priority = PRIORITIES.find(p => p.value === task.priority)
   
-  // Transformer l'id de l'assigné en objet User (ou null si non assignée)
-  const assignee = getUserById(task.assignedToId)
+  // Recupere l'assignee du back
+  const assignee = task.assignedTo
 
   // Peut-on supp la tache ?
   const canDelete = userRole === 'Manager' || task.createdById === currentUser
@@ -26,7 +25,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
   const canAssign = userRole === 'Manager'
 
   // Pour le "Cree par X" en bas du panel"
-  const creator = members.find(m => m.id === task.createdById)
+  const creator = task.createdBy
 
   return (
     <>

@@ -3,7 +3,6 @@ import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSenso
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
-import { getUsers } from "../api/users";
 import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
@@ -200,13 +199,16 @@ function KanbanPage() {
   }
 
   const handleAssignTask = async (taskId, userId) => {
-    // mAj instante a l'ecran 
+    // mAj opti (instantanee mais incomplete)
     const updated = { ...selectedTask, assignedToId: userId }
     setTasks(tasks.map(t => t.id === taskId ? updated : t))
     setSelectedTask(updated)
 
     try {
-      await assignTask(projectId, taskId, userId)
+      const saved = await assignTask(projectId, taskId, userId) // la tache complete
+      console.log(saved) // temporaire
+      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // prev lit toujours l'état le plus à jour.
+      setSelectedTask(saved)
     } catch (error) {
       console.error('Impossible d\'assigner la tache', error)
     }
