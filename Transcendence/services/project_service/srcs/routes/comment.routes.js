@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask, loadComment } from '../middleware/checkPermission.js';
-import prisma from '../prisma.js';
+import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask, loadComment } from '../../../shared/middleware/checkPermission.js';
+import prisma from '../../../prisma/prisma.js';
 
 const router = express.Router();
 
@@ -73,7 +73,7 @@ router.patch('/projects/:projectId/tasks/:taskId/comments/:commentId', authentic
         try {
             if (req.comment.userId !== req.user.userId)
                 return res.status(403).json({ error: 'You cannot edit this comment' });
-            
+
             const { content } = req.body;
 
             if (!content || content.trim().length === 0)

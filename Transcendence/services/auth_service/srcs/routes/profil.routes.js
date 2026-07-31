@@ -8,8 +8,8 @@
 
 
 import express from 'express';
-import prisma from "../prisma.js";
-import { authenticate } from '../middleware/checkPermission.js';
+import prisma from '../../../prisma/prisma.js';
+import { authenticate } from '../../../shared/middleware/checkPermission.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
@@ -31,7 +31,7 @@ router.get('/profile', authenticate, async (req, res) => {
                 langue: true,
             },
         });
-        
+
         if (!user)
             return res.status(404).json({ error: 'User not found' });
 
@@ -50,7 +50,7 @@ router.patch('/profile', authenticate, async (req, res) => {
 
         if (pseudo !== undefined && pseudo.trim().length < 3)
             return res.status(400).json({ error: 'Username must be at least 3 characters' });
-        
+
         const allowedStatus = ['Available', 'Busy', 'Away'];
         const allowedLanguages = ['fr', 'en', 'cn'];
 
@@ -71,7 +71,7 @@ router.patch('/profile', authenticate, async (req, res) => {
             if (pseudoAlreadyExist && pseudoAlreadyExist.id !== req.user.userId)
                  return res.status(409).json({ error: 'Pseudo already used' });
         }
-        
+
         const user = await prisma.user.update({
             where: {
                 id: req.user.userId,
@@ -123,7 +123,7 @@ router.get('/users/:userId', authenticate, async (req, res) => {
         });
 
         if(!user)
-           return res.status(404).json({ error: 'User not found' }); 
+           return res.status(404).json({ error: 'User not found' });
 
         return res.json(user);
 
@@ -140,7 +140,7 @@ router.patch('/profile/password', authenticate, async (req, res) => {
 
         if (!oldPassword || !newPassword)
             return res.status(400).json({ error: 'Old password and new password are required' });
-        
+
         if (newPassword.length < 6)
             return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
@@ -187,7 +187,7 @@ router.delete('/profile', authenticate, async (req, res) => {
 
         if (!password)
             return res.status(400).json({ error: 'Password required' });
-        
+
         const user = await prisma.user.findUnique({
             where: {
                 id: req.user.userId,

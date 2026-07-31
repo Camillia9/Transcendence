@@ -1,7 +1,7 @@
 // crypto = module integrer a Node.js qui permet de generer des chaines de caracteres aleatoires tres difficile a deviner
 import express from 'express';
 
-import { checkPermissionOrga, authenticate, loadOrgMembership } from '../../../shared/middleware/checkPermission.js';
+import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../../../shared/middleware/checkPermission.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
 

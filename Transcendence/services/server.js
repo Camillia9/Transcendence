@@ -23,10 +23,10 @@ import orgaRouter from './auth_service/srcs/routes/organisation.routes.js';
 import invitationRouter from './chat_service/srcs/routes/invitation.routes.js';
 import projectRouter from './project_service/srcs/routes/project.routes.js';
 import taskRouter from './project_service/srcs/routes/task.routes.js';
-import userRouter from './routes/user.routes.js'
-import friendRouter from './routes/friend.routes.js';
-import commentRouter from './routes/comment.routes.js';
-import profilRouter from './routes/profil.routes.js';
+import userRouter from './auth_service/srcs/routes/user.routes.js';
+import friendRouter from './auth_service/srcs/routes/friend.routes.js';
+import commentRouter from './project_service/srcs/routes/comment.routes.js';
+import profilRouter from './auth_service/srcs/routes/profil.routes.js';
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()
