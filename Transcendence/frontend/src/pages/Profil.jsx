@@ -9,20 +9,22 @@ import Input from '../components/ui/Input'
 function Profil() {
   const { user, login } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newUsername, setNewUsername] = useState(user?.username || '')
+  const [newUsername, setNewUsername] = useState(user?.pseudo || '')
 
   const handleSave = () => {
     login({ ...user, username: newUsername })
     setIsModalOpen(false)
   }
 
+  console.log(user)   // dans MainLayout ou Profil
+
   return (
     <div className="max-w-md mx-auto py-10 px-4">
 
       <Card className="flex items-center gap-4">
-        <Avatar username={user?.username} size="lg" />
+        <Avatar username={user?.pseudo} size="lg" />
         <div>
-          <h1 className="text-xl font-bold text-gray-900">{user?.username}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{user?.pseudo}</h1>
           <p className="text-gray-500 text-sm">{user?.email}</p>
         </div>
         <div className="ml-auto">
