@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate, loadOrgMembership, checkPermissionOrga, checkPermissionProject, loadProject} from '../../../shared/middleware/checkPermission.js';
-import prisma from '../../../prisma/prisma.js';
+import prisma from '../prisma.js';
+import { notifyProjectMembers } from '../../../shared/notification_data.js';
 
 const router = express.Router();
 
@@ -178,7 +179,17 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
 router.delete('/projects/:projectId', authenticate, loadProject, checkPermissionProject('delete_project'),
     async (req, res) => {
         try {
-            await prisma.project.delete({ where: { id: req.project.id } });
+            await prisma.$transaction(async (tx) => {
+                await notifyProjectMembers(
+                    tx,
+                    req.project.id,
+                    req.user.userId,
+                    'ProjectDeleted',
+                    `${req.user.pseudo} deleted the project ${req.project.title}`
+                );
+
+                await tx.project.delete({ where: { id: req.project.id } });
+            })
 
             return res.json({ message: 'Project deleted' });
 

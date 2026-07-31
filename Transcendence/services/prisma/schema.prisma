@@ -234,8 +234,12 @@ enum TypeNotification {
   InvitationAccepted
   InvitationDeclined
   InvitationCancelled
+  MemberLeftOrga
+  RoleChanged
+  RemovedFromOrga
+  ProjectUpdated
+  ProjectDeleted
   AjoutProjet
-  SuppProjet
   DeplacementTache
 }
 
