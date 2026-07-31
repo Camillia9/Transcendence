@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate, loadOrgMembership, checkPermissionOrga, checkPermissionProject, loadProject} from '../middleware/checkPermission.js';
 import prisma from '../prisma.js';
+import { notifyProjectMembers } from '../service/notification.js';
 
 const router = express.Router();
 
@@ -148,21 +149,34 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
             const { title, description, deadline } = req.body;
 
             // ... = ajoute cette propriete
-            const project = await prisma.project.update({
-                where: { id: req.project.id },
-                data: {
-                    ...(title !== undefined && { title }),
-                    ...(description !== undefined && { description }),
-                    ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
-                },
+            const project = await prisma.$transaction(async (tx) => {
+
+                const updatedProject = await tx.project.update({
+                    where: { id: req.project.id },
+                    data: {
+                        ...(title !== undefined && { title }),
+                        ...(description !== undefined && { description }),
+                        ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
+                    },
+                });
+            
+                // if (name)
+                //     req.project.name = name;
+            
+                // if (description)
+                //     req.project.description = description;
+            
+                await notifyProjectMembers(
+                    tx,
+                    req.project.id,
+                    req.user.userId,
+                    'ProjectUpdated',
+                    `${req.user.pseudo} updated the project ${updatedProject.title}`
+                );
+
+                return updatedProject;
             });
-        
-            // if (name)
-            //     req.project.name = name;
-        
-            // if (description)
-            //     req.project.description = description;
-        
+
             return res.json({
                 message: 'Project updated',
                 project
@@ -178,7 +192,17 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
 router.delete('/projects/:projectId', authenticate, loadProject, checkPermissionProject('delete_project'),
     async (req, res) => {
         try {
-            await prisma.project.delete({ where: { id: req.project.id } });
+            await prisma.$transaction(async (tx) => {
+                await notifyProjectMembers(
+                    tx,
+                    req.project.id,
+                    req.user.userId,
+                    'ProjectDeleted',
+                    `${req.user.pseudo} deleted the project ${req.project.title}`
+                );
+
+                await tx.project.delete({ where: { id: req.project.id } });
+            })
 
             return res.json({ message: 'Project deleted' });
 

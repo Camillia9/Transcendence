@@ -578,6 +578,42 @@ createdBy User @relation(
 fields: [createdById], -> field = le nom qu'on va donner au champ qu'on va prendre dans Task
 references: [id] -> reference = la variable qu'on va recup dans User
 
+exemple de friends
+on est obliger de mettre @relation("UserFriends") car on a une relation entre le meme modele User 2 fois (relation User -> User, relation entre 2 lignes de la meme table) et prisma ne sait pas faire la difference
+friends User[]
+friendOf User[]
+
+prisma a besoin d'un cote inverse pour les relations implicites many to many auto referencer 
+@relation("UserFriends") sert a dire a prisma que ces deux relations pointent vers la même table User mais représentent deux rôles différents"
+
+si par ex, on ecrit
+model User {
+  ...
+  friends Friend[]
+}
+model Friend {
+  id       Int @id @default(autoincrement())
+  userId   Int
+  friendId Int
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation(fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+}
+ya 2 relations qui vont de Friend vers User
+pour prisma, ca veut dire :
+Friend.user     ---> User
+Friend.friend   ---> User
+2 liens differents vers User, mais dans User on a que friends Friend[]
+donc prisma se demande si le tableau friends correspond à Friend.user ou à Friend.friend
+la table Friend contient deux clés étrangères
+Friend
+----------------
+id
+userId    ---> User.id
+friendId  ---> User.id
+Donc PostgreSQL sait qu'il y a deux liens vers User
 
 
 a chaque changement : format puis validate (puis migrate reset si les donnees de la db pas utile et on peut les remettre avec le seed) puis migrate dev --name puis generate puis seed puis npx prisma studio
@@ -712,6 +748,35 @@ register : pas de 2FA
 login : pas de 2FA
 si on veut le 2FA, le user doit activer l'option dans ses parametres et a la prochaine co, il y aura
 si on veut github + 2FA par ex, on github va authentifier le user, puis on va faire le 2FA puis generate token
+workflow
+login
+↓
+
+2FA activée ?
+
+↓
+
+oui
+↓
+
+renvoie
+{
+   twoFactorRequired: true
+}
+
+↓
+
+frontend demande le code
+
+↓
+
+/auth/login/2fa
+
+↓
+
+JWT
+
+
 
 Utilisateur normal sans 2FA
 POST /auth/login
@@ -752,3 +817,108 @@ twoFactorRequired:true
 /auth/login/2fa
         ↓
 JWT
+
+
+La bonne solution avec les WebSockets
+
+Tu as déjà besoin des WebSockets pour :
+
+le chat,
+les parties de Pong,
+éventuellement les notifications en direct.
+
+Tu peux donc les utiliser aussi pour la présence.
+
+1. L'utilisateur change son statut
+
+Le front appelle :
+
+PATCH /users/me/status
+
+Le backend :
+
+met à jour la base :
+status = "Busy"
+puis envoie un événement WebSocket :
+{
+    "type": "user_status_changed",
+    "userId": 5,
+    "status": "Busy"
+}
+
+Tous les amis connectés reçoivent l'événement.
+
+Leur interface met immédiatement à jour :
+
+🟢 Nico
+
+↓
+
+🔴 Nico
+
+sans recharger la page.
+
+2. L'utilisateur se connecte
+
+À la connexion du WebSocket :
+
+isOnline = true
+
+Puis le serveur envoie :
+
+{
+    "type": "user_online",
+    "userId": 5
+}
+
+Les amis voient apparaître le point vert.
+
+3. L'utilisateur ferme son navigateur
+
+Le WebSocket déclenche :
+
+isOnline = false
+
+Puis le serveur envoie :
+
+{
+    "type": "user_offline",
+    "userId": 5
+}
+
+Tous les amis mettent immédiatement à jour l'affichage.
+
+Pourquoi séparer isOnline et status ?
+
+Parce que ce sont deux informations différentes.
+
+Exemple :
+
+Nico
+
+peut être
+
+🟢 Occupé
+
+ou
+
+🟢 Absent
+
+mais aussi
+
+⚫ Hors ligne
+
+Le statut "Busy" n'est pas remplacé par "Online" : il décrit la disponibilité, tandis que isOnline décrit la connexion.
+
+Le front décide ensuite quoi afficher.
+
+Par exemple :
+
+if (!user.isOnline)
+    afficher("⚫ Hors ligne");
+else if (user.status === "Busy")
+    afficher("🔴 Occupé");
+else if (user.status === "Away")
+    afficher("🟡 Absent");
+else
+    afficher("🟢 En ligne");

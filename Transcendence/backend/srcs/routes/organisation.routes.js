@@ -1,6 +1,7 @@
 import express from 'express';
 import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/checkPermission.js';
 import prisma from '../prisma.js';
+import { notifyOrgaMembers, notifyUser } from '../service/notification.js';
 
 const router = express.Router();
 
@@ -168,46 +169,68 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
             if (!roles.includes(role))
                 return res.status(400).json({ error: 'Invalid role' });
 
-            // verifier que la cible est bien dans l'orga
-            const membre = await prisma.member.findUnique({
-                where: { userId_orgId:
-                    { 
-                        userId: cible,
-                        orgId: req.orgId
-                    }
-                },
-            });
-
-            if (!membre)
-                return res.status(404).json({ error: 'Member not found' });
-
-            // verifie qu'il y a tjs au moins 1 admin sur l'orga
-            if (membre.role === 'Admin' && role !== 'Admin') {
-                const nbAdmins = await prisma.member.count({
-                    where: {
-                        orgId: req.orgId,
-                        role: 'Admin'},
+            const updated = await prisma.$transaction(async (tx) => {
+                // verifier que la cible est bien dans l'orga
+                const membre = await tx.member.findUnique({
+                    where: { userId_orgId:
+                        { 
+                            userId: cible,
+                            orgId: req.orgId
+                        }
+                    },
                 });
 
-                if (nbAdmins === 1)
-                    return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-            }
+                if (!membre)
+                    throw new Error('MEMBER_NOT_FOUND');
 
-            const updated = await prisma.member.update({
-                where: {
-                    userId_orgId: {
-                        userId: cible,
-                        orgId: req.orgId
-                    }
-                },
-                data: { role },
+                // verifie qu'il y a tjs au moins 1 admin sur l'orga
+                if (membre.role === 'Admin' && role !== 'Admin') {
+                    const nbAdmins = await tx.member.count({
+                        where: {
+                            orgId: req.orgId,
+                            role: 'Admin'},
+                    });
+
+                    if (nbAdmins === 1)
+                        throw new Error('LAST_ADMIN');
+                }
+
+                const updated = await tx.member.update({
+                    where: {
+                        userId_orgId: {
+                            userId: cible,
+                            orgId: req.orgId
+                        }
+                    },
+                    data: {
+                        role
+                    },
+                });
+
+                await notifyUser(
+                    tx,
+                    cible,
+                    req.user.userId,
+                    'RoleChanged',
+                    `${req.user.pseudo} changed your role to ${role}`
+                );
+                return updated;
             });
 
             return res.json({
                 message: 'Role updated',
                 membre: updated
             });
+
         } catch (error) {
+            if (error.message === 'LAST_ADMIN') {
+                return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+            }
+
+            if (error.message === 'MEMBER_NOT_FOUND') {
+                return res.status(404).json({ error: 'Member not found' });
+            }
+
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
@@ -222,42 +245,68 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
             if (!Number.isInteger(cible) || cible <= 0)
                 return res.status(400).json({ error: 'Invalid user id' });
 
-            const membre = await prisma.member.findUnique({
-                where: { userId_orgId: {
-                    userId: cible,
-                    orgId: req.orgId
-                    }
-                },
-            });
-
-            if (!membre)
-                return res.status(404).json({ error: 'Member not found' });
-
-            // verifie qu'il y a tjs au moins 1 admin dans l'orga
-            if (membre.role === 'Admin') {
-                const nbAdmins = await prisma.member.count({
-                    where: {
-                        orgId: req.orgId,
-                        role: 'Admin'
+            await prisma.$transaction(async (tx) => {
+                const membre = await tx.member.findUnique({
+                    where: { userId_orgId: {
+                        userId: cible,
+                        orgId: req.orgId
+                        }
                     },
                 });
 
-                if (nbAdmins === 1)
-                    return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
-            }
+                if (!membre)
+                    throw new Error('MEMBER_NOT_FOUND');
 
-            await prisma.member.delete({
-                where: {
-                    userId_orgId: {
-                        userId: cible,
-                        orgId: req.orgId
-                    }
-                },
-            });
+                // verifie qu'il y a tjs au moins 1 admin dans l'orga
+                if (membre.role === 'Admin') {
+                    const nbAdmins = await tx.member.count({
+                        where: {
+                            orgId: req.orgId,
+                            role: 'Admin'
+                        },
+                    });
+
+                    if (nbAdmins === 1)
+                        throw new Error('LAST_ADMIN');
+                }
+
+                await notifyUser(
+                    tx,
+                    cible,
+                    req.user.userId,
+                    'RemovedFromOrga',
+                    `You were removed from the organisation ${req.orgMembership.organisation.name}`
+                );
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'MemberRemoved',
+                    `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`
+                );
+
+                await tx.member.delete({
+                    where: {
+                        userId_orgId: {
+                            userId: cible,
+                            orgId: req.orgId
+                        }
+                    },
+                });
+            })
 
             return res.json({ message: 'Member deleted' });
             
         } catch (error) {
+            if (error.message === 'LAST_ADMIN') {
+                return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+            }
+
+            if (error.message === 'MEMBER_NOT_FOUND') {
+                return res.status(404).json({ error: 'Member not found' });
+            }
+
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
@@ -284,6 +333,14 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                         throw new Error('LAST_ADMIN');
                 }
 
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'MemberLeftOrga',
+                    `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`
+                );
+
                 await tx.member.delete({
                     where: {
                         userId_orgId: {
@@ -300,6 +357,7 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
             if (error.message === 'LAST_ADMIN') {
                 return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
             }
+
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
