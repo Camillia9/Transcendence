@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "start": "npx prisma generate && npx prisma migrate deploy && node server.js"
+    "start": "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && node server.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
