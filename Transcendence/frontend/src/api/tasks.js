@@ -74,3 +74,12 @@ export async function addComment(projectId, taskId, content) {
 		body: JSON.stringify({ content }), // POST renvoie le commentaire DIRECTEMENT (res.status(201).json(comment))
 	})
 }
+
+export async function deleteComment(projectId, taskId, commentId) {
+	if (USE_MOCK)
+		return { message: 'Comment deleted' }
+
+	return await apiRequest(`/projects/${projectId}/tasks/${taskId}/comments/${commentId}`, {
+		method: 'DELETE'
+	})
+}

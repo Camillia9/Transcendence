@@ -12,7 +12,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment, deleteComment } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -31,13 +31,13 @@ function KanbanPage() {
   const projectId = Number(id)
 
   const [activeTask, setActiveTask] = useState(null)
-  const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. Une tâche = panneau ouvert avec ses détails.
+  const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. C'est la tache ouverte dans le taskPanel
   const [newTaskColumn, setNewTaskColumn] = useState(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskPriority, setNewTaskPriority] = useState('Normal')
   const [newTaskError, setNewTaskError] = useState('')
   const [project, setProject] = useState(null)
-  const [tasks, setTasks] = useState([])
+  const [tasks, setTasks] = useState([]) // Le tableau contenant toutes les taches
 
   useEffect(() => {
     if (!socket || !projectId) return
@@ -202,19 +202,19 @@ function KanbanPage() {
     // mAj opti (instantanee mais incomplete)
     const updated = { ...selectedTask, assignedToId: userId }
     setTasks(tasks.map(t => t.id === taskId ? updated : t))
-    setSelectedTask(updated)
+    setSelectedTask(updated) // raffraichit le panneau instante. Le nouveau commentaire apparait
 
     try {
       const saved = await assignTask(projectId, taskId, userId) // la tache complete
       console.log(saved) // temporaire
-      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // prev lit toujours l'état le plus à jour.
+      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // Pour que le comteur de commentaires (task.comments.lenght) s'incremente direct. prev lit toujours l'état le plus à jour.
       setSelectedTask(saved)
     } catch (error) {
       console.error('Impossible d\'assigner la tache', error)
     }
   }
 
-  const handleaddComment = async (taskId, content) => {
+  const handleAddComment = async (taskId, content) => {
     try {
       const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
 
@@ -224,6 +224,21 @@ function KanbanPage() {
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
     } catch (error) {
       console.error('Impossible d\'ajouter le commentaire', error)
+    }
+  }
+
+  const handleDeleteComment = async (taskId, commentId) => {
+    try {
+      await deleteComment(projectId, taskId, commentId)
+
+      const updated = {
+        ...selectedTask,
+        comments: selectedTask.comments.filter(c => c.id !== commentId),
+      }
+      setSelectedTask(updated)
+      setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+    } catch (error) {
+      console.error('Impossible de supprimer le commentaire', error)
     }
   }
 
@@ -291,7 +306,8 @@ function KanbanPage() {
         onUpdate={handleUpdateTask}
         onAssign={handleAssignTask}
         onDelete={handleDeleteTask}
-        onAddComment={handleaddComment}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
       />
       <Modal
         isOpen={!!newTaskColumn}
