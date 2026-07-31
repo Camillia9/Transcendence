@@ -51,6 +51,14 @@ export async function loadOrgMembership(req, res, next) {
                     orgId: orgId,
                 },
             },
+            include: {
+                organisation: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
+            }
         });
 
         if (!membre)
@@ -145,6 +153,75 @@ export async function loadTask(req, res, next) {
     }
 }
 
+export async function loadInvitation(req, res, next) {
+    try {
+        const invitationId = Number(req.params.id);
+        
+        if (!Number.isInteger(invitationId) || invitationId <= 0)
+            return res.status(400).json({ error: 'Invalid invitation id' });
+        
+        const invitation = await prisma.invitation.findUnique({
+            where: {
+                id: invitationId,
+            },
+            include: {
+                organisation: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
+            }
+        });
+        
+        if (!invitation)
+            return res.status(404).json({ error: 'Invitation not found' });
+
+        req.invitation = invitation;
+
+        next();
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
+}
+
+export async function loadComment(req, res, next) {
+    try {
+        const commentId = Number(req.params.commentId);
+        
+        if (!Number.isInteger(commentId) || commentId <= 0)
+            return res.status(400).json({ error: 'Invalid comment id' });
+        
+        const comment = await prisma.comment.findFirst({
+            where: {
+                id: commentId,
+                taskId: req.task.id,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        pseudo: true,
+                        avatar: true,
+                    }
+                }
+            }
+        });
+        
+        if (!comment)
+            return res.status(404).json({ error: 'Comment not found' });
+
+        req.comment = comment;
+
+        next();
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
+}
 
 //verifie qu'un utilisateur est connecter et a le droit de faire une action avant de laisser passer une requete
 // req = request = la requete envoyer
@@ -196,3 +273,36 @@ export function canManageTask(req, res, next) {
 
     next();
 }
+
+
+// const isManager = req.projectMembership.role === "Manager";
+
+// const isOwner =
+//     req.task.createdById === req.user.userId ||
+//     req.task.assignedToId === req.user.userId;
+
+// if (!isManager && !isOwner)
+//     return res.status(403).json({
+//         error: "Not allowed",
+//     });
+
+// next();
+
+
+
+// helper au lieu de faire tt le tps 
+// return res.status(500).json({
+//     error: "Database error",
+// });
+
+// function handleDatabaseError(res, error) {
+//     console.error(error);
+//     return res.status(500).json({
+//         error: "Database error",
+//     });
+// }
+
+// et remplacer par 
+// catch (error) {
+//     return handleDatabaseError(res, error);
+// }

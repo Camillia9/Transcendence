@@ -41,7 +41,8 @@ router.post('/organisations', authenticate,
                 return res.status(400).json({ error: 'Organisation name required' });
             return res.status(500).json({ error: 'Database error' });
         }
-});
+    }
+);
 
 // voir mon organisation
 // GET /organisations/:orgId
@@ -62,7 +63,8 @@ router.get('/organisations/:orgId', authenticate, loadOrgMembership, checkPermis
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
 
 // modifier mon organisation
 router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('edit_orga'),
@@ -96,7 +98,8 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
                 return res.status(409).json({ error: 'Organisation name already taken' });
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
 
 // supprimer mon organisation et donc de ses membres aussi
 router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
@@ -111,7 +114,8 @@ router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPer
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
 
 // voir les membres d'une organisation
 router.get('/organisations/:orgId/membres', authenticate, loadOrgMembership, checkPermissionOrga('view_member'),
@@ -142,7 +146,8 @@ router.get('/organisations/:orgId/membres', authenticate, loadOrgMembership, che
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
 
 // changer un role, par ex tu passes de admin a membre
 router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembership, checkPermissionOrga('change_role'),
@@ -206,9 +211,10 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
 
-// supprimer un membre d'une orga
+// supprimer un membre d'une orga (seul les admins peuvent)
 router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembership, checkPermissionOrga('delete_member'),
     async (req, res) => {
         try {
@@ -255,6 +261,49 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
             console.error(error);
             return res.status(500).json({ error: 'Database error' });
         }
-    });
+    }
+);
+
+// quitter une orga soi meme
+router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
+    async (req, res) => {
+        try {
+            const membre = req.orgMembership;
+
+            // verifie qu'il y a tjs au moins 1 admin dans l'orga
+            await prisma.$transaction(async (tx) => {
+                if (membre.role === 'Admin') {
+                    const nbAdmins = await tx.member.count({
+                        where: {
+                            orgId: req.orgId,
+                            role: 'Admin'
+                        },
+                    });
+
+                    if (nbAdmins === 1)
+                        throw new Error('LAST_ADMIN');
+                }
+
+                await tx.member.delete({
+                    where: {
+                        userId_orgId: {
+                            userId: req.user.userId,
+                            orgId: req.orgId
+                        }
+                    }
+                });
+            });
+
+            return res.json({ message: 'You left the organisation' });
+            
+        } catch (error) {
+            if (error.message === 'LAST_ADMIN') {
+                return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+            }
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    }
+);
 
 export default router;
