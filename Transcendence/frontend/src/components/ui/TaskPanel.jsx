@@ -1,4 +1,5 @@
 import { IconX, IconCalendar, IconUser } from "@tabler/icons-react"
+import { useState } from "react"
 import { PRIORITIES } from "../../data/priorities"
 import Button from "./Button"
 
@@ -9,7 +10,7 @@ const COLUMN_OPTIONS = [
   { value: 'Blocked',     label: 'En attente' },
 ]
 
-function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete }) {
+function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete, onAddComment }) {
   if (!task) return null
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
@@ -26,6 +27,14 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
 
   // Pour le "Cree par X" en bas du panel"
   const creator = task.createdBy
+
+  // Pour pouvoir ecrire des commentaires dans la colonne attente
+  const [newComment, setNewComment] = useState('')
+
+  function submitComment() {
+    if (!newComment.trim()) return // refuse les commentaires vides
+    onAddComment(task.id, newComment.trim())
+  }
 
   return (
     <>
@@ -136,6 +145,16 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
           {/*Champs commentaire QUE colonne en attente*/}
           {task.status === 'Blocked' && (
             <div className="flex flex-col gap-3">
+              {/*Champs comentaire pour ecire */}
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Ajouter un commentaire..."
+                className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none resize-none h-16 placeholder-gray-300"
+              />
+              <Button onClick={submitComment} className="self-end">
+                Envoyer
+              </Button>
               <label className="text-xs text-gray-400 uppercase tracking-wide">Commentaires</label>
               {task.comments.length === 0 && (
                 <p className="text-xs text-gray-300">Aucun commentaire pour l'instant.</p>

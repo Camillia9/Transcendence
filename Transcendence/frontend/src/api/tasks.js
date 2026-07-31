@@ -64,3 +64,13 @@ export async function createTask(projectId, data) {
 	})
 	return response // cette route renvoie la tache directement (201) : res.status(201).json(task)
 }
+
+export async function addComment(projectId, taskId, content) {
+	if (USE_MOCK)
+		return { id: Date.now(), content, user: { id: 0, pseudo: 'moi', avatar: null }, createdAt: new Date().toISOString() }
+
+	return await apiRequest(`/projects/${projectId}/tasks/${taskId}/comments`, {
+		method: 'POST',
+		body: JSON.stringify({ content }), // POST renvoie le commentaire DIRECTEMENT (res.status(201).json(comment))
+	})
+}

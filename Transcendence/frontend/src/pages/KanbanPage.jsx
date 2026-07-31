@@ -12,7 +12,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -214,6 +214,19 @@ function KanbanPage() {
     }
   }
 
+  const handleaddComment = async (taskId, content) => {
+    try {
+      const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
+
+      // On l'ajoute a la tache ouverte
+      const updated = {...selectedTask, comments: [...selectedTask.comments, saved] } // on modifie que le commentaire, on laisse les autres inchange
+      setSelectedTask(updated)
+      setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+    } catch (error) {
+      console.error('Impossible d\'ajouter le commentaire', error)
+    }
+  }
+
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
   // Si on ne met pas cela, ca plante. 
   if (!project) return <p>Chargement…</p>
@@ -278,6 +291,7 @@ function KanbanPage() {
         onUpdate={handleUpdateTask}
         onAssign={handleAssignTask}
         onDelete={handleDeleteTask}
+        onAddComment={handleaddComment}
       />
       <Modal
         isOpen={!!newTaskColumn}
