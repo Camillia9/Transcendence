@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate, loadOrgMembership, checkPermissionOrga, checkPermissionProject, loadProject} from '../../../shared/middleware/checkPermission.js';
-import prisma from '../prisma.js';
+import prisma from '../../../prisma/prisma.js';
 import { notifyProjectMembers } from '../../../shared/notification_data.js';
 
 const router = express.Router();
