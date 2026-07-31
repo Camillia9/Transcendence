@@ -1,5 +1,4 @@
 // crypto = module integrer a Node.js qui permet de generer des chaines de caracteres aleatoires tres difficile a deviner
-import crypto from 'crypto';
 import express from 'express';
 
 import { checkPermissionOrga, authenticate, loadOrgMembership } from '../../../shared/middleware/checkPermission.js';
@@ -11,101 +10,31 @@ const router = express.Router();
 // router.post('/organisation/inviter') = route pour inviter qq1
 // Avant d'exécuter la fonction, Express vérifie si l'utilisateur possède la permission inviter
 // async (req, res) => { -> cette fonction sera executer lorsque la requete est recue
-// const { email } = req.body; = recupere l'email
+// const { userId } = req.body; = recupere l'id de user
 // const { orgId } = req.user; = recupere l'orga
 router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership, checkPermissionOrga('invit_member'),
     async (req, res) => {
         try {
-            const { email } = req.body;
-            if (!email)
-                return res.status(400).json({ error: 'Email required '});
+            const userId = Number(req.body.userId);
+
+            if (!Number.isInteger(userId) || userId <= 0)
+                return res.status(400).json({ error: 'Invalid user id' });
 
             const user = await prisma.user.findUnique({
-                where: { email, },
+                where: { id: userId },
             });
 
-            if (user) {
-                const alreadyMember = await prisma.member.findUnique({
-                    where: {
-                        userId_orgId: {
-                            userId: user.id,
-                            orgId: req.orgId,
-                        },
-                    },
-                });
-                if (alreadyMember)
-                    return res.status(409).json({ error: 'User is already a member'});
-            }
-
-            // creation de l'identifiant de l'invitation
-            // Date.now() = donne l'heure actuelle en millisecondes
-            const inviteToken = crypto.randomBytes(32).toString('hex');
-            const expiration = new Date(Date.now() + 24 * 60 * 60 * 1000);//24h
-
-            const invitation = await prisma.invitation.create({
-                data: {
-                    email,
-                    token: inviteToken,
-                    expireAt: expiration,
-                    organisation: req.orgId,
-                },
-            });
-
-            // envoyer l'email (utiliser nodemailer)
-            // Le lien : https://taskboard.app/rejoindre/${inviteToken}
-
-            return res.json({
-                message: `Invitation sent to ${email}`,
-                token: invitation.inviteToken,
-            });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Database error' });
-        }
-    }
-);
-
-// rejoindre une organisation
-router.post('/organisations/rejoindre/:token', authenticate,
-    async (req, res) => {
-        try {
-            // recuperer le token dans l'URL
-            const { token } = req.params;
-
-            // rechercher l'invitation
-            const invitation = await prisma.invitation.findUnique({
-                where: {
-                    token,
-                },
-            });
-
-            if (!invitation)
-                return res.status(404).json({ error: 'Invitation not found' });
-
-            // verifier que l'invitation n'a pas expirer
-            if (invitation.expireAt < new Date())
-                return res.status(400).json({ error: 'Invitation expired' });
-
-            // recuperer l'utilisateur connecter
-            const user = await prisma.user.findUnique({
-                where: {
-                    id: req.user.userId,
-                },
-            });
-
-            if(!user)
+            if (!user)
                 return res.status(404).json({ error: 'User not found' });
 
-            // verifier que l'email correspond
-            if (user.email !== invitation.email)
-                return res.status(403).json({ error: 'This invitation is not for you' });
+            if (userId === req.user.userId)
+                return res.status(400).json({ error: 'You cannot invite yourself' });
 
-            // verifier qu'il n'est pas deja membre de l'orga (au cas ou si envoie plusieurs invit)
             const alreadyMember = await prisma.member.findUnique({
                 where: {
                     userId_orgId: {
                         userId: user.id,
-                        orgId: invitation.organisation,
+                        orgId: req.orgId,
                     },
                 },
             });
@@ -113,19 +42,208 @@ router.post('/organisations/rejoindre/:token', authenticate,
             if (alreadyMember)
                 return res.status(409).json({ error: 'User is already a member'});
 
-            // ajouter le membre + supprimer l'invitation
+            const pendingInvitation = await prisma.invitation.findFirst({
+                where: {
+                    invitedUserId: userId,
+                    orgId: req.orgId,
+                    status: 'Pending',
+                },
+            });
+
+            if (pendingInvitation)
+                return res.status(409).json({ error: 'Invitation already pending' });
+
+            await prisma.$transaction(async (tx) => {
+                const invitation = await tx.invitation.create({
+                    data: {
+                        inviterId: req.user.userId,
+                        invitedUserId: userId,
+                        orgId: req.orgId,
+                    },
+                });
+
+                await tx.notification.create({
+                    data: {
+                        type: 'InvitationSent',
+                        content: `invited you to join the organisation ${req.orgMembership.organisation.name}`,
+                        actorId: req.user.userId,
+                        userId,
+                    },
+                });
+            });
+
+            return res.json({
+                message: 'Invitation sent',
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    }
+);
+
+
+// voir tte mes invitations en attente
+router.get('/invitations', authenticate,
+    async (req, res) => {
+        try {
+            // rechercher l'invitation
+            const invitations = await prisma.invitation.findMany({
+                where: {
+                    invitedUserId: req.user.userId,
+                    status: 'Pending',
+                },
+                include: {
+                    inviter: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true,
+                        },
+                    },
+                    organisation: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            });
+
+            return res.json(invitations);
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    }
+);
+
+
+// rejoindre une organisation en acceptant une invitation
+router.patch('/invitations/:id/accept', authenticate, loadInvitation,
+    async (req, res) => {
+        try {
+            if (req.invitation.invitedUserId !== req.user.userId)
+                return res.status(403).json({ error: 'Not your invitation' });
+
+            if (req.invitation.status !== 'Pending')
+                return res.status(400).json({ error: 'Invitation already processed' });
+
+            const alreadyMember = await prisma.member.findUnique({
+                where: {
+                    userId_orgId: {
+                        userId: req.user.userId,
+                        orgId: req.invitation.orgId,
+                    },
+                },
+            });
+
+            if (alreadyMember)
+                return res.status(409).json({ error: 'User is already a member' });
+
+            // ajouter le membre + modifier le status de l'invitation
             await prisma.$transaction(async (tx) => {
                 await tx.member.create({
                     data: {
-                        userId: user.id,
-                        orgId: invitation.organisation,
+                        userId: req.user.userId,
+                        orgId: req.invitation.orgId,
                         role: 'Member',
                     },
                 });
 
+                await tx.invitation.update({
+                    where: {
+                        id: req.invitation.id,
+                    },
+                    data: {
+                        status: 'Accepted',
+                        acceptedAt: new Date(),
+                    },
+                });
+
+                await tx.notification.create({
+                    data: {
+                        type: 'InvitationAccepted',
+                        content: `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
+                        actorId: req.user.userId,
+                        userId : req.invitation.inviterId,
+                    },
+                });
+            });
+
+            return res.json({ message: 'Invitation accepted' });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    }
+);
+
+// refuser une invitation
+router.patch('/invitations/:id/decline', authenticate, loadInvitation,
+    async (req, res) => {
+        try {
+            if (req.invitation.invitedUserId !== req.user.userId)
+                return res.status(403).json({ error: 'Not your invitation' });
+
+            if (req.invitation.status !== 'Pending')
+                return res.status(400).json({ error: 'Invitation already processed' });
+
+            await prisma.$transaction(async (tx) => {
+                await tx.invitation.update({
+                    where: {
+                        id: req.invitation.id,
+                    },
+                    data: {
+                        status: 'Declined',
+                    },
+                 });
+
+                await tx.notification.create({
+                    data: {
+                        type: 'InvitationDeclined',
+                        content: `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
+                        actorId: req.user.userId,
+                        userId: req.invitation.inviterId,
+                    },
+                });
+            });
+
+            return res.json({ message: 'Invitation declined' });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    }
+);
+
+// annuler une invitation par l'admin
+router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMembership, checkPermissionOrga('invit_member'), loadInvitation,
+    async (req, res) => {
+        try {
+            if (req.invitation.status !== 'Pending')
+                return res.status(400).json({ error: 'Invitation already processed' });
+
+            if (req.invitation.orgId !== req.orgId)
+                return res.status(404).json({ error: 'Invitation not found' });
+
+            await prisma.$transaction(async (tx) => {
                 await tx.invitation.delete({
                     where: {
-                        id: invitation.id,
+                        id: req.invitation.id,
+                    },
+                });
+
+                await tx.notification.create({
+                    data: {
+                        type: 'InvitationCancelled',
+                        content: `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
+                        actorId: req.user.userId,
+                        userId: req.invitation.invitedUserId,
                     },
                 });
             });
@@ -140,20 +258,3 @@ router.post('/organisations/rejoindre/:token', authenticate,
 );
 
 export default router;
-
-
-// // valider l'invitation quand l'utilisateur clique le lien
-// // :token = signifie que cette partie de l'url est une variable
-// router.get('/organisation/rejoindre/:token', async (req, res) => {
-//     // prisma recherche dans la base une invitation dont le token correspond
-//     const invitation = await prisma.invitation.findUnique({
-//         where: { token: req.params.token }
-//     });
-//     if (!invitation || invitation.expireAt < new Date())
-//         return res.status(400).json({ error: 'Invalid ou expired invitation'});
-//     // si tt est valide, une ligne est ajouter dans la table des membres
-//     await prisma.membre.create({
-//         data: { userId: req.user.id, organisationId: invitation.orgId, role: 'User'}
-//     });
-//     res.json({ message: 'You join the organisation' });
-// });

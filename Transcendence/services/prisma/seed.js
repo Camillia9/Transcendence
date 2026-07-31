@@ -2,6 +2,7 @@ import { PrismaClient } from '../generated/prisma/index.js';
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import "dotenv/config";
+import bcrypt from 'bcrypt'
 
 const { Pool } = pg;
 
@@ -67,7 +68,7 @@ async function main() {
     data:{
       pseudo:"alice",
       email:"alice@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("alice123", 10),
     }
   });
 
@@ -76,7 +77,7 @@ async function main() {
     data:{
       pseudo:"bob",
       email:"bob@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("bob123", 10),
     }
   });
 
@@ -85,7 +86,7 @@ async function main() {
     data:{
       pseudo:"charlie",
       email:"charlie@test.com",
-      passwordHash:"fake_hash",
+      passwordHash: await bcrypt.hash("charlie123", 10),
     }
   });
 
@@ -175,7 +176,7 @@ async function main() {
 
       priority:Priority.Urgent,
       status:Colonne.Doing,
-      position:1,
+      position:0,
 
       projectId:project.id,
 
@@ -193,7 +194,7 @@ async function main() {
 
       priority:Priority.Normal,
       status:Colonne.ToDo,
-      position:1,
+      position:0,
 
       projectId:project.id,
 

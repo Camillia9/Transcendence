@@ -1,5 +1,8 @@
-import prisma from '../../../prisma/prisma.js';
-import { authenticate } from '../../../shared/middleware/checkPermission.js';
+import express from 'express';
+import prisma from "../prisma.js";
+import { authenticate } from '../middleware/checkPermission.js';
+
+const router = express.Router();
 
 // recuperer la liste des amis avec leur status
 router.get('/friends', authenticate, async (req, res) => {
@@ -47,7 +50,7 @@ router.post('/friends', authenticate, async (req, res) => {
         });
 
         if(!friend)
-           return res.status(404).json({ error: 'User not found' });
+           return res.status(404).json({ error: 'User not found' }); 
 
         const alreadyFriend = await prisma.friend.findUnique({
             where: {
@@ -123,7 +126,7 @@ router.get('/users/search', authenticate, async (req, res) => {
         if (!query || query.length < 2)
             return res.status(400).json({ error: "Search must contain at least 2 characters", });
 
-        // insensitive permet de pas faire attention a upper ou lowercase
+        // insensitive permet de pas faire attention a upper ou lowercase 
         const users = await prisma.user.findMany({
             where: {
                 pseudo: {
@@ -155,3 +158,5 @@ router.get('/users/search', authenticate, async (req, res) => {
         return res.status(500).json({ error: 'Database error' });
     }
 });
+
+export default router;

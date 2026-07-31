@@ -4,6 +4,7 @@ import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
 import { getUsers } from "../api/users";
+import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
@@ -12,7 +13,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -23,6 +24,8 @@ const COLUMNS = [
 ];
 
 function KanbanPage() {
+
+  const { user } = useAuth()
 
   const socket = useSocket()
   const { id } = useParams()
@@ -51,16 +54,18 @@ function KanbanPage() {
     }
   }, [socket, projectId])
 
-  // Utilise l'API pour les tachs plutot que le mock
-  useEffect(() => {
-    async function loadTasks() {
-      try {
-        const data = await getTasks(projectId)
-        setTasks(data)
-      } catch (error) {
-        console.error('Impossible de charger les taches')
-      }
+  // Recupere les donnes de la task
+  const loadTasks = async () => {
+    try {
+      const data = await getTasks(projectId)
+      setTasks(data)
+    } catch (error) {
+      console.error('Impossible de charger les taches')
     }
+  }
+
+  // Utilise l'API pour les taches
+  useEffect(() => {
     loadTasks()
   }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
 
@@ -81,15 +86,15 @@ function KanbanPage() {
   console.log(selectedTask)
 
   // Fction helper 
-  const getNextPosition = (projId, column) =>
-    tasks.filter(t => t.projectId === projId && t.status === column).length
+  //const getNextPosition = (projId, column) =>
+  //  tasks.filter(t => t.projectId === projId && t.status === column).length
 
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
     setActiveTask(task)
   }
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event
     setActiveTask(null)
 
@@ -98,32 +103,26 @@ function KanbanPage() {
     const taskId = active.id
     const newColumn = over.id
     const task = tasks.find(t => t.id === taskId)
-    if (task.status === newColumn) return
+    if (task.status === newColumn) return // meme colonne, rien a faire
 
-    // Calcule de la prochiane position loesqu'on bouge
-    const nextPosition = getNextPosition(projectId, newColumn)
+      // Calcule de la prochiane position loesqu'on bouge ~ jsp si elle sera utilse plus tard
+    //const nextPosition = getNextPosition(projectId, newColumn)
 
-    // Met a jour la position des cartes lorsqu'une est bouge
-    setTasks(tasks.map(t => {
-      // task.map (parcourt toutes les taches une par une, et collecte les reponses dans un nouveau tableau)
-      // Cas 1: La tache deplace -> dans la new colonne, bout de file
-      if (t.id === taskId) {
-        return { ...t, status: newColumn, position: nextPosition }
-      }
-      // Cas 2: les taches derriere elle dans l'ancienne file avance d'un cran
-      if (
-        t.projectId === task.projectId &&
-        t.status === task.status &&
-        t.position === task.position
-      ) {
-        return {...t, position: t.position - 1}
-      }
-      // Cas 3 : Les taches qui ne sont pas dans les colonnes concerenes restent inchange
-      return t
-    }))
+    // Met a jour directement la position des cartes lorsqu'une est bouge
+    setTasks(tasks.map(t =>
+      t.id === taskId ? { ...t, status: newColumn } : t
+    ))
 
     if (socket) {
       socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
+    }
+
+    // le back calcule lui-meme la position
+    try {
+      await moveTask(projectId, taskId, newColumn)
+      await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
+    } catch (error) {
+      console.error('Impossible de deplacer la tache', error)
     }
   }
 
@@ -142,9 +141,22 @@ function KanbanPage() {
   )
 
   // Maj de la tache depuis le paneau (panel)
-  const handleUpdateTask = (updateTask) => {
-    setTasks(tasks.map(t => t.id === updateTask.id ? updateTask : t))
-    setSelectedTask(updateTask)
+  const handleUpdateTask = async (updatedTask) => {
+    // MaJ imediate a l'ecran
+    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
+    setSelectedTask(updatedTask)
+
+    // On envoie au back uniquement les champs que la route accepte
+    try {
+      await updateTask(projectId, updatedTask.id, {
+        title: updatedTask.title,
+        description: updatedTask.description,
+        priority: updatedTask.priority,
+        deadline: updatedTask.deadline,
+      })
+    } catch (error) {
+      console.error('Impossible de modifier la tache', error)
+    }
   }
 
   // Remettre tout au propre lorsqu'on a fini de cree la tache
@@ -155,32 +167,49 @@ function KanbanPage() {
     setNewTaskError('')
   }
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!newTaskTitle.trim()) {
       setNewTaskError('Le titre est obligatoire')
       return
     }
-    const nextPosition = getNextPosition(projectId, newTaskColumn)
-
-    const newTask = {
-      id: Date.now(),
-      projectId: projectId,
-      title: newTaskTitle.trim(),
-      priority: newTaskPriority,
-      status: newTaskColumn,
-      position: nextPosition,
-      createdBy: CURRENT_USER,
-      assignedToId: project.role === 'Manager' ? null : CURRENT_USER,
-      deadline: null,
-      comments: [],
+    //const nextPosition = getNextPosition(projectId, newTaskColumn)
+    try {
+      // On envoie uniquement ce que la route accepte
+      const newTask = await createTask(projectId, {
+        title: newTaskTitle.trim(),
+        priority: newTaskPriority,
+        description: null,
+        deadline: null,
+      })
+      // le back renvoie la task complete
+      setTasks([newTask, ...tasks])
+      handleCloseNewTask()
+    } catch (error) {
+      setNewTaskError('Impossible de creer la tache')
     }
-    setTasks([newTask, ...tasks])
-    handleCloseNewTask()
   }
 
-  const handleDeleteTask = (taskId) => {
-    setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
-    setSelectedTask(null) // et on ferme le panneau
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(projectId, taskId)
+      setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
+      setSelectedTask(null) // et on ferme le panneau
+    } catch (error) {
+      console.error('Impossible de supprimer la tache', error)
+    }
+  }
+
+  const handleAssignTask = async (taskId, userId) => {
+    // mAj instante a l'ecran 
+    const updated = { ...selectedTask, assignedToId: userId }
+    setTasks(tasks.map(t => t.id === taskId ? updated : t))
+    setSelectedTask(updated)
+
+    try {
+      await assignTask(projectId, taskId, userId)
+    } catch (error) {
+      console.error('Impossible d\'assigner la tache', error)
+    }
   }
 
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
@@ -188,9 +217,13 @@ function KanbanPage() {
   if (!project) return <p>Chargement…</p>
 
   // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
+  const memberships = project.projectMembers ?? []
+  const members = memberships.map(m => m.user)
+  const myRole = memberships.find(m => m.user.id === user?.id)?.role
 
-const visibleTasks = project.role === 'Manager' ?
-    tasks : tasks.filter(t => t.assignedToId === CURRENT_USER)
+  const visibleTasks = myRole=== 'Manager'
+    ? tasks
+    : tasks.filter(t => t.assignedToId === user?.id)
 
 
   return (
@@ -198,7 +231,10 @@ const visibleTasks = project.role === 'Manager' ?
     <div className="flex flex-col gap-6 min-w-fit">
       {/*En tete*/}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-primary-900">{project.name}</h1>
+        <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
+        <Button onClick={() => setNewTaskColumn('ToDo')}>
+          + Nouvelle tache
+        </Button>
       </div>
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -208,7 +244,7 @@ const visibleTasks = project.role === 'Manager' ?
               .filter((t) => t.status === col.id) // Parrcourt les taches visible et affiche que celle qui correspondent a sa colonne 
               .sort((a, b) => a.position - b.position) // Range l'ordre des cartes. Si a est negatif -> au dessus, positif -> en dessous
             return (
-              <KanbanColumn key={col.id} col={col} colTasks={colTasks} onAddTask={() => setNewTaskColumn(col.id)}>
+              <KanbanColumn key={col.id} col={col} colTasks={colTasks}>
                 {colTasks.map(task => (
                   <TaskCard
                     key={task.id}
@@ -233,11 +269,12 @@ const visibleTasks = project.role === 'Manager' ?
 
       <TaskPanel
         task={selectedTask}
-        userRole={project.role}
-        currentUser={CURRENT_USER}
-        members={getUsers()}
+        userRole={myRole}
+        currentUser={user?.id}
+        members={members}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
+        onAssign={handleAssignTask}
         onDelete={handleDeleteTask}
       />
       <Modal

@@ -2,7 +2,7 @@ const BASE_URL = 'http://localhost:3000/api'
 
 // Le moteur unique : toute requête vers le back passe par ici.
 export async function apiRequest(path, options = {}) {
-  // Bracelet d'Auth : null tant que la vrai auth n'existe pas
+  // Bracelet d'Auth, le token stocke a la connexion est attache aux requetes
   const token = localStorage.getItem('token')
 	try {
 		const response = await fetch(`${BASE_URL}${path}`, {
@@ -15,7 +15,9 @@ export async function apiRequest(path, options = {}) {
 		})
 
     if (!response.ok) {
-      throw new Error(`Erreur ${response.status} sur ${path}`)
+      // Recupere l'erreur du back direct dans la console
+      const errorBody = await response.json().catch(() => ({}))
+  	  throw new Error(errorBody.error || `Erreur ${response.status} sur ${path}`)
     }
     // On décode le corps JSON et on le renvoie à celui qui a appelé.
     return await response.json()

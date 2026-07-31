@@ -24,7 +24,8 @@ model User {
   twoFactorSecret       String?
   assignedTasks         Task[]               @relation("TaskAssignee")
   conversationMembers   ConversationMember[]
-  invitations           Invitation[]
+  sentInvitations       Invitation[]         @relation("InvitationSender")
+  receivedInvitations   Invitation[]         @relation("InvitationReceiver")
   members               Member[]
   messages              Message[]
   notificationsReceived Notification[]       @relation("NotificationReceiver")
@@ -107,17 +108,16 @@ model Task {
 }
 
 model Invitation {
-  id           Int          @id @default(autoincrement())
-  email        String
-  orgId        Int
-  token        String       @unique
-  inviterId    Int
-  expireAt     DateTime
-  utilisee     Boolean      @default(false)
-  createdAt    DateTime     @default(now())
-  acceptedAt   DateTime?
-  inviter      User         @relation(fields: [inviterId], references: [id])
-  organisation Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id            Int              @id @default(autoincrement())
+  inviterId     Int
+  invitedUserId Int
+  orgId         Int
+  createdAt     DateTime         @default(now())
+  status        InvitationStatus @default(Pending)
+  acceptedAt    DateTime?
+  inviter       User             @relation("InvitationSender", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitedUser   User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  organisation  Organisation     @relation(fields: [orgId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -230,10 +230,12 @@ enum TypeConversation {
 
 enum TypeNotification {
   Assignment
-  Invitation
+  InvitationSent
+  InvitationAccepted
+  InvitationDeclined
+  InvitationCancelled
   AjoutProjet
   SuppProjet
-  Commentaire
   DeplacementTache
 }
 
@@ -247,4 +249,10 @@ enum Language {
   fr
   en
   cn
+}
+
+enum InvitationStatus {
+  Pending
+  Accepted
+  Declined
 }

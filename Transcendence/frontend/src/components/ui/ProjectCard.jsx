@@ -2,12 +2,28 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { getProgressColor } from "../../utils/progressColor"
+import { useAuth } from "../../context/AuthContext"
 
 export default function ProjectCard({ project, onEdit, onDelete }) {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false) // Gere le survol
-  const { accent, tint, soft, text } = getProgressColor(project.tasks.done, project.tasks.total)
-  const pct = project.tasks.total === 0 ? 0 : Math.round(project.tasks.done / project.tasks.total * 100)
+
+  // Les taches sont recus : [{ status }, { status }...]
+  const tasks = project.tasks ?? []
+  const total = tasks.length
+  const done  = tasks.filter(t => t.status === 'Done').length
+
+  const { accent, tint, soft, text } = getProgressColor(done, total)
+  const pct = total === 0 ? 0 : Math.round(done / total * 100)
+
+  // Les membres: ils ont comme entree : { role, user: { id, pseudo, avatar }}
+  const memberships = project.projectMembers ?? []
+  const members = memberships.map(m => m.user)
+
+  // Mon role 
+  const myRole = memberships.find(m => m.user.id === user?.id)?.role
+
   return (
     <div
       className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
@@ -17,7 +33,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
     >
       {/*Icones au survol pour le manager*/}
       {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
-      {hovered && project.role === 'Manager' && (
+      {hovered && myRole === 'Manager' && (
         <div className="absolute top-3 right-3 flex gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(project)}}
@@ -40,14 +56,14 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           className="font-medium text-base leading-snug cursor-pointer hover:underline"
           style={{ color: text }}
         >
-          {project.name}
+          {project.title}
         </h3>
         {/* Transition au survol*/}
         <span
-          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && project.role === 'Manager' ? 'mr-12' : ''}`}
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && myRole === 'Manager' ? 'mr-12' : ''}`}
           style={{ backgroundColor: soft, color: text }}
         >
-          {project.role}
+          {myRole}
         </span>
       </div>
 
@@ -63,7 +79,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
           />
         </div>
         <span className="text-xs" style={{ color: text }}>
-          {project.tasks.done}/{project.tasks.total} tâches — {pct}%
+          {done}/{total} tâches — {pct}%
         </span>
       </div>
 
@@ -71,29 +87,29 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 	  {/*2 blocs a gauche et a droite */}
       <div className="flex items-center justify-between mt-auto">
         <span className="text-xs text-gray-400">
+          {project.deadline
+           ? `📅 ${new Date(project.deadline).toLocaleDateString('fr-FR')}`
+           : '📅 Aucune échéance'}
 			{/*project.deadline : project.deadline: date brut. On la transfore en objet JS(new). Format en fr(toLocal())*/}
-          📅 {new Date(project.deadline).toLocaleDateString('fr-FR')}
         </span>
 		{/*On affiche seulement les 3 premier membres. On leurs cree un avatar chacun(map)*/}
         <div className="flex -space-x-2">
-          {project.members.slice(0, 3).map((member, i) => (
+          {members.slice(0, 3).map((member, i) => (
             <div
               key={i}
-              title={member}
+              title={member.pseudo}
               className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium"
               style={{ backgroundColor: soft, color: text }}
             >
-			  {/*affiche 1ere lettres*/}
-              {member[0]}
+              {member.pseudo[0]}
             </div>
           ))}
-		  {/*4eme bulle compteur si +3 membres*/}
-          {project.members.length > 3 && (
+          {members.length > 3 && (
             <div
               className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
               style={{ backgroundColor: soft, color: text }}
             >
-              +{project.members.length - 3}
+              +{members.length - 3}
             </div>
           )}
         </div>
@@ -103,5 +119,3 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 
   )
 }
-
-// FINI ProjectCard, modifier Home.jsx

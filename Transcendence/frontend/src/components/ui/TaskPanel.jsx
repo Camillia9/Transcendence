@@ -10,7 +10,7 @@ const COLUMN_OPTIONS = [
   { value: 'Blocked',     label: 'En attente' },
 ]
 
-function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onDelete }) {
+function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete }) {
   if (!task) return null
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
@@ -20,10 +20,13 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
   const assignee = getUserById(task.assignedToId)
 
   // Peut-on supp la tache ?
-  const canDelete = userRole === 'Manager' || task.createdBy === currentUser
+  const canDelete = userRole === 'Manager' || task.createdById === currentUser
 
   // Pour que le manager puisse changer l'assignation d'une tache
   const canAssign = userRole === 'Manager'
+
+  // Pour le "Cree par X" en bas du panel"
+  const creator = members.find(m => m.id === task.createdById)
 
   return (
     <>
@@ -49,10 +52,15 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
           {/*Champs Deadline*/}
           <div className="flex flex-col gap-2">
             <label className="text-xs text-gray-400 uppercase tracking-wide">Deadline</label>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <IconCalendar size={16} className="text-gray-400" />
-                {task.deadline ? new Date(task.deadline).toLocaleDateString('fr-FR') : 'Aucune Deadline'}
-              </div>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <IconCalendar size={16} className="text-gray-400" />
+              <input
+                type="date"
+                value={task.deadline ? task.deadline.slice(0, 10) : ''}
+                onChange={(e) => onUpdate({ ...task, deadline: e.target.value || null })}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700 outline-none"
+              />
+            </div>
           </div>
           {/*Champs Assignation*/}
           <div className="flex flex-col gap-2">
@@ -65,7 +73,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
                 <select
                 // Champs select: affiche une selection de choix deroulante
                   value={task.assignedToId ?? ''} // si task.assignedToId = null : ''
-                  onChange={(e) => onUpdate({...task, assignedToId: e.target.value ? Number(e.target.value) : null})} // met a jour l'assignation instantanement. null si personne n'est assignee = ''
+                  onChange={(e) => onAssign(task.id, e.target.value ? Number(e.target.value) : null)} // met a jour l'assignation instantanement. null si personne n'est assignee = ''
                   className="text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1"
                 >
                   <option value="">Non assigne</option> 
@@ -138,17 +146,31 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onD
                 <div key={comment.id} className="flex flex-col gap-1 bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-primary-900/20 flex items-center justify-center text-xs text-primary-900">
-                      {comment.author[0]}
+                      {comment.user.pseudo[0]}
                     </div>
-                    <span className="text-xs font-medium text-gray-600">{comment.author}</span>
-                    <span className="text-xs text-gray-300 ml-auto">{comment.date}</span>
+                    <span className="text-xs font-medium text-gray-600">{comment.user.pseudo}</span>
+                    <span className="text-xs text-gray-300 ml-auto">
+                      {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600 pl-7">{comment.text}</p>
+                  <p className="text-xs text-gray-600 pl-7">{comment.content}</p>
                 </div>
               ))}
 
             </div>
           )}
+
+          {/*Créé par*/}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-gray-400 uppercase tracking-wide">Créé par</label>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
+                {creator?.pseudo?.[0] ?? '?'}
+              </div>
+              <span>{creator?.pseudo ?? 'Inconnu'}</span>
+            </div>
+          </div>
+          
         </div>
       </div>
     </>
