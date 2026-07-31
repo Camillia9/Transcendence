@@ -3,7 +3,6 @@ import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSenso
 import { PRIORITIES } from "../data/priorities";
 import { useParams } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
-import { getUsers } from "../api/users";
 import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
@@ -13,7 +12,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 
 import { useSocket } from "../context/SocketContext"
-import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask } from "../api/tasks";
+import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment } from "../api/tasks";
 import { getProjectById } from "../api/projects";
 
 const COLUMNS = [
@@ -200,15 +199,31 @@ function KanbanPage() {
   }
 
   const handleAssignTask = async (taskId, userId) => {
-    // mAj instante a l'ecran 
+    // mAj opti (instantanee mais incomplete)
     const updated = { ...selectedTask, assignedToId: userId }
     setTasks(tasks.map(t => t.id === taskId ? updated : t))
     setSelectedTask(updated)
 
     try {
-      await assignTask(projectId, taskId, userId)
+      const saved = await assignTask(projectId, taskId, userId) // la tache complete
+      console.log(saved) // temporaire
+      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // prev lit toujours l'état le plus à jour.
+      setSelectedTask(saved)
     } catch (error) {
       console.error('Impossible d\'assigner la tache', error)
+    }
+  }
+
+  const handleaddComment = async (taskId, content) => {
+    try {
+      const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
+
+      // On l'ajoute a la tache ouverte
+      const updated = {...selectedTask, comments: [...selectedTask.comments, saved] } // on modifie que le commentaire, on laisse les autres inchange
+      setSelectedTask(updated)
+      setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+    } catch (error) {
+      console.error('Impossible d\'ajouter le commentaire', error)
     }
   }
 
@@ -276,6 +291,7 @@ function KanbanPage() {
         onUpdate={handleUpdateTask}
         onAssign={handleAssignTask}
         onDelete={handleDeleteTask}
+        onAddComment={handleaddComment}
       />
       <Modal
         isOpen={!!newTaskColumn}

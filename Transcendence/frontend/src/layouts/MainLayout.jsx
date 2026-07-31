@@ -1,4 +1,4 @@
-import { IconPaletteFilled, IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers } from '@tabler/icons-react'
+import { IconPaletteFilled, IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers, IconUserHeart } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -217,8 +217,18 @@ function MainLayout() {
               {sidebarOpen && (
                 <span>Organisations</span>
               )}
-
             </button>
+
+            <button
+              onClick={() => navigate('/friends')}
+              className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
+            >
+              <IconUserHeart size={18} className='shrink-0'/>
+              {sidebarOpen && (
+                <span>Friends</span>
+              )}
+            </button>
+
           </div>
 
           <div className='flex flex-col gap-1 px-2 mt-auto mb-4'>
