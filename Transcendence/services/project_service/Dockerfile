@@ -8,5 +8,7 @@ COPY shared/ ./shared/
 COPY prisma/ ./prisma/
 COPY project_service/ ./project_service/
 
+RUN npx prisma generate --schema prisma/schema.prisma
+
 EXPOSE 3003
 CMD ["node", "project_service/srcs/server.js"]
