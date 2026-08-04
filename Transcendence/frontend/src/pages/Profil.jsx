@@ -5,7 +5,7 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
-import { getProfile, updateProfile } from '../api/users'
+import { changePassword, getProfile, updateProfile } from '../api/users'
 
 function Profil() {
   const { user, login } = useAuth()
@@ -17,9 +17,14 @@ function Profil() {
   const [statut, setStatut] = useState('')
   const [language, setLanguage] = useState('')
   //const [avatar, setAvatar] = useState(null)
-
-  // Save les erreurs des champsdu profile
+  // Save les erreurs des champs du profile
   const [error, setError] = useState('')
+
+  // Les etats pour changer le MDP
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
 
   async function handleSave () {
     try {
@@ -32,8 +37,6 @@ function Profil() {
       setError(err.message) // le back a ecrit l'erreur. On l'affiche
     }
   }
-
-  
 
   async function loadProfile() {
     try {
@@ -69,20 +72,33 @@ function Profil() {
     setIsModalOpen(false)
   }
 
+  // Gestion du MDP 
+    async function handleChangePassword () {
+    try {
+      setPasswordError('') // vide le precendent message d'erreur
+      await changePassword(oldPassword, newPassword)
+      setOldPassword('') // vide l'ancien state
+      setNewPassword('') // vide l'ancien satate
+      setPasswordSuccess('Mot de passe change')
+      setIsModalOpen(false)
+    } catch (err) {
+      setPasswordError(err.message) // le back a ecrit l'erreur. On l'affiche
+    }
+  }
+
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargmenet...</p>
 
   return (
-    <div className="max-w-md mx-auto py-10 px-4">
+    <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
 
-      <Card className="flex items-center gap-4">
+      {/*Choix de style : */}
+      {/*<Card className="flex flex-col items-center gap-3 text-center">*/}
+      <Card className="flex items-center justify-center gap-4">
         <Avatar username={profile.pseudo} size="lg" />
         <div>
           <h1 className="text-xl font-bold text-gray-900">{profile.pseudo}</h1>
           <p className="text-gray-500 text-sm">{profile.email}</p>
-        </div>
-        <div className="ml-auto">
-          <Button onClick={() => setIsModalOpen(true)}>Modifier</Button>
         </div>
       </Card>
 

@@ -28,12 +28,20 @@ export async function updateProfile(data) {
     method: 'PATCH',
     body: JSON.stringify(data)
   })
-  return response.user
+  return response.user // le back enoie message et user. On veut juste user. On l'extrait donc.
 }
 
 // recup le back
 export function getProfile() {
   if (USE_MOCK)
     return { pseudo: 'alice', email: '...', statut: 'Available', langue: 'fr' }
-  return apiRequest(`/profile`)
+  return apiRequest(`/profile`) // ou response. Le back retorune deja le user complet. Rien a extraire.
+}
+
+export async function changePassword(pass, newPass ) {
+  const response = await apiRequest(`/profile/password`, {
+    method: 'PATCH',
+    body: JSON.stringify( {oldPassword: pass, newPassword: newPass })
+  })
+  return response // Ou rien. On attend pas de reponses particulieres, on veut juste savoir si ca a reussi (dans le try/catch)
 }
