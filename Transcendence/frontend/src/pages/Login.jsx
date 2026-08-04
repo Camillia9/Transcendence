@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { loginRequest } from '../api/auth'
 import Input from '../components/ui/Input'
@@ -7,8 +8,9 @@ import Button from '../components/ui/Button'
 import AuthCard from '../components/ui/AuthCard'
 
 function Login() {
-  const navigate = useNavigate() // La demande pour avoir acces a un outil de navigation
+  const navigate = useNavigate()
   const { login } = useAuth()
+  const { t } = useTranslation()
 
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword]     = useState('')
@@ -19,10 +21,10 @@ function Login() {
     const newErrors = {}
 
     if (!identifier.trim())
-      newErrors.identifier = "Ton nom d'utilisateur ou email est requis"
+      newErrors.identifier = t('login.errors.identifierRequired')
 
     if (!password)
-      newErrors.password = "Le mot de passe est requis"
+      newErrors.password = t('login.errors.passwordRequired')
 
     return newErrors
   }
@@ -39,31 +41,22 @@ function Login() {
     setErrors({})
 
     try {
-      // Appel API : envoie identifiant + mot de passe, reçoit { token, user }
       const data = await loginRequest({ identifier, password })
-
-      // 1. On range le token dans le navigateur → le "bracelet" de client.js
       localStorage.setItem('token', data.token)
-
-      // 2. On mémorise l'utilisateur dans l'app (AuthContext)
       login(data.user)
-
-      // 3. On entre dans l'app
       navigate('/home')
     } catch (error) {
-      // Le back a refusé (mauvais identifiants, ou serveur injoignable)
-      setErrors({ global: "Identifiant ou mot de passe incorrect" })
+      setErrors({ global: t('login.errors.invalidCredentials') })
     } finally {
       setLoading(false)
     }
   }
 
-
   return (
     <AuthCard
-      title="Connexion"
-      subtitle="Content de te revoir"
-      swapText="Pas encore de compte ? S'inscrire"
+      title={t('login.title')}
+      subtitle={t('login.subtitle')}
+      swapText={t('login.swapText')}
       swapTo="/signup"
     >
       <div className="flex flex-col gap-3 w-full">
@@ -73,7 +66,7 @@ function Login() {
           <Input
             variant='auth'
             type="text"
-            placeholder="Nom d'utilisateur ou email"
+            placeholder={t('login.identifierPlaceholder')}
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             light
@@ -88,7 +81,7 @@ function Login() {
           <Input
             variant='auth'
             type="password"
-            placeholder="Mot de passe"
+            placeholder={t('login.passwordPlaceholder')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -102,7 +95,7 @@ function Login() {
         )}
 
         <Button onClick={handleSubmit} loading={loading}>
-          Se connecter
+          {t('login.submit')}
         </Button>
 
       </div>

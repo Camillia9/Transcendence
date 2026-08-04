@@ -12,6 +12,7 @@ import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
 import { getNotifs } from '../api/notifications'
+import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -150,9 +151,7 @@ function MainLayout() {
               )}
             </div>
             {/*Langue */}
-            <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm text-gray-500 font-medium'>
-              <IconLanguage size={20} className='text-gray-500'/>
-            </button>
+            <LanguageSwitcher/>
 
             {/*Profil */}
             <div className="relative"> {/*relative car le menu deroulant absolute doit se positionner par raport a lui*/}
@@ -161,8 +160,8 @@ function MainLayout() {
                 onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
                 className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
               >
-                <Avatar username={user?.username} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
-                <span className='text-sm text-gray-700'>{user?.username}</span>
+                <Avatar username={user?.pseudo} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
+                <span className='text-sm text-gray-700'>{user?.pseudo}</span>
               </div>
               {profileMenuOpen && (
                 <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-48 flex flex-col overflow-hidden z-50'>

@@ -1,6 +1,7 @@
 import { IconLayoutKanban } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 import Footer from '../components/ui/Footer'
+import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -13,17 +14,21 @@ export default function Landing() {
       <div className="dot-pattern absolute inset-0 opacity-50 pointer-events-none" />
 
       {/* Navbar */}
-      <nav className="relative z-10 flex items-center justify-between px-5 py-5">
+      <nav className="relative z-30 flex items-center justify-between px-5 py-5">
         <div className="flex items-center gap-2 text-primary-500 font-medium text-lg">
           <IconLayoutKanban size={28} />
           TaskBoard
         </div>
-        <span
-          onClick={() => navigate('/login')}
-          className="text-sm text-primary-800 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
-        >
-          Se connecter
-        </span>
+
+        <div className='flex items-center gap-3'>
+          <LanguageSwitcher/>
+          <span
+            onClick={() => navigate('/login')}
+            className="text-sm text-primary-800 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
+          >
+            Se connecter
+          </span>
+        </div>
       </nav>
 
       {/* Hero */}
