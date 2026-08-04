@@ -12,6 +12,7 @@ import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
 import { getNotifs } from '../api/notifications'
+import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -150,9 +151,7 @@ function MainLayout() {
               )}
             </div>
             {/*Langue */}
-            <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm text-gray-500 font-medium'>
-              <IconLanguage size={20} className='text-gray-500'/>
-            </button>
+            <LanguageSwitcher/>
 
             {/*Profil */}
             <div className="relative"> {/*relative car le menu deroulant absolute doit se positionner par raport a lui*/}
