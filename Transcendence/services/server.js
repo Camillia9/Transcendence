@@ -27,6 +27,7 @@ import userRouter from './auth_service/srcs/routes/user.routes.js';
 import friendRouter from './auth_service/srcs/routes/friend.routes.js';
 import commentRouter from './project_service/srcs/routes/comment.routes.js';
 import profilRouter from './auth_service/srcs/routes/profil.routes.js';
+import notificationRouter from './auth_service/srcs/routes/notification.routes.js';
 
 // Express gere les requetes HTTP classiques (GET, POST, etc.)
 const app = express()
@@ -46,8 +47,7 @@ passport.use(gitHubStrategy);
 
 // // Routes REST authentification / organisation
 app.use('/api', authRouter);
-// app.use('/api', orgaRouter);
-// app.use('/api', invitationRouter);
+app.use('/api', orgaRouter);
 app.use('/api', projectRouter);
 app.use('/api', taskRouter);
 app.use('/api', userRouter);
@@ -55,6 +55,7 @@ app.use('/api', commentRouter);
 app.use('/api', friendRouter);
 app.use('/api', profilRouter);
 app.use('/api', invitationRouter);
+app.use('/api', notificationRouter);
 
 // Serveur HTTP brut
 //0695428562
