@@ -7,16 +7,51 @@ services:
       - ./frontend:/app:z
       - /app/node_modules
 
-  backend:
-    build: ./services
+  auth-service:
+    build:
+      context: ./services
+      dockerfile: auth_service/Dockerfile
     depends_on:
-      - db #Podman demarre d'abord bd et ensuite backend
+      - db
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./services:/app:z
       - /app/node_modules
     environment:
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:5173
+      - DATABASE_URL=${DATABASE_URL}
+
+  chat-service:
+    build:
+      context: ./services
+      dockerfile: chat_service/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services:/app:z
+      - /app/node_modules
+    environment:
+      - PORT=3002
+      - FRONTEND_URL=http://localhost:5173
+      - DATABASE_URL=${DATABASE_URL}
+
+  project-service:
+    build:
+      context: ./services
+      dockerfile: project_service/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./services:/app:z
+      - /app/node_modules
+    environment:
+      - PORT=3003
       - FRONTEND_URL=http://localhost:5173
       - DATABASE_URL=${DATABASE_URL}
 
