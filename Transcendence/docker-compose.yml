@@ -12,7 +12,8 @@ services:
       context: ./services
       dockerfile: auth_service/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3001:3001"
     volumes:
@@ -22,13 +23,19 @@ services:
       - PORT=3001
       - FRONTEND_URL=http://localhost:5173
       - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
 
   chat-service:
     build:
       context: ./services
       dockerfile: chat_service/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3002:3002"
     volumes:
@@ -38,13 +45,15 @@ services:
       - PORT=3002
       - FRONTEND_URL=http://localhost:5173
       - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
 
   project-service:
     build:
       context: ./services
       dockerfile: project_service/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3003:3003"
     volumes:
@@ -54,6 +63,7 @@ services:
       - PORT=3003
       - FRONTEND_URL=http://localhost:5173
       - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
 
   db:
     image: docker.io/library/postgres:16-alpine  # image officielle, rien à construire
@@ -64,7 +74,12 @@ services:
     ports:
       - "5432:5432"                     # Le port sur lequel Postgres ecoute. pour t'y connecter depuis TA machine
     volumes:
-      - pgdata:/var/lib/postgresql/data # où Postgres range ses données
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:                               # déclaration du volume nommé
