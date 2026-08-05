@@ -4,12 +4,14 @@ import Avatar from '../components/ui/Avatar'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
-import { changePassword, getProfile, updateProfile } from '../api/users'
+import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
+import { useNavigate } from 'react-router-dom'
 
 function Profil() {
-  const { user, login } = useAuth()
+  const { user, login, logout } = useAuth()
   const [profile, setProfile] = useState(null) // Cree un profile vide. null au cas ou le profil n'a pas fini de charger(voir plus bas)
-  
+  const navigate = useNavigate()
+
   // Les etats des champs du profil
   const [pseudo, setPseudo] = useState('')
   const [statut, setStatut] = useState('')
@@ -24,11 +26,16 @@ function Profil() {
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
 
+  // Champs RGPD: Suppression profil 
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('') // save l'erreur si le mdp pour confirmer le mdp du compte a sa suppresion est pas ok
+  const [confirmDelete, setConfirmDelete] = useState(false) 
+
   async function handleSave () {
     try {
       setError('') // vide le precendent message d'erreur
       const data = await updateProfile({pseudo, statut, langue: language})
-      login(data)
+      login(data) // accessible via useAuth()
       setProfile(data) // met a jour instantannement apres les chnagement la carte profile
     } catch (err) {
       setError(err.message) // le back a ecrit l'erreur. On l'affiche
@@ -79,6 +86,24 @@ function Profil() {
     } catch (err) {
       setPasswordError(err.message) // le back a ecrit l'erreur. On l'affiche
     }
+  }
+
+  // Gestion suppression profil (RGPD)
+  async function handleDeleteAccount() {
+    try {
+      setDeleteError('')
+      await deleteAccount(deletePassword)
+      logout() // vide user + storage (accessible via useAuth())
+      navigate('/')
+    } catch (error) {
+      setDeleteError(error.message) // le back ecrit l'erreur
+    }
+  }
+
+  function cancelDelete() {
+    setConfirmDelete(false)
+    setDeletePassword('')
+    setDeleteError('')
   }
 
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
@@ -148,6 +173,7 @@ function Profil() {
         </div>
       </Card>
 
+      {/*Modifier le MDP */}
       <Card className='flex flex-col gap-4'>
         <h2 className='text-sm font-medium text-gray-700'>Modifier le mot de passe</h2>
         {/*Ancien MDP */}
@@ -161,7 +187,6 @@ function Profil() {
               className="w-48"
           />
         </div>
-
         {/*Nouveau mot de passe */}
         <div className='flex items-center justify-between'>
           <label className='text-sm text-gray-500'>Nouveau mot de passe</label>
@@ -181,6 +206,37 @@ function Profil() {
           {passwordSuccess && <p className="text-sm text-green-500">{passwordSuccess}</p>}
       </Card>
 
+      {/*Suppression du compte (RGPD)*/}
+      <Card className='flex flex-col gap-4'>
+        <h2 className='text-sm font-medium text-red-800'>Suppression du compte</h2>
+        {/*1er temps: Juste le bouton "suppression du compte"*/}
+        {!confirmDelete ? (
+          <Button variant='danger' onClick={() => setConfirmDelete(true)}>
+            Supprimer mon compte
+          </Button>
+        ) : (
+          //2nd temps: Champs mdp releves 
+          <div className='flec flex-col gap-3'>
+            <p className='text-sm text-gray-500'>
+              Cette action est irreversible.</p>
+            <p className='text-sm text-gray-500'>
+              Entre ton mot de passe pour supprimer ton compte</p>
+            <Input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Mot de passe"
+            />
+            {deletePassword && <p className='text-sm text-red-400'>{deleteError}</p>}
+            <div className='flex justify-end gap-2'>
+              <Button onClick={cancelDelete}>Annuler</Button>
+              <Button variant='danger' onClick={handleDeleteAccount}>
+                Confirmer la suppression
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   )
 }

@@ -45,3 +45,11 @@ export async function changePassword(pass, newPass ) {
   })
   return response // Ou rien. On attend pas de reponses particulieres, on veut juste savoir si ca a reussi (dans le try/catch)
 }
+
+export async function deleteAccount(password) {
+  const response = await apiRequest(`/profile`, {
+    method: "DELETE",
+    body: JSON.stringify({ password })
+  })
+  return response // ou rien
+}
