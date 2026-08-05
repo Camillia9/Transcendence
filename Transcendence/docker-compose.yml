@@ -21,7 +21,7 @@ services:
       - /app/node_modules
     environment:
       - PORT=3001
-      - FRONTEND_URL=http://localhost:5173
+      - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -43,7 +43,7 @@ services:
       - /app/node_modules
     environment:
       - PORT=3002
-      - FRONTEND_URL=http://localhost:5173
+      - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
 
@@ -61,16 +61,16 @@ services:
       - /app/node_modules
     environment:
       - PORT=3003
-      - FRONTEND_URL=http://localhost:5173
+      - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
 
   db:
     image: docker.io/library/postgres:16-alpine  # image officielle, rien à construire
     environment:                        # Postgres lit ces variables au démarrage
-      POSTGRES_USER: ${POSTGRES_USER}   # ${...} = "va chercher dans le .env"
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}       # crée automatiquement une base vide de ce nom
+      - POSTGRES_USER=${POSTGRES_USER}   # ${...} = "va chercher dans le .env"
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}       # crée automatiquement une base vide de ce nom
     ports:
       - "5432:5432"                     # Le port sur lequel Postgres ecoute. pour t'y connecter depuis TA machine
     volumes:
