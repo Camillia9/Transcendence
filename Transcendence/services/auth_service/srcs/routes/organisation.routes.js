@@ -212,7 +212,8 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
                     cible,
                     req.user.userId,
                     'RoleChanged',
-                    `${req.user.pseudo} changed your role to ${role}`
+                    `${req.user.pseudo} changed your role to ${role}`,
+                    req.app.get('io')
                 );
                 return updated;
             });
@@ -275,7 +276,8 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     cible,
                     req.user.userId,
                     'RemovedFromOrga',
-                    `You were removed from the organisation ${req.orgMembership.organisation.name}`
+                    `You were removed from the organisation ${req.orgMembership.organisation.name}`,
+                    req.app.get('io')
                 );
 
                 await notifyOrgaMembers(
@@ -283,7 +285,8 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     req.orgId,
                     req.user.userId,
                     'MemberRemoved',
-                    `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`
+                    `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`,
+                    req.app.get('io')
                 );
 
                 await tx.member.delete({
@@ -338,7 +341,8 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                     req.orgId,
                     req.user.userId,
                     'MemberLeftOrga',
-                    `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`
+                    `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`,
+                    req.app.get('io')
                 );
 
                 await tx.member.delete({

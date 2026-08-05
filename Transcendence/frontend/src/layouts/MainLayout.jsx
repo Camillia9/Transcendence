@@ -11,7 +11,7 @@ import Logo from '../components/ui/Logo'
 import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
-import { getNotifs } from '../api/notifications'
+import { getNotifs, markNotifRead, markAllNotifsRead } from '../api/notifications'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
@@ -23,7 +23,7 @@ function MainLayout() {
   const [notifications, setNotifications] = useState([])
   const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.isRead).length
   const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
   // reduce parcourt les conversations en accumulant un total
   const socket = useSocket()
@@ -53,14 +53,16 @@ function MainLayout() {
     navigate('/')
   }
 
-  const markAsRead = (id) => {
+  const markAsRead = async (id) => {
     setNotifications(notifications.map(notif => 
-      notif.id === id ? {...notif, read:true} : notif
+      notif.id === id ? {...notif, isRead: true} : notif
     ))
+    try { await markNotifRead(id) } catch {}
   }
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({...notif, read: true})))
+  const markAllAsRead = async () => {
+    setNotifications(notifications.map(notif => ({...notif, isRead: true})))
+    try { await markAllNotifsRead() } catch {}
   }
 
   useEffect(() => {
@@ -125,17 +127,17 @@ function MainLayout() {
                         key={notif.id}
                         onClick={() => {
                           markAsRead(notif.id)
-                          navigate(notif.link)
+                          if (notif.link) navigate(notif.link)
                           setNotifOpen(false)
                         }}
                         className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
                         >
                           {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
                           {/*Pastille bleu - Non lu*/}
-                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-primary-400'}`} />
+                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
-                            <span className={`text-sm ${notif.read ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                              {notif.message}
+                            <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
+                              {notif.content}
                             </span>
                             <span className='text-xs text-gray-400 mt-0.5'>
                               {timeAgo(notif.createdAt)}

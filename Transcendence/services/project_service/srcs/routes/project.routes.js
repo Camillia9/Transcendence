@@ -185,7 +185,8 @@ router.delete('/projects/:projectId', authenticate, loadProject, checkPermission
                     req.project.id,
                     req.user.userId,
                     'ProjectDeleted',
-                    `${req.user.pseudo} deleted the project ${req.project.title}`
+                    `${req.user.pseudo} deleted the project ${req.project.title}`,
+                    req.app.get('io')
                 );
 
                 await tx.project.delete({ where: { id: req.project.id } });
