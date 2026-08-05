@@ -21,8 +21,6 @@ services:
     container_name: transcendence_frontend
     networks:
       - frontend-network
-    ports:
-      - "5173:5173"
     volumes:
       - ./frontend:/app:z
       - /app/node_modules
@@ -97,9 +95,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}       # crée automatiquement une base vide de ce nom
     networks:
-      -backend-network
-    ports:
-      - "5432:5432"                     # Le port sur lequel Postgres ecoute. pour t'y connecter depuis TA machine
+      - backend-network
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
