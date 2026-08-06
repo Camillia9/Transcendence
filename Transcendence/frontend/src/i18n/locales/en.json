@@ -1,0 +1,33 @@
+{
+	"common": {
+  	"save": "Save",
+  	"cancel": "Cancel",
+  	"delete": "Delete",
+  	"edit": "Edit",
+  	"create": "Create",
+  	"add": "Add",
+  	"close": "Close",
+  	"confirm": "Confirm",
+  	"search": "Search",
+  	"loading": "Loading...",
+  	"error": "An error occurred",
+  	"required": "This field is required",
+  	"yes": "Yes",
+  	"no": "No",
+  	"back": "Back"
+	},
+
+	"login": {
+  	"title": "Log in",
+  	"subtitle": "Good to see you again",
+  	"swapText": "No account yet? Sign up",
+  	"identifierPlaceholder": "Username or email",
+  	"passwordPlaceholder": "Password",
+  	"submit": "Log in",
+  	"errors": {
+  	  "identifierRequired": "Your username or email is required",
+  	  "passwordRequired": "Password is required",
+  	  "invalidCredentials": "Incorrect username or password"
+  	}
+	}
+}

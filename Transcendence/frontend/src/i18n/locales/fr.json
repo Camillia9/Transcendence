@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "add": "Ajouter",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "required": "Ce champ est requis",
+    "yes": "Oui",
+    "no": "Non",
+    "back": "Retour"
+  },
+
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Content de te revoir",
+    "swapText": "Pas encore de compte ? S'inscrire",
+    "identifierPlaceholder": "Nom d'utilisateur ou email",
+    "passwordPlaceholder": "Mot de passe",
+    "submit": "Se connecter",
+    "errors": {
+      "identifierRequired": "Ton nom d'utilisateur ou email est requis",
+      "passwordRequired": "Le mot de passe est requis",
+      "invalidCredentials": "Identifiant ou mot de passe incorrect"
+    }
+  }
+}

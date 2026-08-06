@@ -52,6 +52,9 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
                 }
             });
 
+            const io = req.app.get('io');
+            io.to(`project:${req.project.id}`).emit('task:created', task);
+
             return res.status(201).json(task);
 
         } catch (error) {
@@ -447,6 +450,9 @@ router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, l
                     },
                 });
             });
+
+            const io = req.app.get('io');
+            io.to(`project:${req.project.id}`).emit('task:deleted', { taskId: req.task.id });
 
             return res.json({ message: 'Task deleted' });
 

@@ -1,7 +1,7 @@
 // creer une notif pour les membres d'une orga sauf celui qui fait l'action
 // par ex:
 // Alice quitte l'organisation.
-export async function notifyOrgaMembers(db, orgId, actorId, type, content) {
+export async function notifyOrgaMembers(db, orgId, actorId, type, content, io = null) {
     // on recupere tous les membres sauf celui qui a fait l'action
     const membres = await db.member.findMany({
         where: {
@@ -22,16 +22,27 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, content) {
         data: membres.map(m => ({
             actorId,
             userId: m.userId,
-            orgId,
             type,
             content,
         })),
     });
+
+    if (io) {
+        for (const m of membres) {
+            io.to(`user:${m.userId}`).emit('notification:new', {
+                id: Date.now(),
+                type,
+                content,
+                createdAt: new Date().toISOString(),
+                isRead: false,
+            });
+        }
+    }
 }
 
 // creer une notif pour tous les membres d'un projet sauf celui qui fait l'action
 
-export async function notifyProjectMembers(db, projectId, actorId, type, content) {
+export async function notifyProjectMembers(db, projectId, actorId, type, content, io = null) {
     // on recupere tous les membres sauf celui qui a fait l'action
     const projectMembres = await db.projectMember.findMany({
         where: {
@@ -57,6 +68,18 @@ export async function notifyProjectMembers(db, projectId, actorId, type, content
             content,
         })),
     });
+
+    if (io) {
+        for (const m of projectMembres) {
+            io.to(`user:${m.userId}`).emit('notification:new', {
+                id: Date.now(),
+                type,
+                message: content,
+                createdAt: new Date().toISOString(),
+                isRead: false,
+            });
+        }
+    }
 }
 
 // creer une seule notification
@@ -64,17 +87,29 @@ export async function notifyProjectMembers(db, projectId, actorId, type, content
 // Alice invite Bob.
 // actorId = Alice
 // userId = Bob
-export async function notifyUser(db, userId, actorId, type, content) {
-    return db.notification.create({
+export async function notifyUser(db, userId, actorId, type, content, io = null, projectId = null, taskId = null) {
+    const notif = await db.notification.create({
         data: {
             userId,
             actorId,
             type,
             content,
-            projectId,
-            taskId,
+            ...(projectId !== null && { projectId }),
+            ...(taskId !== null && { taskId }),
         },
     });
+
+    if (io) {
+        io.to(`user:${userId}`).emit('notification:new', {
+            id: notif.id,
+            type,
+            content,
+            createdAt: notif.createdAt.toISOString(),
+            isRead: false,
+        });
+    }
+
+    return notif;
 }
 
 

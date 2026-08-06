@@ -11,7 +11,8 @@ import Logo from '../components/ui/Logo'
 import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
-import { getNotifs } from '../api/notifications'
+import { getNotifs, markNotifRead, markAllNotifsRead } from '../api/notifications'
+import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
   const { user, logout } = useAuth()
@@ -22,7 +23,7 @@ function MainLayout() {
   const [notifications, setNotifications] = useState([])
   const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.isRead).length
   const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
   // reduce parcourt les conversations en accumulant un total
   const socket = useSocket()
@@ -52,14 +53,16 @@ function MainLayout() {
     navigate('/')
   }
 
-  const markAsRead = (id) => {
+  const markAsRead = async (id) => {
     setNotifications(notifications.map(notif => 
-      notif.id === id ? {...notif, read:true} : notif
+      notif.id === id ? {...notif, isRead: true} : notif
     ))
+    try { await markNotifRead(id) } catch {}
   }
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({...notif, read: true})))
+  const markAllAsRead = async () => {
+    setNotifications(notifications.map(notif => ({...notif, isRead: true})))
+    try { await markAllNotifsRead() } catch {}
   }
 
   useEffect(() => {
@@ -124,17 +127,17 @@ function MainLayout() {
                         key={notif.id}
                         onClick={() => {
                           markAsRead(notif.id)
-                          navigate(notif.link)
+                          if (notif.link) navigate(notif.link)
                           setNotifOpen(false)
                         }}
                         className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
                         >
                           {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
                           {/*Pastille bleu - Non lu*/}
-                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-primary-400'}`} />
+                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
-                            <span className={`text-sm ${notif.read ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                              {notif.message}
+                            <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
+                              {notif.content}
                             </span>
                             <span className='text-xs text-gray-400 mt-0.5'>
                               {timeAgo(notif.createdAt)}
@@ -150,9 +153,7 @@ function MainLayout() {
               )}
             </div>
             {/*Langue */}
-            <button className='p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm text-gray-500 font-medium'>
-              <IconLanguage size={20} className='text-gray-500'/>
-            </button>
+            <LanguageSwitcher/>
 
             {/*Profil */}
             <div className="relative"> {/*relative car le menu deroulant absolute doit se positionner par raport a lui*/}
@@ -161,8 +162,8 @@ function MainLayout() {
                 onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
                 className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
               >
-                <Avatar username={user?.username} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
-                <span className='text-sm text-gray-700'>{user?.username}</span>
+                <Avatar src={user?.avatar} username={user?.pseudo} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
+                <span className='text-sm text-gray-700'>{user?.pseudo}</span>
               </div>
               {profileMenuOpen && (
                 <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-48 flex flex-col overflow-hidden z-50'>

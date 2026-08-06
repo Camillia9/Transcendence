@@ -1,4 +1,4 @@
-import { IconX, IconCalendar, IconUser } from "@tabler/icons-react"
+import { IconX, IconCalendar, IconUser, IconTrash } from "@tabler/icons-react"
 import { useState } from "react"
 import { PRIORITIES } from "../../data/priorities"
 import Button from "./Button"
@@ -10,7 +10,7 @@ const COLUMN_OPTIONS = [
   { value: 'Blocked',     label: 'En attente' },
 ]
 
-function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete, onAddComment }) {
+function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onAssign, onDelete, onAddComment, onDeleteComment }) {
   if (!task) return null
 
   // On retourne la priorite de la tache. Si task.priority === 'urgent' ca retourne tout l'objet urgent
@@ -170,6 +170,16 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
                     <span className="text-xs text-gray-300 ml-auto">
                       {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
                     </span>
+                    {/* Bouton supprimer : seulement sur MES commentaires */}
+                    {comment.user.id === currentUser && (
+                      <button
+                        onClick={() => onDeleteComment(task.id, comment.id)}
+                        className="text-gray-300 hover:text-red-400 transition-colors"
+                        title="Supprimer"
+                      >
+                        <IconTrash size={14} />
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-gray-600 pl-7">{comment.content}</p>
                 </div>
