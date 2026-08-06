@@ -39,7 +39,7 @@ app.use(cors({
 }))
 
 // Permet de lire le corps JSON des requetes entrantes (req.body)
-app.use(express.json())
+app.use(express.json({limit: '5mb'}))
 
 // // Passport OAuth
 passport.use(googleStrategy);
@@ -48,6 +48,7 @@ passport.use(gitHubStrategy);
 // // Routes REST authentification / organisation
 app.use('/api', authRouter);
 app.use('/api', orgaRouter);
+app.use('/api', invitationRouter);
 app.use('/api', projectRouter);
 app.use('/api', taskRouter);
 app.use('/api', userRouter);
