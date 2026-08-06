@@ -71,7 +71,7 @@ router.post('/auth/register', async (req, res) => {
         res.status(201).json({
             message: 'Account successfully created',
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email },
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar },
         });
     } catch (err) {
         // quand ya une erreur, ca cree automatiquement une variable avec le catch et on met le nom qu'on veut ici err
@@ -123,7 +123,7 @@ router.post('/auth/login', async (req, res) => {
 
         res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar }
         });
     } catch (error) {
         console.error(error);
@@ -328,7 +328,7 @@ router.post('/auth/login/2fa', async(req, res) => {
 
         return res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar }
         });
     } catch (error) {
         console.error(error);
