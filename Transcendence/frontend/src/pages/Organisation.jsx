@@ -1,9 +1,397 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom'
+import OrgaCard from "../components/ui/OrgaCard";
+import Button from "../components/ui/Button"
+import Modal from "../components/ui/Modal"
+import Input from "../components/ui/Input";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember} from "../api/organisations";
 
+function Organisations() {
+	// etat pour lire le tableau et pouvoir le modifier
+	const [organisations, setOrganisations] = useState([])
+  // L'etat:l'orga qu'on veut supp
+  const [organisationToDelete, setOrganisationToDelete] = useState(null)
+  // L'etat: L'orga qu'on veut add ou edit
+  const [showNewOrganisation, setShowNewOrganisation] = useState(false)
+  const [OrganisationToEdit, setOrganisationToEdit] = useState(null)
+  
+  const [memberToEdit, setMemberToEdit] = useState(null)
+  const [memberToDelete, setMemberToDelete] = useState(null)
+  const [showNewRole, setShowNewRole] = useState(false)
+  const [memberToInvite, setMemberToInvite] = useState(null);
 
-export default function Organisation() {
-	return (
-		<div>
-			<h1 className="bg-primary-500 text-white p-4"> TEst fichier primary </h1>
-		</div>
-	)
+  // Touts les etats utile pour le bouton "nouvelle orga"
+  const [newName, setNewName]       = useState('') // string
+  const [newMembers, setNewMembers] = useState('') // string
+  const [newErrors, setNewErrors]   = useState({}) // Objet
+
+  const [newRole, setNewRole]       = useState('') // string
+  const [invitePseudo, setInvitePseudo] = useState("");
+
+  // Provisoire
+  const navigate = useNavigate()
+  
+  // Lorsqu'on appuie sur le crayon. A modifier
+  const handleEdit = (organisation) => {
+    setOrganisationToEdit(organisation)
+    setNewName(organisation.name)
+    setShowNewOrganisation(true)
+  }
+  // Lorsqu'on appuie sur la benne. Elle ne supprime pas l'orga, la memorise juste pour afficher le modal de confirmation
+  const handleDelete = (organisation) => {
+    setOrganisationToDelete(organisation)
+  }
+  // Lorsqu'on confirme vouloir supp l'orga sur le modal
+  const confirmDelete = async () => {
+    try {
+      await deleteOrganisation(organisationToDelete.id)
+      setOrganisations(organisations.filter(org => org.id !== organisationToDelete.id)) // garde toutes les orga (le tableau) sauf celui-ci
+      setOrganisationToDelete(null)
+    } catch (error) {
+      console.error("Impossible de supprimer l'organisation", error)
+    }
+  }
+
+  // Lorsqu'on appuie sur le crayon. A modifier
+  const handleEditMember = (organisationId, member, newRole) => {
+    const organisation = organisations.find(org => org.id === organisationId);
+    const adminCount = organisation.members.filter(m => m.role === "Admin").length;
+
+    if (member.role === "Admin" && adminCount === 1) {
+      alert("Impossible de modifier le role du dernier administrateur. Il faut toujours au moins un admnistrateur dans l'organisation.");
+      return;
+    }
+    
+    setMemberToEdit({organisationId, member});
+    setNewRole(member.role);
+  }
+
+  // Lorsqu'on appuie sur la benne. Elle ne supprime pas l'orga, la memorise juste pour afficher le modal de confirmation
+  const handleDeleteMember = async (organisationId, member) => {
+    const organisation = organisations.find(org => org.id === organisationId);
+    const adminCount = organisation.members.filter(m =>m.role === "Admin").length;
+
+    if (member.role === "Admin" && adminCount === 1) {
+      alert("Une organisation doit toujours avoir au moins un administrateur.");
+      return;
+    }
+      
+    setMemberToDelete({organisationId, member});
+  }
+
+  // Lorsqu'on confirme vouloir supp l'orga sur le modal
+  const confirmDeleteMember = async () => {
+    try {
+      await deleteMember(
+        memberToDelete.organisationId,
+        memberToDelete.member.userId
+      )
+      const data = await getMyOrganisations()
+      setOrganisations(data) // garde toutes les orga (le tableau) sauf celui-ci
+      setMemberToDelete(null)
+    } catch (error) {
+      console.error("Impossible de supprimer l'organisation", error)
+    }
+  }
+
+  const handleCloseNewOrganisation = () => {
+    // Reinitialise tout les etats lorsque l'orga est cree ou qu'on ferme avant
+    setNewName('')
+    setNewMembers('')
+    setNewErrors({})
+    setOrganisationToEdit(null) // remet le mode edition a null
+    setShowNewOrganisation(false) // ferme la modal
+  }
+
+  // vérifier les champs et retourner un objet avec les erreurs trouvées.
+  const validateNewOrganisation = () => {
+    // errors est un objet ({}). Il peut stocker plusieurs strings.
+    // ici il stockera les strings si les champs de newOrga sont invalides
+    const errors = {}
+
+    // Si le nameOrga ne contient rien ou que des espaces on stock l'erreur dans errors
+    if (!newName.trim()) 
+      errors.name = "Le nom de l'organisation est obligatoire"
+
+    // return l'objet complet
+    return errors
+  }
+
+  // Fonction appelle lorsqu'on soumet le formulaire du new Orga
+  const handleSubmitOrganisation = async () => {
+    /*Object.keys prend un objet et renvoie un tableau contenant les noms de ses proprietes
+    // ex:  const errors = {
+      name: "Le nom est obligatoire",
+      email: "Email invalide",
+      } 
+      Object.keys(errors) = ["name", "email"]
+      // */
+    const errors = validateNewOrganisation()
+    if (Object.keys(errors).length > 0) {
+      setNewErrors(errors)
+      return
+    }
+    if (OrganisationToEdit) {
+      // MODE EDITION (remplace orga existant)
+      // Updated : recopie tout l'orga d'origine en modifiant seulement :
+      try {
+        const updated = await updateOrganisation(OrganisationToEdit.id, {
+          orgName: newName.trim(),
+        })
+        setOrganisations(organisations.map(org =>
+          org.id === OrganisationToEdit.id ? { ...org, ...updated } : org // « pars de l'ancien orga complet, puis les écrase avec les champs revenus du back ».
+        ))
+      } catch (error) {
+        setNewErrors({ global: "Impossible de modifier l'organisation" })
+        return
+      }
+      // Sert a parcourir toutes les orga pour modifier celui qu'on veut. 
+    } else {
+      try {
+        // On envoie uniquement ce que la route accepte
+        const newOrganisation = await createOrganisation({
+          orgName: newName.trim()
+        })
+        // le back renvoie l'orga complete
+        const data = await getMyOrganisations()
+        setOrganisations(data)// creation newTableau sans toucher aux autres
+        handleCloseNewOrganisation()
+      } catch (error) {
+        setNewErrors({ global: "Impossible de creer l'organisation"})
+      }
+    }
+
+  }
+
+  const saveRole = async() => {
+    try {
+      console.log(memberToEdit.organisationId, memberToEdit.member.userId, newRole);
+      await updateMemberRole(
+        memberToEdit.organisationId,
+        memberToEdit.member.userId,
+        newRole
+      );
+
+      const data = await getMyOrganisations();
+      setOrganisations(data);
+
+      setMemberToEdit(null);
+      setNewRole("");
+    } catch (error) {
+      setNewErrors({ global: "Impossible de modifier le role"})
+    }
+  }
+
+  const handleInvite = (organisation) => {
+    setMemberToInvite(organisation);
+  }
+
+  const sendInvitation = async () => {
+    console.log("Organisation: ", memberToInvite);
+    console.log("Pseudo : ", invitePseudo);
+
+    setInvitePseudo("");
+    setMemberToInvite(null);
+  }
+
+  // BRANCHEMENT BACK/FRONT:
+  // état local pour stocker ce que le back nous répond.
+  // TEST de depart. A supp des qu'on aurra remplace les mock par de vraie donnees
+//   const [health, setHealth] = useState('...')
+
+  // useEffect avec [] : s'execute une fois au montage.
+//   useEffect(() => {
+//     // fction asynchrone : "Fonction qui contient des attentes"
+//     async function checkBackend() {
+//       try {
+//         const data = await getHealth()
+//         setHealth(data.status)
+//       } catch (error) {
+//         // Si le back ne repond pas on le note plutot que de planter 
+//         setHealth('injoignable')
+//       }
+//     }
+//     checkBackend()
+//   }, [])
+
+  useEffect(() => {
+    async function loadOrganisations() {
+      try {
+        const data = await getMyOrganisations()
+        setOrganisations(data)
+      } catch(error) {
+        console.error('Impossible de charger les organisations', error)
+      }
+    }
+    loadOrganisations()
+  }, [])
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* <p>État du backend : {health}</p> */}
+        {/*Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-medium text-primary-900"> Mes organisations </h1>
+        <Button onClick={() => setShowNewOrganisation(true)}>
+          + Nouvelle organisation
+        </Button>
+      </div>
+        {/*Grille responsive*/}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {organisations.map(organisation => (
+            <OrgaCard
+            orga={organisation}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onEditMember={handleEditMember}
+            onDeleteMember={handleDeleteMember}
+            onInvite={handleInvite}
+            key={organisation.id}
+            />
+          ))}
+        </div>
+        {/*Modal supprimer une orga */}
+          {organisationToDelete && (
+            <Modal
+              isOpen={!!organisationToDelete}
+              onClose={() => setOrganisationToDelete(null)}
+              title="Supprimer cette organisation ?"
+            >
+              <p> {organisationToDelete.name} sera supprime definitivement </p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setOrganisationToDelete(null)}> Annuler </Button>
+                <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
+              </div>
+            </Modal>
+          )}
+          {/*Modal Cree une nouvelle orga OU edit une orga (utilisations de la meme modal)*/}
+          <Modal
+            isOpen={showNewOrganisation}
+            onClose={handleCloseNewOrganisation}
+            title={OrganisationToEdit ? "Modifier l'organisation" : "Nouvelle organisation"}
+          >
+            {/*Entree du NameOrganisation */}
+            <div className="flex flex-col gap-1 mb-4">
+              {/*Label = tire du champs*/}
+              <label className="text-sm text-gray-500"> 
+                Nom de l'organisation *
+              </label>
+              {/*Input = zone saisie */}
+              <Input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Nom de l'organisation"
+                light
+              />
+              {newErrors.name && (
+                <p className="text-red-400 text-sm mt-1">{newErrors.name}</p>
+              )}
+            </div>
+
+            {/*Entree des membres */}
+            {/*Masquer en mode edition */}
+            {!OrganisationToEdit && (
+              <div className="flex flex-col gap-1 mb-4">
+                <label className="text-sm text-gray-500">
+                  Ajout de membres (separation par virgule !)
+                </label>
+                <Input
+                  type="text"
+                  value={newMembers}
+                  onChange={(e) => setNewMembers(e.target.value)}
+                  placeholder="Clara, Vincent, Remy"
+                  light
+                />
+              </div>
+            )}
+
+            {newErrors.global && (
+              <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
+            )}
+
+            {/*Boutons Annuler/Cree l'orga */}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCloseNewOrganisation}> Annuler </Button>
+              <Button variant="primary" onClick={handleSubmitOrganisation}>
+                {OrganisationToEdit ? "Enregistrer" : "Creer l'organisation"}
+              </Button>
+            </div>
+          </Modal>
+          
+          {memberToDelete && (
+            <Modal
+              isOpen={!!memberToDelete}
+              onClose={() => setMemberToDelete(null)}
+              title="Retirer ce membre ?"
+            >
+              <p> {memberToDelete.member.pseudo} sera retirer definitivement de cette organisation</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setMemberToDelete(null)}> Annuler </Button>
+                <Button variant="danger" onClick={confirmDeleteMember}> Retirer </Button>
+              </div>
+            </Modal>
+          )}
+
+          {memberToEdit && (
+            <Modal
+              isOpen={!!memberToEdit}
+              onClose={() => setMemberToEdit(null)}
+              title="Modifier le role"
+            >
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+              >
+                <option value="Admin">Admin</option>
+                <option value="Member">Member</option>
+              </select>
+
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={() => setMemberToEdit(null)}> Annuler </Button>
+                <Button variant="primary" onClick={saveRole}> Enregistrer </Button>
+              </div>
+            </Modal>
+          )}
+
+          <Modal
+            isOpen={!!memberToInvite}
+            onClose={() => setMemberToInvite(null)}
+            title="Inviter un membre"
+          >
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-sm text-gray-500">
+                Pseudo
+              </label>
+
+              <Input
+                type="text"
+                value={invitePseudo}
+                onChange={(e) => setInvitePseudo(e.target.value)}
+                placeholder="Pseudo du joueur"
+                light
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setMemberToInvite(null)}
+              >
+                Annuler
+              </Button>
+
+              <Button
+                variant="primary"
+                onClick={sendInvitation}
+              >
+                Inviter
+              </Button>
+            </div>
+          </Modal>
+            
+    </div>
+  )
 }
+
+export default Organisations

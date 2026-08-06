@@ -38,4 +38,27 @@ router.get('/users', authenticate, async (req, res) => {
 	}
 });
 
+// route pour retrouver un user par son pseudo pour avoir userId
+router.get("/users/search", authenticate, async (req, res) => {
+	const pseudo = req.query.pseudo;
+	if (!pseudo)
+		return res.status(400).json({ error: "Pseudo required" });
+
+	const user = await prisma.user.findUnique({
+		where: {
+			pseudo
+		},
+		select: {
+			id: true,
+			pseudo: true,
+			avatar: true
+		}
+	});
+
+	if (!user)
+		return res.status(404).json({ error: "User not found" });
+
+	return res.json(user);
+})
+
 export default router;
