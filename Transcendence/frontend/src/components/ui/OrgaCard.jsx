@@ -10,7 +10,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
   console.log("ORGA =", orga);
   console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
   console.log("INVIT =", JSON.stringify(orga.pendingInvitations, null, 2));
-  
+  {console.log("CARD INVITATIONS", orga.pendingInvitations)}
   const { user } = useAuth()
   const [hovered, setHovered] = useState(false) // Gere le survol
   const [expanded, setExpanded] = useState(false)
@@ -90,12 +90,12 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             </div>
           )}
 
-          {orga.pendingInvitations > 0 && (
+          {orga.pendingInvitationsCount > 0 && (
             <div
               className="px-3 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
               style={{ backgroundColor: soft, color: text }}
             >
-              {orga.pendingInvitations} invites {orga.pendingInvitations > 1 ? "s" : ""}
+              {orga.pendingInvitationsCount} invite {orga.pendingInvitations > 1 ? "s" : ""}
             </div>
           )}
 
@@ -167,14 +167,46 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
                 </div>
               )}
             </div>
-            ))}
-            {orga.pendingInvitations.map(inv => (
-              <div key={inv.id}>
-                {inv.pseudo}
+          ))}
+
+          {orga.pendingInvitations.map(inv => (
+            <div key={inv.id}
+              className="flex items-center justify-between group"
+            >
+              {/* Avatar + pseudo */}
+              <div className="flex items-center gap-2">
+                <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border"
+                style={{ backgroundColor: soft, color: text }}
+                >
+                  {inv.avatar ? (
+                    <img
+                    src={inv.avatar}
+                    alt={inv.pseudo}
+                    className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    inv.pseudo[0].toUpperCase()
+                  )}
+                </div>
+                <span className="text-xs" style={{ color: text }}>
+                  {inv.pseudo}
+                </span>
               </div>
-            ))}
-        </div>
-        )}
+            {/* Role */}
+            <span
+            className="text-[10px] rounded-full px-2 py-0.5"
+            style={{
+              backgroundColor: soft,
+              color: text
+            }}
+            >
+              Invite
+            </span>
+            </div>
+          ))}
+    </div>
+    )}
   </div>
   )
 }

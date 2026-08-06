@@ -4,7 +4,7 @@ import OrgaCard from "../components/ui/OrgaCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember} from "../api/organisations";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, searchUser} from "../api/organisations";
 
 function Organisations() {
 	// etat pour lire le tableau et pouvoir le modifier
@@ -186,12 +186,21 @@ function Organisations() {
     setMemberToInvite(organisation);
   }
 
-  const sendInvitation = async () => {
-    console.log("Organisation: ", memberToInvite);
-    console.log("Pseudo : ", invitePseudo);
+  const handleSendInvitation = async () => {
+    try {
+      const user = await searchUser(invitePseudo);
 
-    setInvitePseudo("");
-    setMemberToInvite(null);
+      await sendInvitation(memberToInvite.id, user.id);
+
+      const data = await getMyOrganisations();
+      setOrganisations(data);
+
+      setInvitePseudo("");
+      setMemberToInvite(null);
+    } catch (error) {
+      setNewErrors({ global: "Impossible d'envoyer l'invitation"})
+    }
+
   }
 
   // BRANCHEMENT BACK/FRONT:
@@ -291,7 +300,7 @@ function Organisations() {
 
             {/*Entree des membres */}
             {/*Masquer en mode edition */}
-            {!OrganisationToEdit && (
+            {/* {!OrganisationToEdit && (
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-sm text-gray-500">
                   Ajout de membres (separation par virgule !)
@@ -304,7 +313,7 @@ function Organisations() {
                   light
                 />
               </div>
-            )}
+            )} */}
 
             {newErrors.global && (
               <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
@@ -368,7 +377,7 @@ function Organisations() {
                 type="text"
                 value={invitePseudo}
                 onChange={(e) => setInvitePseudo(e.target.value)}
-                placeholder="Pseudo du joueur"
+                placeholder="Membre a ajouter"
                 light
               />
             </div>
@@ -383,7 +392,7 @@ function Organisations() {
 
               <Button
                 variant="primary"
-                onClick={sendInvitation}
+                onClick={handleSendInvitation}
               >
                 Inviter
               </Button>

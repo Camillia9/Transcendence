@@ -102,7 +102,7 @@ router.get("/organisations", authenticate, async (req, res) => {
                 avatar: member.user.avatar,
                 role: member.role
             })),
-            pendingInvitations: m.organisation._count.invitations,
+            pendingInvitationsCount: m.organisation._count.invitations,
             pendingInvitations: m.organisation.invitations.map(inv => ({
                 id: inv.id,
                 pseudo: inv.invitedUser.pseudo,

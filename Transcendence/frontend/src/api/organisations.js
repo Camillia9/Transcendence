@@ -77,3 +77,7 @@ export async function sendInvitation(orgId, userId) {
         body: JSON.stringify({ userId })
     })  
 }
+
+export async function searchUser(pseudo) {
+    return await apiRequest(`/users/search?pseudo=${pseudo}`);
+}
