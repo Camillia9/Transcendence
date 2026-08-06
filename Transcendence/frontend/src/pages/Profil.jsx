@@ -16,7 +16,7 @@ function Profil() {
   const [pseudo, setPseudo] = useState('')
   const [statut, setStatut] = useState('')
   const [language, setLanguage] = useState('')
-  //const [avatar, setAvatar] = useState(null)
+  const [avatar, setAvatar] = useState('')
   // Save les erreurs des champs du profile
   const [error, setError] = useState('')
 
@@ -34,7 +34,7 @@ function Profil() {
   async function handleSave () {
     try {
       setError('') // vide le precendent message d'erreur
-      const data = await updateProfile({pseudo, statut, langue: language})
+      const data = await updateProfile({pseudo, statut, langue: language, avatar})
       login(data) // accessible via useAuth()
       setProfile(data) // met a jour instantannement apres les chnagement la carte profile
     } catch (err) {
@@ -65,6 +65,7 @@ function Profil() {
     setPseudo(profile.pseudo)
     setStatut(profile.statut)
     setLanguage(profile.langue)
+    setAvatar(profile.avatar ?? '') // un Avatar peut etre null
    }
   }, [profile])   // le tableau de dépendances : "surveille profile"
 
@@ -106,16 +107,52 @@ function Profil() {
     setDeleteError('')
   }
 
+  function handleAvatarChange(e) {
+    const file = e.target.files[0] // le fichier choisis
+    if (!file) return // Au cas ou le user annule sa selection
+    setError('') // on vide le state error des precedents essai
+
+    if (!file.type.startsWith('image/')) { // startWith : fonction qui test si un texte commence par un prefix donnee
+      setError('Le fichier doit etre une image')
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // file.size est un nombre en octets. Pour poser une limite à 2 Mo, tu dois exprimer 2 Mo en octets : 2 × 1024 Ko × 1024 octets = ~2 097 152
+      setError('Image trop lourde (max 2 Mo)')
+      return
+    }
+
+    const reader = new FileReader() // Explication dans xplain
+
+    // Bloc executee QUE QUAND la lecture est fini. C'est une promesse pour plus tard, pas une action immediate. Elle range juste une fonction dans un tirroir "unload"
+    reader.onload = () => {
+      console.log('onload OK', reader.result.slice(0, 30))
+      setAvatar(reader.result) // reader.result contient la chaine en base 64 complete
+    }
+    reader.readAsDataURL(file) // lance la lecture. Elle prend quelques ms. et ensuite le navigateur va regarder dans le tirroir onload et declanchera la fonction
+  }
+
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
+
+  console.log('avatar dans le render', avatar)
 
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
 
       {/*Choix de style : */}
-      {/*<Card className="flex flex-col items-center gap-3 text-center">*/}
-      <Card className="flex items-center justify-center gap-4">
-        <Avatar username={profile.pseudo} size="lg" />
+      <Card className="flex flex-col items-center gap-3 text-center">
+      {/*<Card className="flex items-center justify-center gap-4">*/}
+        <Avatar
+          src={avatar} // state, pour avoir la Maj direct. 
+          username={profile.pseudo}
+          size="lg"
+        />
+        <input
+          type='file'
+          accept='image/*' // ne propose que des images dans le selecteurs
+          onChange={handleAvatarChange}
+        />
         <div>
           <h1 className="text-xl font-bold text-gray-900">{profile.pseudo}</h1>
           <p className="text-gray-500 text-sm">{profile.email}</p>
