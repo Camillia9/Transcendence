@@ -162,7 +162,7 @@ function MainLayout() {
                 onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
                 className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
               >
-                <Avatar username={user?.pseudo} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
+                <Avatar src={user?.avatar} username={user?.pseudo} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
                 <span className='text-sm text-gray-700'>{user?.pseudo}</span>
               </div>
               {profileMenuOpen && (

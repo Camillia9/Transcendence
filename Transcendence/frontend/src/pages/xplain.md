@@ -90,3 +90,24 @@ Tailwind :
 <main className="max-w-3xl mx-auto px-6 py-12">  : Evite que le texte s'affiche sur tout l'ecran. Largeur confortable et centree. 
 leading-relaxed : Augmente l'interligne du text
 list-disc pl-5 sur le <ul> → list-disc remet les puces (•) que Tailwind enlève par défaut, pl-5 décale la liste vers la droite pour que les puces aient de la place.
+
+
+## Profil
+
+**L'upload de l'avatar**
+
+Ici on recupere l'avatar sans avoir besoin du back (grace a l'upload en base 64 (l'utilisateur choisit un fichier via <input type="file">, tu le lis, tu l'envoies.))
+
+  - Le flux => l'utilisateur clique un bouton,
+  choisit un fichier image sur son disque (<input type="file">),
+  tu lis ce fichier et le transformes en une longue chaîne base64 (data:image/png;base64,iVBOR...),
+  tu ranges cette chaîne dans ton state,
+  au « Enregistrer » elle part dans PATCH /profile comme n'importe quel autre champ.
+
+  - Base 64 ? : Quand l'utilisateur choisit une image, le navigateur te donne un objet File — des données binaires, pas une chaîne. Or ton PATCH /profile envoie du JSON, qui ne transporte que du texte. Il faut donc convertir le fichier binaire en une chaîne de texte : c'est le rôle du base64 (data:image/png;base64,iVBOR...), une représentation textuelle de l'image.
+
+  - FileReader ? : Un objet du navigateur qui lit un fichier. Son piège — il travaille de façon asynchrone, mais pas avec await. Il fonctionne par événement : tu lui demandes de lire, et quand il a fini, il déclenche un événement onload où le résultat est disponible.
+  - Shema : readAsDataURL(file) démarre la lecture ; quand elle finit, onload se déclenche ; là, reader.result contient la chaîne base64, que tu ranges dans ton state. Tu définis le onload avant de lancer la lecture, mais il ne s'exécute qu'après.
+  -  e.target.files[0] : un input file peut accepter plusieurs fichiers, donc il expose une liste (files). Nous on n'en veux qu'un (l'avatar), donc on prends le premier, [0].
+
+  - la fonction est defini avant l'appelle car on ne dis pas « fais ça, attends, récupère le résultat » (ça, c'est await). On dis « voici ma réaction pour plus tard » puis « go », et la réaction se déclenche toute seule au bon moment.
