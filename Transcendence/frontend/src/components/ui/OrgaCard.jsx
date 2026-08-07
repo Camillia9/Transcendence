@@ -203,7 +203,17 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             >
               Invite
             </span>
-            </div>
+
+            {myRole === "Admin" && (
+                <div className="hidden group-hover:flex gap-1">
+                  <button onClick={() => onDeleteInvitation(orga.id, inv.id)}
+                    className="p-1 rounded hover:bg-red-100 text-red-500"
+                    >
+                    <IconTrash size={14} />
+                  </button>
+                </div>
+              )}
+          </div>
           ))}
     </div>
     )}

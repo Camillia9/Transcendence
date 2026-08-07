@@ -78,6 +78,15 @@ export async function sendInvitation(orgId, userId) {
     })  
 }
 
+export async function deleteInvitation(orgId, id) {
+    // if (USE_MOCK)
+    //     return { message: 'Project deleted' }
+
+    return await apiRequest(`/organisations/${orgId}/invitations/${id}`, {
+        method: 'DELETE'
+    })
+}
+
 export async function searchUser(pseudo) {
     return await apiRequest(`/users/search?pseudo=${pseudo}`);
 }

@@ -4,7 +4,7 @@ import OrgaCard from "../components/ui/OrgaCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, searchUser} from "../api/organisations";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser} from "../api/organisations";
 
 function Organisations() {
 	// etat pour lire le tableau et pouvoir le modifier
@@ -19,6 +19,7 @@ function Organisations() {
   const [memberToDelete, setMemberToDelete] = useState(null)
   const [showNewRole, setShowNewRole] = useState(false)
   const [memberToInvite, setMemberToInvite] = useState(null);
+  const [invitationToDelete, setInvitationToDelete] = useState(null)
 
   // Touts les etats utile pour le bouton "nouvelle orga"
   const [newName, setNewName]       = useState('') // string
@@ -187,6 +188,24 @@ function Organisations() {
   }
 
   const handleSendInvitation = async () => {
+    const alreadyMember = memberToInvite.members.some(
+      member => member.pseudo.toLowerCase() === invitePseudo.toLowerCase()
+    );
+
+    if (alreadyMember){
+      setNewErrors({ global: "Cet utilisateur est deja membre de l'organisation" });
+      return;
+    }
+
+    const alreadyInvited = memberToInvite.pendingInvitations.some(
+      invitation => invitation.pseudo.toLowerCase() === invitePseudo.toLowerCase()
+    );
+
+    if (alreadyInvited) {
+      setNewErrors({ global: "Une invitation est deja en attente pour cet utilisateur" });
+      return;
+    }
+      
     try {
       const user = await searchUser(invitePseudo);
 
@@ -200,8 +219,29 @@ function Organisations() {
     } catch (error) {
       setNewErrors({ global: "Impossible d'envoyer l'invitation"})
     }
-
   }
+
+  // Lorsqu'on appuie sur la benne. Elle ne supprime pas l'invit, la memorise juste pour afficher le modal de confirmation
+  const handleDeleteInvitation = async (organisationId, invitationId) => {
+    const organisation = organisations.find(org => org.id === organisationId);
+    setInvitationToDelete({organisationId, invitationId});
+  }
+
+  // Lorsqu'on confirme vouloir supp l'invit sur le modal
+  const confirmDeleteInvitation = async () => {
+    try {
+      await deleteInvitation(
+        invitationToDelete.organisationId,
+        invitationToDelete.invitationId
+      )
+      const data = await getMyOrganisations()
+      setOrganisations(data) // garde toutes les orga (le tableau) sauf celui-ci
+      setInvitationToDelete(null)
+    } catch (error) {
+      console.error("Impossible de supprimer l'invitation", error)
+    }
+  }
+
 
   // BRANCHEMENT BACK/FRONT:
   // état local pour stocker ce que le back nous répond.
@@ -380,6 +420,10 @@ function Organisations() {
                 placeholder="Membre a ajouter"
                 light
               />
+
+                {newErrors.global && (
+                <p className="text-red-400 text-sm mt-1">{newErrors.global}</p>
+              )}
             </div>
 
             <div className="flex gap-2">
