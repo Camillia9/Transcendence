@@ -63,14 +63,14 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                await notifyUser(
-                    tx,
-                    userId,
-                    req.user.userId,
-                    'InvitationSent',
-                    `invited you to join the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io'),
-                );
+                // await notifyUser(
+                //     tx,
+                //     userId,
+                //     req.user.userId,
+                //     'InvitationSent',
+                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io'),
+                // );
             });
 
             return res.json({

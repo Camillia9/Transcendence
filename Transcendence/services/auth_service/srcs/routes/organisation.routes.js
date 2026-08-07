@@ -45,6 +45,77 @@ router.post('/organisations', authenticate,
     }
 );
 
+router.get("/organisations", authenticate, async (req, res) => {
+    try {
+        const organisations = await prisma.member.findMany({
+            where: {
+                userId: req.user.userId
+            },
+            include: {
+                organisation: {
+                    include: {
+                        members: {
+                            include: {
+                                user: {
+                                    select: {
+                                        id: true,
+                                        pseudo: true,
+                                        avatar: true
+                                    }
+                                }
+                            }
+                        },
+                        invitations: {
+                            where: {
+                                status: "Pending"
+                            },
+                            include: {
+                                invitedUser: {
+                                    select: {
+                                        id: true,
+                                        pseudo: true,
+                                        avatar: true
+                                    }
+                                }
+                            }
+                        },
+                        _count: {
+                            select: {
+                                members: true,
+                                invitations: true
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        
+        res.json(organisations.map(m => ({
+            id: m.organisation.id,
+            name: m.organisation.name,
+            myRole: m.role,
+            memberCount: m.organisation._count.members,
+            members: m.organisation.members.map(member => ({
+                id: member.id,
+                userId: member.user.id,
+                pseudo: member.user.pseudo,
+                avatar: member.user.avatar,
+                role: member.role
+            })),
+            pendingInvitationsCount: m.organisation._count.invitations,
+            pendingInvitations: m.organisation.invitations.map(inv => ({
+                id: inv.id,
+                pseudo: inv.invitedUser.pseudo,
+                avatar: inv.invitedUser.avatar
+            }))
+        })))
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
+})
+
 // voir mon organisation
 // GET /organisations/:orgId
 // accessible a tous les membres connecter et on sait que l'utilisateur appartient a cette orga car loadmembership verifier
