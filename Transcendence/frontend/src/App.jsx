@@ -37,17 +37,15 @@ function App() {
               <Route path="/signup" element={<Signup />} />
             </Route>
             {/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
-            <Route element={<MainLayout />}>
-              <Route path="/home" element={<Home />} />
-              <Route path="/projet/:id" element={<KanbanPage />} />
-              <Route path="/Organisation" element={<Organisation />} />
-              <Route path="/profil" element={<Profil />} />
-              <Route path="/designsystem" element={<DesignSystem />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/friends" element={<FriendsPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/test" element={<Test />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+            <Route element={<ProtectedRoute />}>
+                <Route element={<MainLayout />}>
+                <Route path="/home" element={<Home />} />
+                <Route path="/projet/:id" element={<KanbanPage />} />
+                <Route path="/Organisation" element={<Organisation />} />
+                <Route path="/profil" element={<Profil />} />
+                <Route path="/designsystem" element={<DesignSystem />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/friends" element={<FriendsPage />} />
               </Route>
             </Route>
           </Routes>

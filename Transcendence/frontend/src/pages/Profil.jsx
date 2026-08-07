@@ -75,7 +75,9 @@ function Profil() {
     setPseudo(profile.pseudo)
     setStatut(profile.statut)
     setLanguage(profile.langue)
+    setAvatar(profile.avatar ?? '')
     setError('')
+    setErrorAvatar('')
   }
 
   // Gestion du MDP 
@@ -179,18 +181,13 @@ function Profil() {
 
         {avatarError && <p className="text-sm text-red-400">{avatarError}</p>}
 
-        {/*Les boutons */}
-        <div className="flex justify-center gap-2 mt-4">
+        {/* Si avatar present, le supp */}
         {avatar && (
           <Button variant='danger' onClick={handleRemoveAvatar}>
             Supprimer la photo
           </Button>
         )}
-          <Button onClick={handleSave}>Enregistrer</Button>
-        </div>
-      </Card>
 
-      <Card className='flex flex-col gap-4'>
         {/*PSeudo */}
         <div className='flex items-center justify-between'>
           <label className='text-sm text-gray-500'>Pseudo</label>
