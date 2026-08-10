@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000/api'
+const BASE_URL = 'https://localhost/api'
 
 // Le moteur unique : toute requête vers le back passe par ici.
 export async function apiRequest(path, options = {}) {

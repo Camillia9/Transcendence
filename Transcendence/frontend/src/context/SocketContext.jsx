@@ -12,7 +12,7 @@ export function SocketProvider({ children }) {
     const token = localStorage.getItem('token')
     if (!user || !token) return
 
-    const s = io('http://localhost:3000', {
+    const s = io('https://localhost', {
       auth: { token }
     })
     setSocket(s)
