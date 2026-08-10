@@ -41,8 +41,6 @@ services:
       - ./services/shared:/app/shared:z
       - ./services/prisma:/app/prisma:z
       - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - ./services/package.json:/app/package.json:z
-      - ./services/package-lock.json:/app/package-lock.json:z
       - /app/node_modules
     environment:
       - PORT=3001
@@ -69,8 +67,6 @@ services:
       - ./services/shared:/app/shared:z
       - ./services/prisma:/app/prisma:z
       - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - ./services/package.json:/app/package.json:z
-      - ./services/package-lock.json:/app/package-lock.json:z
       - /app/node_modules
     environment:
       - PORT=3002
@@ -93,8 +89,6 @@ services:
       - ./services/shared:/app/shared:z
       - ./services/prisma:/app/prisma:z
       - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - ./services/package.json:/app/package.json:z
-      - ./services/package-lock.json:/app/package-lock.json:z
       - /app/node_modules
     environment:
       - PORT=3003
