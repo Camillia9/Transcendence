@@ -4,6 +4,7 @@ import express from 'express';
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../../../shared/middleware/checkPermission.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
+import { notifyUser } from '../../../shared/notification_data.js';
 
 const router = express.Router();
 
@@ -62,14 +63,14 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                await tx.notification.create({
-                    data: {
-                        type: 'InvitationSent',
-                        content: `invited you to join the organisation ${req.orgMembership.organisation.name}`,
-                        actorId: req.user.userId,
-                        userId,
-                    },
-                });
+                // await notifyUser(
+                //     tx,
+                //     userId,
+                //     req.user.userId,
+                //     'InvitationSent',
+                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io'),
+                // );
             });
 
             return res.json({
@@ -163,14 +164,14 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     },
                 });
 
-                await tx.notification.create({
-                    data: {
-                        type: 'InvitationAccepted',
-                        content: `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
-                        actorId: req.user.userId,
-                        userId : req.invitation.inviterId,
-                    },
-                });
+                await notifyUser(
+                    tx,
+                    req.invitation.inviterId,
+                    req.user.userId,
+                    'InvitationAccepted',
+                    `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    req.app.get('io'),
+                );
             });
 
             return res.json({ message: 'Invitation accepted' });
@@ -202,14 +203,14 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                     },
                  });
 
-                await tx.notification.create({
-                    data: {
-                        type: 'InvitationDeclined',
-                        content: `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
-                        actorId: req.user.userId,
-                        userId: req.invitation.inviterId,
-                    },
-                });
+                await notifyUser(
+                    tx,
+                    req.invitation.inviterId,
+                    req.user.userId,
+                    'InvitationDeclined',
+                    `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    req.app.get('io'),
+                );
             });
 
             return res.json({ message: 'Invitation declined' });
@@ -238,14 +239,14 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     },
                 });
 
-                await tx.notification.create({
-                    data: {
-                        type: 'InvitationCancelled',
-                        content: `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-                        actorId: req.user.userId,
-                        userId: req.invitation.invitedUserId,
-                    },
-                });
+                await notifyUser(
+                    tx,
+                    req.invitation.invitedUserId,
+                    req.user.userId,
+                    'InvitationCancelled',
+                    `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    req.app.get('io'),
+                );
             });
 
             return res.json({ message: 'Welcome to the organisation' });

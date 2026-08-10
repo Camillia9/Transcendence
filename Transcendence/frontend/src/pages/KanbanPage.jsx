@@ -47,9 +47,27 @@ function KanbanPage() {
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: toColumn } : t))
     })
 
+    socket.on('task:created', (task) => {
+      setTasks(prev => prev.some(t => t.id === task.id) ? prev : [task, ...prev])
+    })
+
+    socket.on('task:updated', (task) => {
+      setTasks(prev => prev.some(t => t.id === task.id)
+        ? prev.map(t => t.id === task.id ? task : t)
+        : [...prev, task]
+      )
+    })
+
+    socket.on('task:deleted', ({ taskId }) => {
+      setTasks(prev => prev.filter(t => t.id !== taskId))
+    })
+
     return () => {
       socket.emit('project:leave', { projectId })
       socket.off('task:moved')
+      socket.off('task:created')
+      socket.off('task:updated')
+      socket.off('task:deleted')
     }
   }, [socket, projectId])
 
