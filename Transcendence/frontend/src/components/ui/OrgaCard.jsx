@@ -6,7 +6,7 @@ import { getProgressColor } from "../../utils/progressColor"
 // useAuth permet de recuperer l'utilisateur connecter
 
 
-export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite }) {
+export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation }) {
   console.log("ORGA =", orga);
   console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
   console.log("INVIT =", JSON.stringify(orga.pendingInvitations, null, 2));
@@ -95,7 +95,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               className="px-3 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
               style={{ backgroundColor: soft, color: text }}
             >
-              {orga.pendingInvitationsCount} invite {orga.pendingInvitations > 1 ? "s" : ""}
+              {orga.pendingInvitationsCount} invite{orga.pendingInvitationsCount > 1 ? "s" : ""}
             </div>
           )}
 
@@ -159,7 +159,9 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
                     <IconPencil size={14} />
                   </button>
 
-                  <button onClick={() => onDeleteMember(orga.id, member)}
+                  <button 
+                    type="button"
+                    onClick={() => onDeleteMember(orga.id, member)}
                     className="p-1 rounded hover:bg-red-100 text-red-500"
                     >
                     <IconTrash size={14} />
