@@ -39,7 +39,7 @@ router.get('/users', authenticate, async (req, res) => {
 });
 
 // route pour retrouver un user par son pseudo pour avoir userId
-router.get("/users/search", authenticate, async (req, res) => {
+router.get("/users/by-pseudi", authenticate, async (req, res) => {
 	const pseudo = req.query.pseudo;
 	if (!pseudo)
 		return res.status(400).json({ error: "Pseudo required" });
