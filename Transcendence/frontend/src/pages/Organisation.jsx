@@ -34,6 +34,7 @@ function Organisations() {
   
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (organisation) => {
+    setNewErrors({})
     setOrganisationToEdit(organisation)
     setNewName(organisation.name)
     setShowNewOrganisation(true)
@@ -62,7 +63,7 @@ function Organisations() {
       alert("Impossible de modifier le role du dernier administrateur. Il faut toujours au moins un admnistrateur dans l'organisation.");
       return;
     }
-    
+    setNewErrors({})
     setMemberToEdit({organisationId, member});
     setNewRole(member.role);
   }
@@ -184,6 +185,8 @@ function Organisations() {
   }
 
   const handleInvite = (organisation) => {
+    setNewErrors({})
+    setInvitePseudo('')
     setMemberToInvite(organisation);
   }
 
@@ -214,8 +217,7 @@ function Organisations() {
       const data = await getMyOrganisations();
       setOrganisations(data);
 
-      setInvitePseudo("");
-      setMemberToInvite(null);
+      handleCloseInvite()
     } catch (error) {
       setNewErrors({ global: "Impossible d'envoyer l'invitation"})
     }
@@ -241,6 +243,12 @@ function Organisations() {
     } catch (error) {
       console.error("Impossible de supprimer l'invitation", error)
     }
+  }
+
+  const handleCloseInvite = () => {
+    setMemberToInvite(null)
+    setInvitePseudo('')
+    setNewErrors({})
   }
 
 
@@ -421,7 +429,7 @@ function Organisations() {
 
           <Modal
             isOpen={!!memberToInvite}
-            onClose={() => setMemberToInvite(null)}
+            onClose={handleCloseInvite}
             title="Inviter un membre"
           >
             <div className="flex flex-col gap-1 mb-4">
@@ -445,7 +453,7 @@ function Organisations() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => setMemberToInvite(null)}
+                onClick={handleCloseInvite}
               >
                 Annuler
               </Button>
