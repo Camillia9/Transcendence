@@ -223,6 +223,7 @@ function Organisations() {
 
   // Lorsqu'on appuie sur la benne. Elle ne supprime pas l'invit, la memorise juste pour afficher le modal de confirmation
   const handleDeleteInvitation = async (organisationId, invitationId) => {
+    console.log('clic suppression invit:', organisationId, invitationId)
     const organisation = organisations.find(org => org.id === organisationId);
     setInvitationToDelete({organisationId, invitationId});
   }
@@ -295,6 +296,7 @@ function Organisations() {
             onEditMember={handleEditMember}
             onDeleteMember={handleDeleteMember}
             onInvite={handleInvite}
+            onDeleteInvitation={handleDeleteInvitation}
             key={organisation.id}
             />
           ))}
@@ -399,6 +401,20 @@ function Organisations() {
               <div className="flex gap-2 mt-4">
                 <Button variant="outline" onClick={() => setMemberToEdit(null)}> Annuler </Button>
                 <Button variant="primary" onClick={saveRole}> Enregistrer </Button>
+              </div>
+            </Modal>
+          )}
+
+            {invitationToDelete && (
+            <Modal
+              isOpen={!!invitationToDelete}
+              onClose={() => setInvitationToDelete(null)}
+              title="Annuler cette invitation ?"
+            >
+              <p>L'invitation sera annulée.</p>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={() => setInvitationToDelete(null)}>Annuler</Button>
+                <Button variant="danger" onClick={confirmDeleteInvitation}>Confirmer</Button>
               </div>
             </Modal>
           )}

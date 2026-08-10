@@ -239,14 +239,14 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     },
                 });
 
-                await notifyUser(
-                    tx,
-                    req.invitation.invitedUserId,
-                    req.user.userId,
-                    'InvitationCancelled',
-                    `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
-                );
+            //     await notifyUser(
+            //         tx,
+            //         req.invitation.invitedUserId,
+            //         req.user.userId,
+            //         'InvitationCancelled',
+            //         `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
+            //         req.app.get('io'),
+            //     );
             });
 
             return res.json({ message: 'Welcome to the organisation' });
