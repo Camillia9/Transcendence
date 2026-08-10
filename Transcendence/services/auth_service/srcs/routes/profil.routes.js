@@ -202,15 +202,44 @@ router.delete('/profile', authenticate, async (req, res) => {
         if (!match)
             return res.status(401).json({ error: 'Incorrect password' });
 
-        await prisma.user.delete({
-            where: {
-                id: req.user.userId,
-            },
-        });
+        // recupere tte les orga ou le user est admin
+        await prisma.$transaction(async (tx) => {
+            const adminMemberships = await tx.member.findMany({
+                where: {
+                    userId: req.user.userId,
+                    role: 'Admin',
+                },
+                select: {
+                    orgId: true,
+                },
+            });
+            for (const {orgId} of adminMemberships) {
+                const nbAdmins = await tx.member.count({
+                    where: {
+                        orgId,
+                        role: 'Admin',
+                    },
+                });
+
+                if (nbAdmins === 1) {
+                    throw new Error('LAST_ADMIN');
+                }
+            }
+
+            // si tte les orga ont encore au moins 1 admin, on peut supprimer
+            await prisma.user.delete({
+                where: {
+                    id: req.user.userId,
+                },
+            });
+        })
 
         return res.json({ message: 'Profile deleted', });
 
     } catch (error) {
+        if (error.message === 'LAST_ADMIN') {
+            return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
+        }
         console.error(error);
         return res.status(500).json({ error: 'Database error' });
     }
