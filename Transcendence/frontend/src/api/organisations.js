@@ -90,3 +90,19 @@ export async function deleteInvitation(orgId, id) {
 export async function searchUser(pseudo) {
     return await apiRequest(`/users/by-pseudo?pseudo=${pseudo}`);
 }
+
+export async function getMyInvitations() {
+    return await apiRequest(`/invitations`)
+}
+
+export async function acceptInvitation(id) {
+    return await apiRequest(`/invitations/${id}/accept`, {
+        method: 'PATCH'
+    })
+}
+
+export async function declineInvitation(id) {
+    return await apiRequest(`/invitations/${id}/decline`, {
+        method: 'PATCH'
+    })
+}
