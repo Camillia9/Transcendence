@@ -55,7 +55,6 @@ app.use('/api', userRouter);
 app.use('/api', commentRouter);
 app.use('/api', friendRouter);
 app.use('/api', profilRouter);
-app.use('/api', invitationRouter);
 app.use('/api', notificationRouter);
 
 // Serveur HTTP brut

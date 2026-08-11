@@ -82,7 +82,11 @@ router.get("/organisations", authenticate, async (req, res) => {
                         _count: {
                             select: {
                                 members: true,
-                                invitations: true
+                                invitations: {
+                                    where: {
+                                        status: "Pending"
+                                    }
+                                }
                             }
                         }
                     }
