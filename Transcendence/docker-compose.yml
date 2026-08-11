@@ -47,6 +47,8 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - WORKSPACE_URL=http://workspace-service:3003
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -74,6 +76,8 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - WORKSPACE_URL=http://workspace-service:3003
 
   # Workspace = organisations, invitations, projects, tasks, comments + kanban sockets
   workspace-service:
@@ -97,6 +101,8 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - CHAT_URL=http://chat-service:3002
 
   db:
     image: docker.io/library/postgres:16-alpine

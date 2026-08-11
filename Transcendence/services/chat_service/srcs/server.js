@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 
 import conversationsRouter from './routes/conversations.js';
 import messagesRouter from './routes/messages.js';
+import internalRouter from './routes/internal.routes.js';
 import { initSockets } from './sockets/index.js';
 
 const app = express();
@@ -38,6 +39,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/conversations', conversationsRouter);
 app.use('/api/messages', messagesRouter);
+app.use('/internal', internalRouter);
 
 initSockets(io);
 

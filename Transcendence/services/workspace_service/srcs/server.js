@@ -9,6 +9,7 @@ import invitationRouter from './routes/invitation.routes.js';
 import projectRouter from './routes/project.routes.js';
 import taskRouter from './routes/task.routes.js';
 import commentRouter from './routes/comment.routes.js';
+import internalRouter from './routes/internal.routes.js';
 import { initSockets } from './sockets/index.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api', invitationRouter);
 app.use('/api', projectRouter);
 app.use('/api', taskRouter);
 app.use('/api', commentRouter);
+app.use('/internal', internalRouter);
 
 initSockets(io);
 

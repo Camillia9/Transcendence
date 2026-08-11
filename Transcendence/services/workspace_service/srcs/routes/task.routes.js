@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
+import { emitUserNotification } from '../../../shared/chatClient.js';
 
 const router = express.Router();
 
@@ -422,10 +423,9 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                 io.to(`project:${req.project.id}`).emit('task:updated', updatedTask);
             }
 
-            // Notifie en temps reel la personne assignee, meme si elle n'est pas sur le Kanban
-            // (sans ca, la notif existe en base mais n'arrive au front qu'au prochain refresh)
-            if (notification && io) {
-                io.to(`user:${notification.userId}`).emit('notification:new', {
+            // Notifie en temps reel via chat (rooms user:* sont sur chat-service)
+            if (notification) {
+                await emitUserNotification(notification.userId, {
                     id: notification.id,
                     type: notification.type,
                     content: notification.content,
