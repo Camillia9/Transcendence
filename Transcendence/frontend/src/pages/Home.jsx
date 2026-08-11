@@ -5,7 +5,8 @@ import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
 import { getHealth } from "../api/health";
-import { getProjects, updateProject, deleteProject } from "../api/projects";
+import { getProjects, updateProject, deleteProject, createProject } from "../api/projects";
+import { getMyOrganisations } from "../api/organisations";
 
 function Home() {
   // L'etat: Le projet qu'on veut supp
@@ -22,6 +23,10 @@ function Home() {
 
   // etat pour lire le tableau et pouvoir le modifier
   const [projects, setProjects] = useState([])
+
+  // Besoin des orgas pour creer un projet 
+  const [organisations, setOrganisations] = useState([])
+  const [selectedOrgId, setSelectedOrgId] = useState('')
 
   // Provisoire
   const navigate = useNavigate()
@@ -66,7 +71,10 @@ function Home() {
 
     // Si le nameProject ne contient rien ou que des espaces on stock l'erreur dans errors
     if (!newName.trim()) 
-      errors.name = "Le nom du projet est obligatoire"
+      errors.title = "Le nom du projet est obligatoire"
+
+    if (!projectToEdit && !selectedOrgId)
+      errors.org = "Choisis une organisation"
 
     if (newDeadline) { // Si on met une Deadline
       const today = new Date() // recupere plusieurs infos comme la date l'heure etc
@@ -99,35 +107,31 @@ function Home() {
       try {
         const updated = await updateProject(projectToEdit.id, {
           title: newName.trim(),
-          deadline: newDeadline || null,
+          deadline: newDeadline || null
         })
         setProjects(projects.map(p =>
           p.id === projectToEdit.id ? { ...p, ...updated } : p // « pars de l'ancien projet complet, puis les écrase avec les champs revenus du back ».
         ))
+        handleCloseNewProject()
       } catch (error) {
         setNewErrors({ global: "Impossible de modifier le projet" })
         return
       }
       // Sert a parcourir tout les projets pour modifier celui qu'on veut. 
     } else {
-      // Cree l'objet du nouveau projet (Localement. Remplacer par un appel API)
-      const newProject = {
-        id: Date.now(), // Date.now() renvoie le nb de ms ecoule depuis 1970. Sert ici a avoir des ID forcement differents'
-        name: newName.trim(), // recupere le name en retirant tout les espaces autour
-        deadline: newDeadline || null, // Utilise deadline si existante, sinon = null
-        tasks: { done: 0, total: 0 }, // on commence avec 0 taches
-        members: newMembers ? newMembers.split(',').map(m => m.trim()).filter(m => m !== '') : [],
-        // Si newMembers n'est pas une chaine vide (donc continent des memnres) :
-        // split(): on tansforme la string de membres en tableau ("John, Eliott, ML" ==> ["John", " Eliott", " ML"])
-        // map() : parcourt chaque element du tableau et les transforme. Ici trim donc supprime les espaces
-        // filter() : garde seulement les elements respectant la condition. Ici supp les chaines vides
-        // Sinon elle est vide donc cree un tableau vide
-        role: 'Manager' // Celui qui cree le projet est forcement Manager
+      try {
+        await createProject(selectedOrgId, {
+          title: newName.trim(),
+          description: null,
+          deadline: newDeadline || null,
+        })
+        const data = await getProjects()
+        setProjects(data)
+        handleCloseNewProject()
+      } catch (error) {
+        setNewErrors({ global: "Impossible de creer le projet" })
       }
-      setProjects([newProject, ...projects]) // creation newTableau sans toucher aux autres
     }
-    handleCloseNewProject()
-
   }
 
   // BRANCHEMENT BACK/FRONT:
@@ -159,7 +163,18 @@ function Home() {
         console.error('Impossible de charger les projets', error)
       }
     }
-    loadProjects()
+
+    async function loadOrganisations() {
+      try {
+        const data = await getMyOrganisations()
+        console.log('ORGAS HOME', data)
+        setOrganisations(data)
+      } catch (error) {
+        console.error('Impossible de charger les organisations', error)
+      }
+    }
+
+    loadProjects(), loadOrganisations()
   }, [])
 
   return (
@@ -190,7 +205,7 @@ function Home() {
               onClose={() => setProjectToDelete(null)}
               title="Supprimer ce projet ?"
             >
-              <p> {projectToDelete.name} sera supprime definitivement </p>
+              <p> {projectToDelete.title} sera supprime definitivement </p>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setProjectToDelete(null)}> Annuler </Button>
                 <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
@@ -203,6 +218,27 @@ function Home() {
             onClose={handleCloseNewProject}
             title={projectToEdit ? "Modifier le projet" : "Nouveau Projet"}
           >
+            {/* Choix de l'organisation (création uniquement) */}
+            {!projectToEdit && (
+              <div className="flex flex-col gap-1 mb-4">
+                <label className="text-sm text-gray-500">
+                  Organisation *
+                </label>
+                <select
+                  value={selectedOrgId}
+                  onChange={(e) => setSelectedOrgId(e.target.value)}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
+                >
+                  <option value="">Choisir une organisation</option>
+                  {organisations.map(org => (
+                    <option key={org.id} value={org.id}>{org.title}</option>
+                  ))}
+                </select>
+                {newErrors.org && (
+                  <p className="text-red-400 text-sm mt-1">{newErrors.org}</p>
+                )}
+              </div>
+            )}
             {/*Entree du NameProject */}
             <div className="flex flex-col gap-1 mb-4">
               {/*Label = tire du champs*/}
@@ -218,7 +254,7 @@ function Home() {
                 light
               />
               {newErrors.name && (
-                <p className="text-red-400 text-sm mt-1">{newErrors.name}</p>
+                <p className="text-red-400 text-sm mt-1">{newErrors.title}</p>
               )}
             </div>
             {/*Entree de la Deadline */}
@@ -239,7 +275,7 @@ function Home() {
 
             {/*Entree des membres */}
             {/*Masquer en mode edition */}
-            {!projectToEdit && (
+            {/*{!projectToEdit && (
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-sm text-gray-500">
                   Ajout de membres (separation par virgule !)
@@ -252,7 +288,7 @@ function Home() {
                   light
                 />
               </div>
-            )}
+            )}*/}
 
             {newErrors.global && (
               <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
