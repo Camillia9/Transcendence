@@ -18,7 +18,7 @@ const googleStrategy = new GoogleStrategy(
     {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: 'https://localhost/api/auth/google/callback',
+        callbackURL: 'https://localhost:8443/api/auth/google/callback',
     },
 
     // accessToken = jeton donner par google qui permet d'acceder aux API google

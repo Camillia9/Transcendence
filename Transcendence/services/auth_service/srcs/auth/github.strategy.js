@@ -6,7 +6,7 @@ const gitHubStrategy = new GitHubStrategy (
     {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: 'https://localhost/api/auth/github/callback',
+        callbackURL: 'https://localhost:8443/api/auth/github/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
         try{
