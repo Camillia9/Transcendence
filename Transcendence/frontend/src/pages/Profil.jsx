@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import Avatar from '../components/ui/Avatar'
 import Card from '../components/ui/Card'
@@ -11,14 +11,16 @@ function Profil() {
   const { user, login, logout } = useAuth()
   const [profile, setProfile] = useState(null) // Cree un profile vide. null au cas ou le profil n'a pas fini de charger(voir plus bas)
   const navigate = useNavigate()
+  const fileInputRef = useRef(null) // Servira a cacher le "Browse... No file selected" en dessous de l'avatar
 
   // Les etats des champs du profil
   const [pseudo, setPseudo] = useState('')
   const [statut, setStatut] = useState('')
   const [language, setLanguage] = useState('')
   const [avatar, setAvatar] = useState('')
-  // Save les erreurs des champs du profile
+  // Save les erreurs des champs du profile et l'avatar
   const [error, setError] = useState('')
+  const [avatarError, setErrorAvatar] = useState('')
 
   // Les etats pour changer le MDP
   const [oldPassword, setOldPassword] = useState('')
@@ -73,7 +75,9 @@ function Profil() {
     setPseudo(profile.pseudo)
     setStatut(profile.statut)
     setLanguage(profile.langue)
+    setAvatar(profile.avatar ?? '')
     setError('')
+    setErrorAvatar('')
   }
 
   // Gestion du MDP 
@@ -110,15 +114,15 @@ function Profil() {
   function handleAvatarChange(e) {
     const file = e.target.files[0] // le fichier choisis
     if (!file) return // Au cas ou le user annule sa selection
-    setError('') // on vide le state error des precedents essai
+    setErrorAvatar('') // on vide le state error des precedents essai
 
     if (!file.type.startsWith('image/')) { // startWith : fonction qui test si un texte commence par un prefix donnee
-      setError('Le fichier doit etre une image')
+      setErrorAvatar('Le fichier doit etre une image')
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) { // file.size est un nombre en octets. Pour poser une limite à 2 Mo, tu dois exprimer 2 Mo en octets : 2 × 1024 Ko × 1024 octets = ~2 097 152
-      setError('Image trop lourde (max 2 Mo)')
+    if (file.size > 1 * 1024 * 1024) { // file.size est un nombre en octets. Pour poser une limite à 1 Mo, tu dois exprimer 1 Mo en octets : 1 × 1024 Ko × 1024 octets = ~1 097 152
+      setErrorAvatar('Image trop lourde (max 1 Mo)')
       return
     }
 
@@ -132,34 +136,58 @@ function Profil() {
     reader.readAsDataURL(file) // lance la lecture. Elle prend quelques ms. et ensuite le navigateur va regarder dans le tirroir onload et declanchera la fonction
   }
 
+  function handleRemoveAvatar() {
+    setAvatar('')
+  }
+
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
 
-  console.log('avatar dans le render', avatar)
+  // Debug 
+  //console.log('avatar dans le render', avatar)
 
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
 
       {/*Choix de style : */}
       <Card className="flex flex-col items-center gap-3 text-center">
-      {/*<Card className="flex items-center justify-center gap-4">*/}
-        <Avatar
-          src={avatar} // state, pour avoir la Maj direct. 
-          username={profile.pseudo}
-          size="lg"
-        />
+        <div
+          onClick={() => fileInputRef.current.click()}
+          className="relative cursor-pointer group"
+        >
+          <Avatar
+            src={avatar}
+            username={profile.pseudo}
+            size="lg"
+          />
+          {/*Voile au survol*/}
+          <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className='text-white text-xs'>Modifier</span>
+          </div>
+        </div>
+
         <input
           type='file'
           accept='image/*' // ne propose que des images dans le selecteurs
           onChange={handleAvatarChange}
+          ref={fileInputRef}
+          className='hidden'
         />
+
         <div>
           <h1 className="text-xl font-bold text-gray-900">{profile.pseudo}</h1>
           <p className="text-gray-500 text-sm">{profile.email}</p>
         </div>
-      </Card>
 
-      <Card className='flex flex-col gap-4'>
+        {avatarError && <p className="text-sm text-red-400">{avatarError}</p>}
+
+        {/* Si avatar present, le supp */}
+        {avatar && (
+          <Button variant='danger' onClick={handleRemoveAvatar}>
+            Supprimer la photo
+          </Button>
+        )}
+
         {/*PSeudo */}
         <div className='flex items-center justify-between'>
           <label className='text-sm text-gray-500'>Pseudo</label>

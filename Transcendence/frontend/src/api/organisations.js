@@ -88,5 +88,5 @@ export async function deleteInvitation(orgId, id) {
 }
 
 export async function searchUser(pseudo) {
-    return await apiRequest(`/users/search?pseudo=${pseudo}`);
+    return await apiRequest(`/users/by-pseudo?pseudo=${pseudo}`);
 }

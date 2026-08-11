@@ -342,23 +342,23 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                         throw new Error('LAST_ADMIN');
                 }
 
-                await notifyUser(
-                    tx,
-                    cible,
-                    req.user.userId,
-                    'RemovedFromOrga',
-                    `You were removed from the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io')
-                );
+                // await notifyUser(
+                //     tx,
+                //     cible,
+                //     req.user.userId,
+                //     'RemovedFromOrga',
+                //     `You were removed from the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io')
+                // );
 
-                await notifyOrgaMembers(
-                    tx,
-                    req.orgId,
-                    req.user.userId,
-                    'MemberRemoved',
-                    `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io')
-                );
+                // await notifyOrgaMembers(
+                //     tx,
+                //     req.orgId,
+                //     req.user.userId,
+                //     'MemberRemoved',
+                //     `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io')
+                // );
 
                 await tx.member.delete({
                     where: {
@@ -407,14 +407,14 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                         throw new Error('LAST_ADMIN');
                 }
 
-                await notifyOrgaMembers(
-                    tx,
-                    req.orgId,
-                    req.user.userId,
-                    'MemberLeftOrga',
-                    `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io')
-                );
+                // await notifyOrgaMembers(
+                //     tx,
+                //     req.orgId,
+                //     req.user.userId,
+                //     'MemberLeftOrga',
+                //     `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io')
+                // );
 
                 await tx.member.delete({
                     where: {
