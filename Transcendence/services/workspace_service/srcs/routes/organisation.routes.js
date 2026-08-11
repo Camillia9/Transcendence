@@ -1,7 +1,7 @@
 import express from 'express';
-import { checkPermissionOrga, authenticate, loadOrgMembership } from '../../../shared/middleware/checkPermission.js';
+import { checkPermissionOrga, authenticate, loadOrgMembership } from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
-import { notifyOrgaMembers, notifyUser } from '../../../shared/notification_data.js';
+import { notifyOrgaMembers, notifyUser } from '../utils/notifications.js';
 
 const router = express.Router();
 

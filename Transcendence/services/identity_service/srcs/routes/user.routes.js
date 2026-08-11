@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { authenticate } from '../../../shared/middleware/checkPermission.js';
+import { authenticate } from '../../../shared/auth.middleware.js';
 import prisma from '../../../prisma/prisma.js';
 
 const router = Router();
 
+// NOTE (architecture): lit la table Member (domaine workspace) via la DB partagée.
+// Plus tard: appeler workspace HTTP GET /internal/orgs/:id/members au lieu d'accéder aux tables orga ici.
 // GET /api/users — liste les utilisateurs qui partagent une organisation avec moi
 router.get('/users', authenticate, async (req, res) => {
 	try {

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../../../shared/middleware/checkPermission.js';
+import { authenticate } from '../../../shared/auth.middleware.js';
 import prisma from '../../../prisma/prisma.js';
 
 const router = Router();
@@ -47,6 +47,8 @@ router.post('/', authenticate, async (req, res) => {
 			where: { userId },
 			select: { orgId: true }
 		});
+		// NOTE: check "même orga" via DB partagée (domaine workspace).
+		// Plus tard: endpoint interne workspace plutôt qu'accès direct à Member.
 		const creatorOrgIds = creatorOrgs.map(m => m.orgId);
 
 		for (const pid of participantIds.map(Number)) {

@@ -13,7 +13,7 @@ import googleStrategy from '../auth/google.strategy.js';
 import gitHubStrategy from '../auth/github.strategy.js';
 import { generateToken } from '../../../shared/jwt.utils.js';
 import prisma from '../../../prisma/prisma.js';
-import { authenticate } from '../../../shared/middleware/checkPermission.js';
+import { authenticate } from '../../../shared/auth.middleware.js';
 
 const router = express.Router();
 
