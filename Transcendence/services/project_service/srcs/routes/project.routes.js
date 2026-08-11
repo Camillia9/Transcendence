@@ -56,6 +56,9 @@ router.get('/projects', authenticate,
                         }
                     }
                 },
+                orderBy: {
+                    createdAt: 'desc'
+                },
                 include: {
                     projectMembers: {
                         include: {
@@ -200,5 +203,183 @@ router.delete('/projects/:projectId', authenticate, loadProject, checkPermission
         }
     }
 );
+
+
+// ajouter un membre a un projet
+router.post('/projects/:projectId/members', authenticate, loadProject, checkPermissionProject('edit_project'),
+    async(req, res) => {
+        try{
+            const { userId, role = 'User' } = req.body;
+
+            if (!userId) {
+                return res.status(400).json({ error: 'userId required'});
+            }
+
+            const targetUserId = Number(userId);
+            if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
+                return res.status(400).json({ error: 'Invalid userId' });
+            }
+
+            // verifier que le role est valide
+            if (!['User', 'Manager'].includes(role)) {
+                return res.status(400).json({ error: 'Invalid role' });
+            }
+
+            // verifier que l'utilisateur existe
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: targetUserId
+                },
+                select: {
+                    id: true,
+                    pseudo: true,
+                    avatar: true
+                }
+            });
+
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            // verifier que le user qu'on ajoute appartient a l'orga
+            const orgMembership = await prisma.member.findUnique({
+                where: {
+                    userId_orgId: {
+                        userId: targetUserId,
+                        orgId: req.project.orgId
+                    }
+                }
+            });
+
+            if (!orgMembership) {
+                return res.status(403).json({ error: 'User is not a member of this organisation' });
+            }
+
+            // verifier qu'il n'est pas deja membre du projet
+            const existingMember = await prisma.projectMember.findUnique({
+                where: {
+                    userId_projectId: {
+                        projectId: req.project.id,
+                        userId: targetUserId
+                    }
+                }
+            });
+
+            if (existingMember) {
+                return res.status(409).json({ error: 'User is already a member of this project' });
+            }
+
+            // ajouter le membre
+            const member = await prisma.projectMember.create({
+                data: {
+                    projectId: req.project.id,
+                    userId: targetUserId,
+                    role
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true
+                        }
+                    }
+                }
+            });
+
+            return res.status(201).json(member);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    });
+
+
+// retirer un membre d'un projet
+router.delete('/projects/:projectId/members/:userId', authenticate, loadProject, checkPermissionProject('edit_project'), 
+    async (req, res) => {
+        try{
+            const userId = Number(req.params.userId);
+
+            if (!Number.isInteger(userId) || userId <= 0)
+            return res.status(400).json({ error: 'Invalid userId' });
+
+            // verifier que le membre existe dans le projet
+            const member = await prisma.projectMember.findUnique({
+                where: {
+                    userId_projectId: {
+                        projectId: req.project.id,
+                        userId
+                    }
+                }
+            });
+
+            if (!member) {
+                return res.status(404).json({ error: 'User is not a member of this project' });
+            }
+            
+            // verifier que ce n'est pas le dernier manager du projet
+            if (member.role === 'Manager') {
+                const nbManager = await prisma.projectMember.count({
+                    where: {
+                        projectId: req.project.id,
+                        role: 'Manager'
+                    }
+                });
+
+                if (nbManager <= 1) {
+                    return res.status(400).json({ error: 'Cannot remove the last manager of the project' });
+                }
+            }
+
+            await prisma.projectMember.delete({
+                where: {
+                    userId_projectId: {
+                        projectId: req.project.id,
+                        userId
+                    }
+                }
+            });
+        
+            return res.json({ message: 'Member removed from project' });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    });
+
+// lister les membres de l'orga qui ne sont pas dans le projet
+router.get('/projects/:projectId/available-members', authenticate, loadProject, checkPermissionProject('edit_project'),
+    async (req, res) => {
+        try {
+            const members = await prisma.member.findMany({
+                where: {
+                    orgId: req.project.orgId,
+                    user: {
+                        projectMembers: {
+                            none: {
+                                projectId: req.project.id
+                            }
+                        }
+                    }
+                },
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            pseudo: true,
+                            avatar: true
+                        }
+                    }
+                }
+            });
+
+            return res.json(members.map(member => member.user));
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    });
 
 export default router;
