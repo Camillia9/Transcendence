@@ -11,6 +11,7 @@ import userRouter from './routes/user.routes.js';
 import friendRouter from './routes/friend.routes.js';
 import organisationRouter from './routes/organisation.routes.js';
 import profilRouter from './routes/profil.routes.js';
+import notificationRouter from './routes/notification.routes.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api', userRouter);
 app.use('/api', friendRouter);
 app.use('/api', organisationRouter);
 app.use('/api', profilRouter);
+app.use('/api', notificationRouter);
 
 const PORT = process.env.PORT || 3001;
 
