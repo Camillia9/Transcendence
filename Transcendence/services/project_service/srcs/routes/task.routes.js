@@ -370,7 +370,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
             }
 
             // assigne la tache et recupere la tache modifier
-            const updatedTask = await prisma.$transaction(async (tx) => {
+            const { updatedTask, notification } = await prisma.$transaction(async (tx) => {
                 const task = await tx.task.update({
                     where: {
                         id: req.task.id,
@@ -395,9 +395,10 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                     },
                 });
 
+                let notification = null;
                 if (userId !== null && userId !== undefined) {
                     // cree une notification
-                    await tx.notification.create({
+                    notification = await tx.notification.create({
                         data: {
                             type: 'Assignment',
                             content: `You have been assigned to the task "${task.title}"`,
@@ -409,8 +410,25 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                     });
                 }
 
-                return task;
+                return { updatedTask: task, notification };
             });
+
+            // Diffuse la tache mise a jour a tous les clients connectes sur ce projet
+            // (sans ca, le Kanban des autres onglets/utilisateurs ne bouge qu'au refresh)
+            const io = req.app.get('io');
+            io.to(`project:${req.project.id}`).emit('task:updated', updatedTask);
+
+            // Notifie en temps reel la personne assignee, meme si elle n'est pas sur le Kanban
+            // (sans ca, la notif existe en base mais n'arrive au front qu'au prochain refresh)
+            if (notification) {
+                io.to(`user:${notification.userId}`).emit('notification:new', {
+                    id: notification.id,
+                    type: notification.type,
+                    content: notification.content,
+                    createdAt: notification.createdAt.toISOString(),
+                    isRead: false,
+                });
+            }
 
             return res.status(200).json ({
                 message: 'Task assignment updated',

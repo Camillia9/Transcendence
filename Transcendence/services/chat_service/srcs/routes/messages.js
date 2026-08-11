@@ -53,8 +53,8 @@ router.post('/:conversationId', authenticate, async (req, res) => {
             include: { user: { select: { id: true, pseudo: true, avatar: true } } }
         });
 
-        // TODO: émettre via Socket.io quand le socle WS est prêt
-        // io.to(`conversation:${convoId}`).emit('new_message', message);
+        const io = req.app.get('io');
+        io.to(`conversation:${convoId}`).emit('message:new', message);
 
         res.status(201).json(message);
     } catch (e) {

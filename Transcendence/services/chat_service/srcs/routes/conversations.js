@@ -75,6 +75,8 @@ router.post('/', authenticate, async (req, res) => {
 				}
 			});
 			if (existing) {
+				io.in(`user:${userId}`).socketsJoin(`conversation:${existing.id}`)
+				io.in(`user:${Number(otherId)}`).socketsJoin(`conversation:${existing.id}`)
 				io.to(`user:${userId}`).to(`user:${Number(otherId)}`).emit('conversation:new', existing)
 				return res.json(existing);
 			}
@@ -96,6 +98,7 @@ router.post('/', authenticate, async (req, res) => {
 		});
 
 		allParticipants.forEach(uid => {
+			io.in(`user:${uid}`).socketsJoin(`conversation:${convo.id}`)
 			io.to(`user:${uid}`).emit('conversation:new', convo)
 		})
 
