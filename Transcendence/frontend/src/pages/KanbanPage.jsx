@@ -276,7 +276,7 @@ function KanbanPage() {
 
   return (
 
-    <div className="flex flex-col gap-6 min-w-fit">
+    <div className="flex flex-col gap-6">
       {/*En tete*/}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
