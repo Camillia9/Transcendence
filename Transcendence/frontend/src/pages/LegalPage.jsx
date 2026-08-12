@@ -1,14 +1,26 @@
 import { Link } from 'react-router-dom'
 import Logo from '../components/ui/Logo'
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function LegalPage({ content }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    if (location.key !== "default") {
+      navigate(-1);          // on revient là où on était
+    } else {
+      navigate("/");         // arrivée directe → fallback
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* En-tête simple avec retour à l'accueil */}
       <header className="bg-white border-b border-gray-100 px-6 py-4">
-        <Link to="/">
+        <button onClick={handleBack} className="cursor-pointer">
           <Logo />
-        </Link>
+        </button>
       </header>
 
       {/* Contenu centré, largeur de lecture confortable */}
