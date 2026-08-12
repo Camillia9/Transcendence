@@ -231,7 +231,7 @@ function Home() {
                 >
                   <option value="">Choisir une organisation</option>
                   {organisations.map(org => (
-                    <option key={org.id} value={org.id}>{org.title}</option>
+                    <option key={org.id} value={org.id}>{org.name}</option>
                   ))}
                 </select>
                 {newErrors.org && (
