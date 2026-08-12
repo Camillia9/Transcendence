@@ -332,13 +332,26 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
                 }
             }
 
-            await prisma.projectMember.delete({
-                where: {
-                    userId_projectId: {
+            await prisma.$transaction(async (tx) => {
+                // desassigner ttes les taches de ce membre
+                await tx.task.updateMany({
+                    where: {
                         projectId: req.project.id,
-                        userId
+                        assignedToId: userId,
+                    },
+                    data: {
+                        assignedToId: null,
+                    },
+                });
+                // retirer le membre du projet
+                await tx.projectMember.delete({
+                    where: {
+                        userId_projectId: {
+                            projectId: req.project.id,
+                            userId
+                        }
                     }
-                }
+                });
             });
         
             return res.json({ message: 'Member removed from project' });
