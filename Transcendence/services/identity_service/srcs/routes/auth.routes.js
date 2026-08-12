@@ -172,9 +172,9 @@ router.get('/auth/google/callback',
 
         const { token, user } = req.user;
         // en prod : rediriger vers le front avec le token dans l'URL
-        // res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 
-        return res.json({ token, user });
+        // return res.json({ token, user });
         // renvoyer le token au front (dev 1 lit ca)
     }
 );
@@ -188,6 +188,9 @@ router.get('/auth/github',
 router.get('/auth/github/callback',
     passport.authenticate('github', { session: false, failureRedirect: '/login' }),
     (req, res) => {
+
+        console.log('🔥 GITHUB CALLBACK ATTEINT');
+        console.log('req.user =', req.user);
         if (req.user.twoFactorRequired) {
             return res.json({
                 twoFactorRequired: true,
@@ -195,10 +198,16 @@ router.get('/auth/github/callback',
             });
         }
 
-        const { token, user } = req.user;
-        res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
+        console.log('GITHUB USER:', req.user);
 
-        return res.json({ token, user });
+        const { token, user } = req.user;
+
+        console.log('GITHUB TOKEN:', token);
+        console.log('GITHUB USER DATA:', user);
+
+        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
+
+        // return res.json({ token, user });
     }
 );
 

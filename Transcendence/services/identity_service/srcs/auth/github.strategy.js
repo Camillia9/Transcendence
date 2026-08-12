@@ -2,11 +2,16 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import { generateToken } from '../../../shared/jwt.utils.js';
 import prisma from '../../../prisma/prisma.js';
 
+console.log(
+    'GitHub callback:',
+    `${process.env.BACKEND_URL}/api/auth/github/callback`
+);
+
 const gitHubStrategy = new GitHubStrategy (
     {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: 'https://localhost:8443/api/auth/github/callback',
+        callbackURL: `${process.env.BACKEND_URL}/api/auth/github/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
         try{

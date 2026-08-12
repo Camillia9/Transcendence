@@ -38,3 +38,11 @@ export async function deleteProject(projectId) {
 		method: 'DELETE'
 	})
 }
+
+export async function createProject(orgId, data) {
+	const response = await apiRequest(`/organisations/${orgId}/projects`, {
+		method: 'POST',
+		body: JSON.stringify(data),
+	})
+	return response
+}

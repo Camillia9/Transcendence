@@ -21,6 +21,7 @@ import LegalPage from './pages/LegalPage'
 import { privacyPolicy, termsOfService } from './data/legalContent'
 import DesignSystem from './pages/DesignSystem'
 import { SocketProvider } from './context/SocketContext'
+import OAuthSuccess from './components/ui/OAuthSuccess'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/oauth-success" element={<OAuthSuccess />} />
             </Route>
             {/* Pages protégées — avec navbar + vérif connexion (avec ProtectedRoute) */}
             <Route element={<ProtectedRoute />}>

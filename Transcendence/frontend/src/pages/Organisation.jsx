@@ -4,11 +4,12 @@ import OrgaCard from "../components/ui/OrgaCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser} from "../api/organisations";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation} from "../api/organisations";
 
 function Organisations() {
 	// etat pour lire le tableau et pouvoir le modifier
 	const [organisations, setOrganisations] = useState([])
+  const [invitations, setInvitations] = useState([])
   // L'etat:l'orga qu'on veut supp
   const [organisationToDelete, setOrganisationToDelete] = useState(null)
   // L'etat: L'orga qu'on veut add ou edit
@@ -34,6 +35,7 @@ function Organisations() {
   
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (organisation) => {
+    setNewErrors({})
     setOrganisationToEdit(organisation)
     setNewName(organisation.name)
     setShowNewOrganisation(true)
@@ -62,7 +64,7 @@ function Organisations() {
       alert("Impossible de modifier le role du dernier administrateur. Il faut toujours au moins un admnistrateur dans l'organisation.");
       return;
     }
-    
+    setNewErrors({})
     setMemberToEdit({organisationId, member});
     setNewRole(member.role);
   }
@@ -184,6 +186,8 @@ function Organisations() {
   }
 
   const handleInvite = (organisation) => {
+    setNewErrors({})
+    setInvitePseudo('')
     setMemberToInvite(organisation);
   }
 
@@ -214,8 +218,7 @@ function Organisations() {
       const data = await getMyOrganisations();
       setOrganisations(data);
 
-      setInvitePseudo("");
-      setMemberToInvite(null);
+      handleCloseInvite()
     } catch (error) {
       setNewErrors({ global: "Impossible d'envoyer l'invitation"})
     }
@@ -243,6 +246,33 @@ function Organisations() {
     }
   }
 
+  // Refuser une invit : Disparait de la liste
+  async function handleDecline(id) {
+    try {
+      await declineInvitation(id)
+      await loadInvitations()
+    } catch (error) {
+      console.error('Impossible de refuser l\'invitation', error)
+    }
+  }
+
+  // Acceter une invit : membres de l'orga
+  async function handleAccept(id) {
+    try {
+      await acceptInvitation(id)
+      await loadInvitations()
+      await loadOrganisations()
+    } catch (error) {
+      console.error('Impossible d\'accepter l\'invitation', error)
+    }
+  }
+
+  const handleCloseInvite = () => {
+    setMemberToInvite(null)
+    setInvitePseudo('')
+    setNewErrors({})
+  }
+
 
   // BRANCHEMENT BACK/FRONT:
   // état local pour stocker ce que le back nous répond.
@@ -264,17 +294,31 @@ function Organisations() {
 //     checkBackend()
 //   }, [])
 
-  useEffect(() => {
-    async function loadOrganisations() {
-      try {
-        const data = await getMyOrganisations()
-        setOrganisations(data)
-      } catch(error) {
-        console.error('Impossible de charger les organisations', error)
-      }
+  async function loadOrganisations() {
+    try {
+      const data = await getMyOrganisations()
+      setOrganisations(data)
+    } catch(error) {
+      console.error('Impossible de charger les organisations', error)
     }
+  }
+
+
+  async function loadInvitations() {
+    try {
+      const data = await getMyInvitations()
+      setInvitations(data)
+    } catch (error) {
+      console.log('Impossible de charger les invitations', error)
+    }
+  }
+
+  useEffect(() => {
     loadOrganisations()
+    loadInvitations()
   }, [])
+
+  console.log("test inv", invitations)
 
   return (
     <div className="flex flex-col gap-6">
@@ -286,179 +330,190 @@ function Organisations() {
           + Nouvelle organisation
         </Button>
       </div>
-        {/*Grille responsive*/}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {organisations.map(organisation => (
-            <OrgaCard
-            orga={organisation}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onEditMember={handleEditMember}
-            onDeleteMember={handleDeleteMember}
-            onInvite={handleInvite}
-            onDeleteInvitation={handleDeleteInvitation}
-            key={organisation.id}
-            />
-          ))}
-        </div>
-        {/*Modal supprimer une orga */}
-          {organisationToDelete && (
-            <Modal
-              isOpen={!!organisationToDelete}
-              onClose={() => setOrganisationToDelete(null)}
-              title="Supprimer cette organisation ?"
-            >
-              <p> {organisationToDelete.name} sera supprime definitivement </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setOrganisationToDelete(null)}> Annuler </Button>
-                <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
-              </div>
-            </Modal>
-          )}
-          {/*Modal Cree une nouvelle orga OU edit une orga (utilisations de la meme modal)*/}
-          <Modal
-            isOpen={showNewOrganisation}
-            onClose={handleCloseNewOrganisation}
-            title={OrganisationToEdit ? "Modifier l'organisation" : "Nouvelle organisation"}
-          >
-            {/*Entree du NameOrganisation */}
-            <div className="flex flex-col gap-1 mb-4">
-              {/*Label = tire du champs*/}
-              <label className="text-sm text-gray-500"> 
-                Nom de l'organisation *
-              </label>
-              {/*Input = zone saisie */}
-              <Input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Nom de l'organisation"
-                light
-              />
-              {newErrors.name && (
-                <p className="text-red-400 text-sm mt-1">{newErrors.name}</p>
-              )}
-            </div>
 
-            {/*Entree des membres */}
-            {/*Masquer en mode edition */}
-            {/* {!OrganisationToEdit && (
-              <div className="flex flex-col gap-1 mb-4">
-                <label className="text-sm text-gray-500">
-                  Ajout de membres (separation par virgule !)
-                </label>
-                <Input
-                  type="text"
-                  value={newMembers}
-                  onChange={(e) => setNewMembers(e.target.value)}
-                  placeholder="Clara, Vincent, Remy"
-                  light
-                />
-              </div>
-            )} */}
-
-            {newErrors.global && (
-              <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
-            )}
-
-            {/*Boutons Annuler/Cree l'orga */}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCloseNewOrganisation}> Annuler </Button>
-              <Button variant="primary" onClick={handleSubmitOrganisation}>
-                {OrganisationToEdit ? "Enregistrer" : "Creer l'organisation"}
-              </Button>
-            </div>
-          </Modal>
-          
-          {memberToDelete && (
-            <Modal
-              isOpen={!!memberToDelete}
-              onClose={() => setMemberToDelete(null)}
-              title="Retirer ce membre ?"
-            >
-              <p> {memberToDelete.member.pseudo} sera retirer definitivement de cette organisation</p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setMemberToDelete(null)}> Annuler </Button>
-                <Button variant="danger" onClick={confirmDeleteMember}> Retirer </Button>
-              </div>
-            </Modal>
-          )}
-
-          {memberToEdit && (
-            <Modal
-              isOpen={!!memberToEdit}
-              onClose={() => setMemberToEdit(null)}
-              title="Modifier le role"
-            >
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-              >
-                <option value="Admin">Admin</option>
-                <option value="Member">Member</option>
-              </select>
-
-              <div className="flex gap-2 mt-4">
-                <Button variant="outline" onClick={() => setMemberToEdit(null)}> Annuler </Button>
-                <Button variant="primary" onClick={saveRole}> Enregistrer </Button>
-              </div>
-            </Modal>
-          )}
-
-            {invitationToDelete && (
-            <Modal
-              isOpen={!!invitationToDelete}
-              onClose={() => setInvitationToDelete(null)}
-              title="Annuler cette invitation ?"
-            >
-              <p>L'invitation sera annulée.</p>
-              <div className="flex gap-2 mt-4">
-                <Button variant="outline" onClick={() => setInvitationToDelete(null)}>Annuler</Button>
-                <Button variant="danger" onClick={confirmDeleteInvitation}>Confirmer</Button>
-              </div>
-            </Modal>
-          )}
-
-          <Modal
-            isOpen={!!memberToInvite}
-            onClose={() => setMemberToInvite(null)}
-            title="Inviter un membre"
-          >
-            <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">
-                Pseudo
-              </label>
-
-              <Input
-                type="text"
-                value={invitePseudo}
-                onChange={(e) => setInvitePseudo(e.target.value)}
-                placeholder="Membre a ajouter"
-                light
-              />
-
-                {newErrors.global && (
-                <p className="text-red-400 text-sm mt-1">{newErrors.global}</p>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setMemberToInvite(null)}
-              >
-                Annuler
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={handleSendInvitation}
-              >
-                Inviter
-              </Button>
-            </div>
-          </Modal>
+      {invitations.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Mes invitations</h2>
+          <div className="flex flex-col gap-2">
+            {invitations.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between bg-white rounded-xl border border-gray-100 p-3">
+                {/* Texte : qui t'invite, à quelle orga */}
+                <span className="text-sm text-gray-700">
+                  <span className="font-medium">{inv.inviter.pseudo}</span> t'invite à rejoindre <span className="font-medium">{inv.organisation.name}</span>
+                </span>
             
+                {/* Les deux actions */}
+                <div className="flex gap-2">
+                  <Button onClick={() => handleAccept(inv.id)}>Accepter</Button>
+                  <Button variant="outline" onClick={() => handleDecline(inv.id)}>Refuser</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/*Grille responsive*/}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {organisations.map(organisation => (
+          <OrgaCard
+          orga={organisation}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onEditMember={handleEditMember}
+          onDeleteMember={handleDeleteMember}
+          onInvite={handleInvite}
+          onDeleteInvitation={handleDeleteInvitation}
+          key={organisation.id}
+          />
+        ))}
+      </div>
+      {/*Modal supprimer une orga */}
+      {organisationToDelete && (
+        <Modal
+          isOpen={!!organisationToDelete}
+          onClose={() => setOrganisationToDelete(null)}
+          title="Supprimer cette organisation ?"
+        >
+          <p> {organisationToDelete.name} sera supprime definitivement </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setOrganisationToDelete(null)}> Annuler </Button>
+            <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
+          </div>
+        </Modal>
+      )}
+      {/*Modal Cree une nouvelle orga OU edit une orga (utilisations de la meme modal)*/}
+      <Modal
+        isOpen={showNewOrganisation}
+        onClose={handleCloseNewOrganisation}
+        title={OrganisationToEdit ? "Modifier l'organisation" : "Nouvelle organisation"}
+      >
+        {/*Entree du NameOrganisation */}
+        <div className="flex flex-col gap-1 mb-4">
+          {/*Label = tire du champs*/}
+          <label className="text-sm text-gray-500"> 
+            Nom de l'organisation *
+          </label>
+          {/*Input = zone saisie */}
+          <Input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Nom de l'organisation"
+            light
+          />
+          {newErrors.name && (
+            <p className="text-red-400 text-sm mt-1">{newErrors.name}</p>
+          )}
+        </div>
+        {/*Entree des membres */}
+        {/*Masquer en mode edition */}
+        {/* {!OrganisationToEdit && (
+          <div className="flex flex-col gap-1 mb-4">
+            <label className="text-sm text-gray-500">
+              Ajout de membres (separation par virgule !)
+            </label>
+            <Input
+              type="text"
+              value={newMembers}
+              onChange={(e) => setNewMembers(e.target.value)}
+              placeholder="Clara, Vincent, Remy"
+              light
+            />
+          </div>
+        )} */}
+        {newErrors.global && (
+          <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
+        )}
+        {/*Boutons Annuler/Cree l'orga */}
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCloseNewOrganisation}> Annuler </Button>
+          <Button variant="primary" onClick={handleSubmitOrganisation}>
+            {OrganisationToEdit ? "Enregistrer" : "Creer l'organisation"}
+          </Button>
+        </div>
+      </Modal>
+      
+      {memberToDelete && (
+        <Modal
+          isOpen={!!memberToDelete}
+          onClose={() => setMemberToDelete(null)}
+          title="Retirer ce membre ?"
+        >
+          <p> {memberToDelete.member.pseudo} sera retirer definitivement de cette organisation</p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setMemberToDelete(null)}> Annuler </Button>
+            <Button variant="danger" onClick={confirmDeleteMember}> Retirer </Button>
+          </div>
+        </Modal>
+      )}
+      {memberToEdit && (
+        <Modal
+          isOpen={!!memberToEdit}
+          onClose={() => setMemberToEdit(null)}
+          title="Modifier le role"
+        >
+          <select
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value)}
+          >
+            <option value="Admin">Admin</option>
+            <option value="Member">Member</option>
+          </select>
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => setMemberToEdit(null)}> Annuler </Button>
+            <Button variant="primary" onClick={saveRole}> Enregistrer </Button>
+          </div>
+        </Modal>
+      )}
+        {invitationToDelete && (
+        <Modal
+          isOpen={!!invitationToDelete}
+          onClose={() => setInvitationToDelete(null)}
+          title="Annuler cette invitation ?"
+        >
+          <p>L'invitation sera annulée.</p>
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => setInvitationToDelete(null)}>Annuler</Button>
+            <Button variant="danger" onClick={confirmDeleteInvitation}>Confirmer</Button>
+          </div>
+        </Modal>
+      )}
+      <Modal
+        isOpen={!!memberToInvite}
+        onClose={handleCloseInvite}
+        title="Inviter un membre"
+      >
+        <div className="flex flex-col gap-1 mb-4">
+          <label className="text-sm text-gray-500">
+            Pseudo
+          </label>
+          <Input
+            type="text"
+            value={invitePseudo}
+            onChange={(e) => setInvitePseudo(e.target.value)}
+            placeholder="Membre a ajouter"
+            light
+          />
+            {newErrors.global && (
+            <p className="text-red-400 text-sm mt-1">{newErrors.global}</p>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleCloseInvite}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSendInvitation}
+          >
+            Inviter
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
