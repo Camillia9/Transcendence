@@ -10,10 +10,12 @@ import Button from '../components/ui/Button'
 import TaskCard from "../components/ui/TaskCard"
 import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
+import Avatar from "../components/ui/Avatar"
 
 import { useSocket } from "../context/SocketContext"
 import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment, deleteComment } from "../api/tasks";
-import { getProjectById } from "../api/projects";
+import { addProjectMember, getAvailableMembers, getProjectById, removeProjectMember } from "../api/projects";
+import { IconPlug, IconPlus, IconTrash } from "@tabler/icons-react";
 
 const COLUMNS = [
   { id: "ToDo", label: "À faire" },
@@ -38,6 +40,9 @@ function KanbanPage() {
   const [newTaskError, setNewTaskError] = useState('')
   const [project, setProject] = useState(null)
   const [tasks, setTasks] = useState([]) // Le tableau contenant toutes les taches
+
+  const [showMembers, setShowMembers] = useState(false) // modal ouverte ?
+  const [availableMembers, setAvailableMembers] = useState([]) // gens de l'orga ajoutable
 
   useEffect(() => {
     if (!socket || !projectId) return
@@ -81,22 +86,24 @@ function KanbanPage() {
     }
   }
 
-  // Utilise l'API pour les taches
+  async function loadProject() {
+    try {
+      const data = await getProjectById(projectId)
+      setProject(data)
+    } catch (error) {
+      console.error('Impossible de charger le projet', error)
+    }
+  }
+
+  // Apelle ces fction aux chargements
   useEffect(() => {
     loadTasks()
+    loadProject()
   }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
 
-  useEffect(() => {
-    async function loadProject() {
-      try {
-        const data = await getProjectById(projectId)
-        setProject(data)
-      } catch (error) {
-        console.error('Impossible de charger le projet', error)
-      }
-    }
-    loadProject()
-  }, [projectId])
+  //useEffect(() => {
+  //  loadProject()
+  //}, [projectId])
 
 
   // TEMPORAIRE 
@@ -129,14 +136,13 @@ function KanbanPage() {
     setTasks(tasks.map(t =>
       t.id === taskId ? { ...t, status: newColumn } : t
     ))
-
-    if (socket) {
-      socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
-    }
-
+    
     // le back calcule lui-meme la position
     try {
       await moveTask(projectId, taskId, newColumn)
+       if (socket) {
+      socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
+    }
       await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
     } catch (error) {
       console.error('Impossible de deplacer la tache', error)
@@ -260,6 +266,42 @@ function KanbanPage() {
     }
   }
 
+  // Bouton pour afficher modal d'ajouts
+  async function openMembers() {
+    setShowMembers(true)
+    try {
+      const data = await getAvailableMembers(projectId)
+      setAvailableMembers(data)
+    } catch (error) {
+      console.error('Impossible de charger les membres disponibles', error)
+    }
+  }
+
+  // Ajouter ces personnes
+  async function handleAddMember(userId) {
+    try {
+      await addProjectMember(projectId, userId)
+      await loadProject() // rafraichit les membres actuels
+      const data = await getAvailableMembers(projectId)
+      setAvailableMembers(data) // rafraichit les personnes dispo
+    } catch (error) {
+      console.error('Impossible d\'ajouter le membre', error)
+    }
+  }
+
+  // Supprimer les membres
+  async function handleRemoveMember(userId) {
+    try {
+      await removeProjectMember(projectId, userId)
+      await loadProject()
+      await loadTasks()
+      const data = await getAvailableMembers(projectId)
+      setAvailableMembers(data)
+    } catch (error) {
+      console.error('Impossible de retirer le membre', error)
+    }
+  }
+
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
   // Si on ne met pas cela, ca plante. 
   if (!project) return <p>Chargement…</p>
@@ -280,9 +322,19 @@ function KanbanPage() {
       {/*En tete*/}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
-        <Button onClick={() => setNewTaskColumn('ToDo')}>
-          + Nouvelle tache
-        </Button>
+
+        {/*Bouton noouvelle tache et ajout de membres*/}
+        <div className="flex gap-2">
+          {myRole === 'Manager' && (
+            <Button variant="outline" onClick={openMembers}>
+              Membres
+            </Button>
+          )}
+          <Button onClick={() => setNewTaskColumn('ToDo')}>
+            + Nouvelle tache
+          </Button>
+        </div>
+
       </div>
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -327,6 +379,8 @@ function KanbanPage() {
         onAddComment={handleAddComment}
         onDeleteComment={handleDeleteComment}
       />
+
+      {/*Modal d'ajout d'une tache */}
       <Modal
         isOpen={!!newTaskColumn}
         onClose={handleCloseNewTask}
@@ -375,6 +429,61 @@ function KanbanPage() {
           </Button>
         </div>
       </Modal>
+
+      {/*Modal de la gestions des membres*/}
+      <Modal
+        isOpen={showMembers}
+        onClose={() => setShowMembers(false)}
+        title="Membres du projet"
+      >
+        {/*Membres actuels*/}
+        <div className="flex flex-col gap-2 mb-6">
+          <h3 className="text-sm font-medium text-gray-700">Membres actuels</h3>
+          {members.map(m => (
+            <div key={m.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Avatar src={m.avatar} username={m.pseudo} size="sm" />
+                <span className="text-sm text-gray-700">{m.pseudo}</span>
+              </div>
+              <button
+                onClick={() => handleRemoveMember(m.id)}
+                className="text-gray-300 hover:text-red-400 transition-colors"
+                title="Retirer"
+              >
+                <IconTrash size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/*Membres ajoutables*/}
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-gray-700">Ajouter depuis l'organisation</h3>
+          {availableMembers.length === 0 ? (
+            <p className="text-xs text-gray-400">Tous les membres de l'organisation sont déjà dans le projet.</p>
+          ) : (
+            availableMembers.map(u => (
+              <div key={u.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Avatar src={u.avatar} username={u.pseudo} size="sm" />
+                  <span className="text-sm text-gray-700">{u.pseudo}</span>
+                </div>
+                <button
+                  onClick={() => handleAddMember(u.id)}
+                  className="text-gray-400 hover:text-primary-600 transition-colors"
+                  title="Ajouter"
+                >
+                  <IconPlug size={18} />
+                </button>
+              </div>
+            ))
+          )}
+
+        </div>
+        
+            
+      </Modal>
+
     </div>
   )
 }
