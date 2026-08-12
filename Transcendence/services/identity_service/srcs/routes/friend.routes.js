@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../../../prisma/prisma.js';
-import { authenticate } from '../../../shared/middleware/checkPermission.js';
+import { authenticate } from '../../../shared/auth.middleware.js';
 
 const router = express.Router();
 

@@ -12,7 +12,7 @@ import KanbanColumn from "../components/ui/KanbanColum"
 import TaskPanel from "../components/ui/TaskPanel";
 import Avatar from "../components/ui/Avatar"
 
-import { useSocket } from "../context/SocketContext"
+import { useWorkspaceSocket } from "../context/SocketContext"
 import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment, deleteComment } from "../api/tasks";
 import { addProjectMember, getAvailableMembers, getProjectById, removeProjectMember } from "../api/projects";
 import { IconPlug, IconPlus, IconTrash } from "@tabler/icons-react";
@@ -28,7 +28,7 @@ function KanbanPage() {
 
   const { user } = useAuth()
 
-  const socket = useSocket()
+  const socket = useWorkspaceSocket()
   const { id } = useParams()
   const projectId = Number(id)
 

@@ -1,15 +1,15 @@
 FROM node:20-alpine
 WORKDIR /app
 
-COPY chat_service/package.json ./package.json
+COPY identity_service/package.json ./package.json
 RUN npm install
 
 COPY shared/ ./shared/
 COPY prisma/ ./prisma/
 COPY prisma.config.ts ./
-COPY chat_service/ ./chat_service/
+COPY identity_service/ ./identity_service/
 
 RUN npx prisma generate --schema prisma/schema.prisma
 
-EXPOSE 3002
-CMD ["node", "chat_service/srcs/server.js"]
+EXPOSE 3001
+CMD ["node", "identity_service/srcs/server.js"]

@@ -8,11 +8,11 @@ function AuthCard({ title, subtitle, swapText, swapTo, children }) {
 	const navigate = useNavigate()
 
 	const handleGoogle = () => {
-		window.location.href = 'http://localhost:3000/api/auth/google'
+		window.location.href = 'https://localhost:8443/api/auth/google'
 	}
 
 	const handleGithub = () => {
-		window.location.href = 'http://localhost:3000/api/auth/github'
+		window.location.href = 'https://localhost:8443/api/auth/github'
 	}
 
 	return (

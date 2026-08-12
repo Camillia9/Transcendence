@@ -1,6 +1,7 @@
 import express from 'express';
-import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../../../shared/middleware/checkPermission.js';
+import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
+import { emitUserNotification } from '../../../shared/chatClient.js';
 
 const router = express.Router();
 
@@ -53,7 +54,9 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
             });
 
             const io = req.app.get('io');
-            io.to(`project:${req.project.id}`).emit('task:created', task);
+            if (io) {
+                io.to(`project:${req.project.id}`).emit('task:created', task);
+            }
 
             return res.status(201).json(task);
 
@@ -416,12 +419,13 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
             // Diffuse la tache mise a jour a tous les clients connectes sur ce projet
             // (sans ca, le Kanban des autres onglets/utilisateurs ne bouge qu'au refresh)
             const io = req.app.get('io');
-            io.to(`project:${req.project.id}`).emit('task:updated', updatedTask);
+            if (io) {
+                io.to(`project:${req.project.id}`).emit('task:updated', updatedTask);
+            }
 
-            // Notifie en temps reel la personne assignee, meme si elle n'est pas sur le Kanban
-            // (sans ca, la notif existe en base mais n'arrive au front qu'au prochain refresh)
+            // Notifie en temps reel via chat (rooms user:* sont sur chat-service)
             if (notification) {
-                io.to(`user:${notification.userId}`).emit('notification:new', {
+                await emitUserNotification(notification.userId, {
                     id: notification.id,
                     type: notification.type,
                     content: notification.content,
@@ -470,7 +474,9 @@ router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, l
             });
 
             const io = req.app.get('io');
-            io.to(`project:${req.project.id}`).emit('task:deleted', { taskId: req.task.id });
+            if (io) {
+                io.to(`project:${req.project.id}`).emit('task:deleted', { taskId: req.task.id });
+            }
 
             return res.json({ message: 'Task deleted' });
 
