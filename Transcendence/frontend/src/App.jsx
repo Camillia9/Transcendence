@@ -20,6 +20,7 @@ import './App.css'
 import LegalPage from './pages/LegalPage'
 import { privacyPolicy, termsOfService } from './data/legalContent'
 import DesignSystem from './pages/DesignSystem'
+import StatusPage from './pages/StatusPage'
 import { SocketProvider } from './context/SocketContext'
 import OAuthSuccess from './components/ui/OAuthSuccess'
 
@@ -30,6 +31,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/status" element={<StatusPage />} />
             <Route path="/privacy" element={<LegalPage content={privacyPolicy} />} />
             <Route path="/terms" element={<LegalPage content={termsOfService} />} />
             {/* Pages auth — centrées, sans navbar */}

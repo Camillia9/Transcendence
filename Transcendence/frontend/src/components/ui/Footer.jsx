@@ -12,6 +12,10 @@ function Footer() {
           Conditions d'utilisation
         </Link>
         <span className="text-gray-300">·</span>
+        <Link to="/status" className="hover:text-gray-600 transition-colors">
+          Statut
+        </Link>
+        <span className="text-gray-300">·</span>
         <span>© {new Date().getFullYear()} TaskBoard</span>
       </div>
     </footer>

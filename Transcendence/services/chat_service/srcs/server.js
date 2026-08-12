@@ -8,6 +8,7 @@ import conversationsRouter from './routes/conversations.js';
 import messagesRouter from './routes/messages.js';
 import internalRouter from './routes/internal.routes.js';
 import { initSockets } from './sockets/index.js';
+import { healthHandler } from '../../shared/health.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -29,13 +30,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'chat' });
-});
-
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'chat' });
-});
+app.get('/health', healthHandler('chat'));
+app.get('/api/health', healthHandler('chat'));
 
 app.use('/api/conversations', conversationsRouter);
 app.use('/api/messages', messagesRouter);

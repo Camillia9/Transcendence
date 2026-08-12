@@ -11,6 +11,8 @@ import userRouter from './routes/user.routes.js';
 import friendRouter from './routes/friend.routes.js';
 import profilRouter from './routes/profil.routes.js';
 import notificationRouter from './routes/notification.routes.js';
+import { healthHandler } from '../../shared/health.js';
+import { buildSystemStatus } from '../../shared/systemStatus.js';
 
 const app = express();
 
@@ -24,12 +26,13 @@ app.use(express.json());
 passport.use(googleStrategy);
 passport.use(githubStrategy);
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'identity' });
-});
+app.get('/health', healthHandler('identity'));
+app.get('/api/health', healthHandler('identity'));
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'identity' });
+app.get('/api/status', async (_req, res) => {
+  const payload = await buildSystemStatus();
+  const code = payload.status === 'ok' ? 200 : 503;
+  return res.status(code).json(payload);
 });
 
 app.use('/api', authRouter);

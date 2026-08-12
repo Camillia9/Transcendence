@@ -1,7 +1,22 @@
-import { apiRequest } from "./client"
+const BASE_URL = 'https://localhost:8443/api'
 
-export async function getHealth() {
-	return await apiRequest('/health')
+/**
+ * Health / status can return 503 when degraded — still parse the body.
+ */
+async function fetchHealthJson(path) {
+	const response = await fetch(`${BASE_URL}${path}`, {
+		headers: { 'Content-Type': 'application/json' },
+	})
+	const data = await response.json().catch(() => ({}))
+	return { ok: response.ok, statusCode: response.status, data }
 }
 
-// Donne simplement sa route a l'API qui se charge du reste 
+export async function getHealth() {
+	const { data } = await fetchHealthJson('/health')
+	return data
+}
+
+export async function getSystemStatus() {
+	const { data } = await fetchHealthJson('/status')
+	return data
+}

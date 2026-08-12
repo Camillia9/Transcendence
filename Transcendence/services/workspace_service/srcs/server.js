@@ -11,6 +11,7 @@ import taskRouter from './routes/task.routes.js';
 import commentRouter from './routes/comment.routes.js';
 import internalRouter from './routes/internal.routes.js';
 import { initSockets } from './sockets/index.js';
+import { healthHandler } from '../../shared/health.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -32,13 +33,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'workspace' });
-});
-
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'workspace' });
-});
+app.get('/health', healthHandler('workspace'));
+app.get('/api/health', healthHandler('workspace'));
 
 app.use('/api', organisationRouter);
 app.use('/api', invitationRouter);

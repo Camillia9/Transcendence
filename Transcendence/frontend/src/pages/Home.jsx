@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
@@ -179,7 +179,12 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p>État du backend : {health}</p>
+      <p className="text-sm text-primary-700">
+        État du backend :{' '}
+        <Link to="/status" className="font-medium text-primary-800 underline-offset-2 hover:underline">
+          {health}
+        </Link>
+      </p>
         {/*Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900"> Mes projets </h1>
