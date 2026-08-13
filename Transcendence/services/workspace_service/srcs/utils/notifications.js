@@ -18,7 +18,6 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, content, _io =
 			actorId,
 			userId: m.userId,
 			type,
-			content,
 		})),
 	});
 
@@ -28,7 +27,6 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, content, _io =
 			emitUserNotification(m.userId, {
 				id: Date.now(),
 				type,
-				content,
 				createdAt,
 				isRead: false,
 			}),
@@ -54,7 +52,6 @@ export async function notifyProjectMembers(db, projectId, actorId, type, content
 			userId: m.userId,
 			projectId,
 			type,
-			content,
 		})),
 	});
 
@@ -64,7 +61,6 @@ export async function notifyProjectMembers(db, projectId, actorId, type, content
 			emitUserNotification(m.userId, {
 				id: Date.now(),
 				type,
-				content,
 				createdAt,
 				isRead: false,
 			}),
@@ -78,7 +74,6 @@ export async function notifyUser(db, userId, actorId, type, content, _io = null,
 			userId,
 			actorId,
 			type,
-			content,
 			...(projectId !== null && { projectId }),
 			...(taskId !== null && { taskId }),
 		},
@@ -87,7 +82,6 @@ export async function notifyUser(db, userId, actorId, type, content, _io = null,
 	await emitUserNotification(userId, {
 		id: notif.id,
 		type,
-		content,
 		createdAt: notif.createdAt.toISOString(),
 		isRead: false,
 	});

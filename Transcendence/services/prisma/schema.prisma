@@ -123,7 +123,6 @@ model Invitation {
 model Notification {
   id        Int              @id @default(autoincrement())
   type      TypeNotification
-  content   String
   actorId   Int?
   userId    Int
   projectId Int?

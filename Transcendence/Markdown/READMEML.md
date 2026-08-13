@@ -922,3 +922,8 @@ else if (user.status === "Away")
     afficher("🟡 Absent");
 else
     afficher("🟢 En ligne");
+
+
+pour les notif
+actorId = celui qui a fait l'action
+userId = celui qui recoit

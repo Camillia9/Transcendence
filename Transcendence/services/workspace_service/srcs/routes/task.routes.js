@@ -208,18 +208,6 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, lo
                 }
             });
 
-            // if (title)
-            //     task.title = title;
-
-            // if (description)
-            //     task.description = description;
-
-            // const allowedStatus = ['todo', 'doing', 'done'];
-
-            // if (status && allowedStatus.includes(status)){
-            //     task.status = status;
-            // }
-
             return res.json({
                 message: 'Task updated',
                 task
@@ -404,7 +392,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                     notification = await tx.notification.create({
                         data: {
                             type: 'Assignment',
-                            content: `You have been assigned to the task "${task.title}"`,
+                            // content: `You have been assigned to the task "${task.title}"`,
                             actorId: req.user.userId,
                             userId,
                             projectId: req.project.id,
@@ -428,7 +416,9 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                 await emitUserNotification(notification.userId, {
                     id: notification.id,
                     type: notification.type,
-                    content: notification.content,
+                    actor: notification.actor,
+                    task: notification.task,
+                    project: notification.project,
                     createdAt: notification.createdAt.toISOString(),
                     isRead: false,
                 });
