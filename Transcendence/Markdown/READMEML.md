@@ -629,7 +629,9 @@ npx prisma dev -> commande sert à lancer Prisma Postgres local (le service pris
 
 npx prisma migrate dev --name init -> synchronise la database avec mon schema prisma
 
-podman compose exec backend npx prisma migrate dev --name update_schema -> va generer que les changements necessaire 
+podman compose config --services -> pour avoir le nom des services qu'on va utiliser genre backend, identity-service
+
+podman compose exec identity-service npx prisma migrate dev --name update_schema -> va generer que les changements necessaire 
 mettre podman compose exec backend a partir de Transcendence car l'url est dans le .env du dossier et pas dans le back
 
 npx prisma generate -> regenerer le client apres la migration ou a chaque modification du schema prisma
