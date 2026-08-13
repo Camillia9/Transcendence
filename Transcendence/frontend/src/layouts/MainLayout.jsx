@@ -74,6 +74,18 @@ function MainLayout() {
       document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [profileMenuOpen, notifOpen])
+
+  // Afficher les notifs
+  function formatNotification(notif) {
+    console.log('NOTIF RECU :', notif)
+    switch (notif.type) {
+      case 'Assignment':
+        return `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task?.title} »`
+      // Ajouter ici les autres types de notifs
+      default:
+        return 'Nouvelle notification'
+    }
+  }
   
   return (
     <div className="h-screen bg-gray-50 text-gray-800 flex flex-col overflow-hidden">
@@ -137,7 +149,7 @@ function MainLayout() {
                           <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
                             <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                              {notif.content}
+                              {formatNotification(notif)}
                             </span>
                             <span className='text-xs text-gray-400 mt-0.5'>
                               {timeAgo(notif.createdAt)}
