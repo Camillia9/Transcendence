@@ -29,6 +29,7 @@ router.get('/profile', authenticate, async (req, res) => {
                 avatar: true,
                 statut: true,
                 langue: true,
+                twoFactorEnabled: true,
             },
         });
 
