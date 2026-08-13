@@ -32,3 +32,18 @@ export async function signupRequest(data) {
   })
 }
 
+// Envoyer le QrCode de la 2FA
+export async function setup2FA() {
+  return await apiRequest(`/auth/2fa/setup`, {
+    method: 'POST',
+  })
+}
+
+// Confirme la 2fa
+export async function verify2FA(code) {
+  const response = await apiRequest(`/auth/2fa/verify`, {
+    method: 'POST',
+    body: JSON.stringify({code})
+  })
+  return response
+}
