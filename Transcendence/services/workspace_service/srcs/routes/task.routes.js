@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
 import { emitUserNotification } from '../../../shared/chatClient.js';
+import { title } from 'node:process';
 
 const router = express.Router();
 
@@ -398,6 +399,27 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                             projectId: req.project.id,
                             taskId: task.id,
                         },
+                        include: {
+                            actor: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true,
+                                },
+                            },
+                            task: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
+                            project: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
+                        },
                     });
                 }
 
@@ -420,7 +442,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                     task: notification.task,
                     project: notification.project,
                     createdAt: notification.createdAt.toISOString(),
-                    isRead: false,
+                    isRead: notification.isRead,
                 });
             }
 
