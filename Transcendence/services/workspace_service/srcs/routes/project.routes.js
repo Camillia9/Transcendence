@@ -287,6 +287,23 @@ router.post('/projects/:projectId/members', authenticate, loadProject, checkPerm
                 }
             });
 
+            const project = await prisma.project.findUnique({
+                where: { id: req.project.id },
+                include: {
+                    projectMembers: {
+                        include: {
+                            user: {
+                                select: { id: true, pseudo: true, avatar: true }
+                            }
+                        }
+                    },
+                    tasks: {
+                        select: { status: true }
+                    }
+                }
+            });
+            req.app.get('io').to(`user:${targetUserId}`).emit('project:member-added', project);
+
             return res.status(201).json(member);
         } catch (error) {
             console.error(error);
@@ -353,7 +370,9 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
                     }
                 });
             });
-        
+
+            req.app.get('io').to(`user:${userId}`).emit('project:member-removed', { projectId: req.project.id });
+
             return res.json({ message: 'Member removed from project' });
 
         } catch (error) {
