@@ -7,6 +7,7 @@ import Input from "../components/ui/Input";
 import { getHealth } from "../api/health";
 import { getProjects, updateProject, deleteProject, createProject } from "../api/projects";
 import { getMyOrganisations } from "../api/organisations";
+import { useWorkspaceSocket } from "../context/SocketContext";
 
 function Home() {
   // L'etat: Le projet qu'on veut supp
@@ -176,6 +177,23 @@ function Home() {
 
     loadProjects(), loadOrganisations()
   }, [])
+
+  const workspaceSocket = useWorkspaceSocket()
+  useEffect(() => {
+    if (!workspaceSocket) return
+    const handleMemberRemoved = ({ projectId }) => {
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+    }
+    const handleMemberAdded = (project) => {
+      setProjects(prev => prev.some(p => p.id === project.id) ? prev : [project, ...prev])
+    }
+    workspaceSocket.on('project:member-removed', handleMemberRemoved)
+    workspaceSocket.on('project:member-added', handleMemberAdded)
+    return () => {
+      workspaceSocket.off('project:member-removed', handleMemberRemoved)
+      workspaceSocket.off('project:member-added', handleMemberAdded)
+    }
+  }, [workspaceSocket])
 
   return (
     <div className="flex flex-col gap-6">

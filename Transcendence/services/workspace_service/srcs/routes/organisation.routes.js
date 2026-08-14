@@ -374,6 +374,8 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                 });
             })
 
+            req.app.get('io').to(`user:${cible}`).emit('organisation:member-removed', { orgId: req.orgId });
+
             return res.json({ message: 'Member deleted' });
 
         } catch (error) {
