@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate, loadOrgMembership, checkPermissionOrga, checkPermissionProject, loadProject} from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
-import { notifyProjectMembers } from '../utils/notifications.js';
+import { notifyProjectMembers, notifyUser } from '../utils/notifications.js';
 
 const router = express.Router();
 
@@ -151,21 +151,33 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
         try {
             const { title, description, deadline } = req.body;
 
+            if (title !== undefined && (!title || !title.trim())) {
+                return res.status(400).json({ error: 'Project title required'});
+            }
+
             // ... = ajoute cette propriete
-            const project = await prisma.project.update({
-                where: { id: req.project.id },
-                data: {
-                    ...(title !== undefined && { title }),
-                    ...(description !== undefined && { description }),
-                    ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
-                },
+            const project = await prisma.$transaction(async (tx) => {
+                const updatedProject = await tx.project.update({
+                    where: {
+                        id: req.project.id
+                    },
+                    data: {
+                        ...(title !== undefined && { title }),
+                        ...(description !== undefined && { description }),
+                        ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
+                    },
+                });
+
+                await notifyProjectMembers(
+                    tx,
+                    req.project.id,
+                    req.user.userId,
+                    'ProjectUpdated',
+                    req.app.get('io')
+                );
+
+                return updatedProject;
             });
-
-            // if (name)
-            //     req.project.name = name;
-
-            // if (description)
-            //     req.project.description = description;
 
             return res.json({
                 message: 'Project updated',
@@ -188,12 +200,16 @@ router.delete('/projects/:projectId', authenticate, loadProject, checkPermission
                     req.project.id,
                     req.user.userId,
                     'ProjectDeleted',
-                    `${req.user.pseudo} deleted the project ${req.project.title}`,
+                    // `${req.user.pseudo} deleted the project ${req.project.title}`,
                     req.app.get('io')
                 );
 
-                await tx.project.delete({ where: { id: req.project.id } });
-            })
+                await tx.project.delete({
+                    where: {
+                        id: req.project.id
+                    }
+                });
+            });
 
             return res.json({ message: 'Project deleted' });
 
@@ -369,6 +385,17 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
                         }
                     }
                 });
+                // notifier a la personne retirer
+                await notifyUser(
+                    tx,
+                    userId,
+                    req.user.userId,
+                    'RemovedFromProject',
+                    req.app.get('io'),
+                    {
+                        projectId: req.project.id
+                    }
+                );
             });
 
             req.app.get('io').to(`user:${userId}`).emit('project:member-removed', { projectId: req.project.id });

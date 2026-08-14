@@ -39,13 +39,14 @@ model User {
 }
 
 model Organisation {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  invitations Invitation[]
-  members     Member[]
-  projects    Project[]
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  invitations   Invitation[]
+  members       Member[]
+  projects      Project[]
+  notifications Notification[]
 }
 
 model Member {
@@ -118,21 +119,26 @@ model Invitation {
   inviter       User             @relation("InvitationSender", fields: [inviterId], references: [id], onDelete: Cascade)
   invitedUser   User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
   organisation  Organisation     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  notifications Notification[]
 }
 
 model Notification {
-  id        Int              @id @default(autoincrement())
-  type      TypeNotification
-  actorId   Int?
-  userId    Int
-  projectId Int?
-  taskId    Int?
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  project   Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task      Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
-  user      User             @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+  id             Int              @id @default(autoincrement())
+  type           TypeNotification
+  actorId        Int?
+  userId         Int
+  organisationId Int?
+  projectId      Int?
+  taskId         Int?
+  invitationId   Int?
+  isRead         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  organisation   Organisation?    @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+  project        Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  invitation     Invitation?      @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+  actor          User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  user           User             @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {
@@ -236,9 +242,12 @@ enum TypeNotification {
   MemberLeftOrga
   RoleChanged
   RemovedFromOrga
+  MemberRemoved
+  OrgaUpdated
+  OrgaDeleted
   ProjectUpdated
   ProjectDeleted
-  AjoutProjet
+  RemovedFromProject
   DeplacementTache
 }
 
@@ -258,4 +267,5 @@ enum InvitationStatus {
   Pending
   Accepted
   Declined
+  Cancelled
 }
