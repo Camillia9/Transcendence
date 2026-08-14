@@ -1,12 +1,3 @@
-
-// invitation sil a un compte il recoit une notif d'invitation
-// quand il accepte tt le monde, recoit la notif
-
-// quand on ajoute un membre a l'orga tt le monde recoit
-// quand on supprime un membre a un projet tt le monde recoit
-// quand on ajoute qq1 a un projet tt le monde recoit
-
-
 import express from 'express';
 import prisma from '../../../prisma/prisma.js';
 import { authenticate } from '../../../shared/auth.middleware.js';
