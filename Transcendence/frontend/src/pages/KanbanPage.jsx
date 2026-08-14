@@ -127,6 +127,7 @@ function KanbanPage() {
     const taskId = active.id
     const newColumn = over.id
     const task = tasks.find(t => t.id === taskId)
+    if (!task) return;
     if (task.status === newColumn) return // meme colonne, rien a faire
 
       // Calcule de la prochiane position loesqu'on bouge ~ jsp si elle sera utilse plus tard
@@ -146,6 +147,7 @@ function KanbanPage() {
       await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
     } catch (error) {
       console.error('Impossible de deplacer la tache', error)
+      await loadTasks() // Si erreur, on resynchronise direct, la carte ne se deplace plus visuellement
     }
   }
 

@@ -7,10 +7,11 @@ import { getProgressColor } from "../../utils/progressColor"
 
 
 export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation }) {
-  console.log("ORGA =", orga);
-  console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
-  console.log("INVIT =", JSON.stringify(orga.pendingInvitations, null, 2));
-  {console.log("CARD INVITATIONS", orga.pendingInvitations)}
+  // DEBUG
+  //console.log("ORGA =", orga);
+  //console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
+  //console.log("INVIT =", JSON.stringify(orga.pendingInvitations, null, 2));
+  //{console.log("CARD INVITATIONS", orga.pendingInvitations)}
   const { user } = useAuth()
   const [hovered, setHovered] = useState(false) // Gere le survol
   const [expanded, setExpanded] = useState(false)

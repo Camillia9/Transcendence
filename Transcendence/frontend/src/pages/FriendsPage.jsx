@@ -81,7 +81,7 @@ export default function FriendsPage() {
 	}
 
 	return (
-		<div className="relative h-full">
+		<div className="relative h-full isolate">
 			{/*En-tete : titre + recherche */}
 			<div className="flex items-center justify-between mb-6 relative z-50">
 				<h1 className="text-2xl font-semibold text-gray-800">Amis</h1>

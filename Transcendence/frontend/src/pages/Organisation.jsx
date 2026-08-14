@@ -5,6 +5,7 @@ import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
 import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation} from "../api/organisations";
+import { useWorkspaceSocket } from "../context/SocketContext";
 
 function Organisations() {
 	// etat pour lire le tableau et pouvoir le modifier
@@ -318,7 +319,17 @@ function Organisations() {
     loadInvitations()
   }, [])
 
-  console.log("test inv", invitations)
+  const workspaceSocket = useWorkspaceSocket()
+  useEffect(() => {
+    if (!workspaceSocket) return
+    const handleMemberRemoved = ({ orgId }) => {
+      setOrganisations(prev => prev.filter(org => org.id !== orgId))
+    }
+    workspaceSocket.on('organisation:member-removed', handleMemberRemoved)
+    return () => workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
+  }, [workspaceSocket])
+
+  //console.log("test inv", invitations)
 
   return (
     <div className="flex flex-col gap-6">

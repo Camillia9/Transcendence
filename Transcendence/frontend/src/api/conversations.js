@@ -21,3 +21,11 @@ export async function createConversation(participantIds, type = 'private', name 
 		body: JSON.stringify({ participantIds, type, name }),
 	});
 }
+
+export async function getUnreadCount() {
+	return await apiRequest('/conversations/unread-count');
+}
+
+export async function markConversationRead(conversationId) {
+	return await apiRequest(`/conversations/${conversationId}/read`, { method: 'PATCH' });
+}
