@@ -5,7 +5,6 @@
 import 'dotenv/config';
 import express from 'express';
 import bcrypt from 'bcrypt';
-import passport from 'passport';
 import { generateSecret, generateURI, verify } from 'otplib';
 import QRCode from 'qrcode';
 
@@ -171,11 +170,8 @@ router.get('/auth/google/callback',
         }
 
         const { token, user } = req.user;
-        // en prod : rediriger vers le front avec le token dans l'URL
+        // rediriger vers le front avec le token dans l'URL
         res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
-
-        // return res.json({ token, user });
-        // renvoyer le token au front (dev 1 lit ca)
     }
 );
 
@@ -206,8 +202,6 @@ router.get('/auth/github/callback',
         console.log('GITHUB USER DATA:', user);
 
         res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
-
-        // return res.json({ token, user });
     }
 );
 
@@ -346,8 +340,56 @@ router.post('/auth/login/2fa', async(req, res) => {
 });
 
 // desactivation de la 2fa avec demande de mdp
-router.post('/auth/2fa/disable', async(req, res) => {
+router.post('/auth/2fa/disable', authenticate, async(req, res) => {
+    try {
+        const { password } = req.body;
 
+        if (!password) {
+            return res.status(400).json({ error: 'Password required' });
+        }
+
+        // recupere le user connecter
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.userId
+            }
+        });
+
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+
+        // verifie que le 2fa est activer
+        if (!user.twoFactorEnabled)
+            return res.status(400).json({ error: "2FA is not enabled" });
+
+        // verifier que le compte possede un mdp car si utilise google/gitHub, ya pas
+        if (!user.passwordHash) {
+            return res.status(400).json({ error: 'Password authentication is not available for this account' });
+        }
+
+        // verifie le mdp
+        const passwordOk = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordOk) {
+            return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        // desactiver le 2fa et supprimer le secret
+        await prisma.user.update({
+            where: {
+                id: user.id
+            },
+            data: {
+                twoFactorEnabled: false,
+                twoFactorSecret: null
+            }
+        });
+
+        return res.json({ message: '2FA disabled' });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
 })
 
 // on exporte tte ces routes pour pouvoir les utiliser dans le serveur principal

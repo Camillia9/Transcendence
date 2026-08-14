@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { PRIORITIES } from "../data/priorities";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
 import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
@@ -31,6 +31,7 @@ function KanbanPage() {
   const socket = useWorkspaceSocket()
   const { id } = useParams()
   const projectId = Number(id)
+  const navigate = useNavigate()
 
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. C'est la tache ouverte dans le taskPanel
@@ -67,12 +68,20 @@ function KanbanPage() {
       setTasks(prev => prev.filter(t => t.id !== taskId))
     })
 
+    socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
+      if (removedProjectId !== projectId) return
+      socket.emit('project:leave', { projectId })
+      alert("Vous faites plus partie de ce projet")
+      navigate('/home')
+    })
+
     return () => {
       socket.emit('project:leave', { projectId })
       socket.off('task:moved')
       socket.off('task:created')
       socket.off('task:updated')
       socket.off('task:deleted')
+      socket.off('project:member-removed')
     }
   }, [socket, projectId])
 
