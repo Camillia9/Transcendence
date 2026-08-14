@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { NOTIF_ICONS } from "../data/notifIcons"
-import { mockConversations } from "../data/mockConversations" 
 import { timeAgo } from '../utils/timeAgo'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
@@ -12,6 +11,7 @@ import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
 import { getNotifs, markNotifRead, markAllNotifsRead } from '../api/notifications'
+import { getUnreadCount } from '../api/conversations'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
@@ -24,8 +24,7 @@ function MainLayout() {
   const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
   const unreadCount = notifications.filter(n => !n.isRead).length
-  const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
-  // reduce parcourt les conversations en accumulant un total
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const socket = useSocket()
 
   useEffect(() => {
@@ -33,8 +32,26 @@ function MainLayout() {
     socket.on('notification:new', (notif) => {
       setNotifications(prev => [notif, ...prev])
     })
-    return () => socket.off('notification:new')
+    socket.on('messages:unread-count', ({ count }) => {
+      setUnreadMessages(count)
+    })
+    return () => {
+      socket.off('notification:new')
+      socket.off('messages:unread-count')
+    }
   }, [socket])
+
+  useEffect(() => {
+    async function loadUnreadCount() {
+      try {
+        const { count } = await getUnreadCount()
+        setUnreadMessages(count)
+      } catch (error) {
+        console.error('Impossible de charger les messages non lus', error)
+      }
+    }
+    loadUnreadCount()
+  }, [])
 
   useEffect(() => {
     async function loadNotifications() {

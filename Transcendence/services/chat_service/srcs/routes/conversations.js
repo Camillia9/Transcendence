@@ -2,8 +2,19 @@ import { Router } from 'express';
 import { authenticate } from '../../../shared/auth.middleware.js';
 import prisma from '../../../prisma/prisma.js';
 import { usersShareOrganisation } from '../../../shared/workspaceClient.js';
+import { getUnreadCount, emitUnreadCount } from '../sockets/handlers/unread.js';
 
 const router = Router();
+
+// GET /api/conversations/unread-count — nombre total de messages non lus
+router.get('/unread-count', authenticate, async (req, res) => {
+	try {
+		const count = await getUnreadCount(req.user.userId);
+		res.json({ count });
+	} catch (e) {
+		res.status(500).json({ error: e.message });
+	}
+});
 
 // GET /api/conversations — liste les conversations
 router.get('/', authenticate, async (req, res) => {
@@ -124,6 +135,39 @@ router.get('/:id', authenticate, async (req, res) => {
 			return res.status(403).json({ error: 'Access denied' });
 
 		res.json(convo);
+	} catch (e) {
+		res.status(500).json({ error: e.message });
+	}
+});
+
+// PATCH /api/conversations/:id/read — marque les messages de la conversation comme lus
+router.patch('/:id/read', authenticate, async (req, res) => {
+	try {
+		const userId = req.user.userId;
+		const convoId = Number(req.params.id);
+
+		const member = await prisma.conversationMember.findUnique({
+			where: { userId_conversationId: { userId, conversationId: convoId } },
+		});
+		if (!member)
+			return res.status(403).json({ error: 'Access denied' });
+
+		const unread = await prisma.message.findMany({
+			where: { conversationId: convoId, userId: { not: userId }, reads: { none: { userId } } },
+			select: { id: true },
+		});
+
+		if (unread.length > 0) {
+			await prisma.messageRead.createMany({
+				data: unread.map((m) => ({ messageId: m.id, userId })),
+				skipDuplicates: true,
+			});
+		}
+
+		const io = req.app.get('io');
+		await emitUnreadCount(io, userId);
+
+		res.json({ ok: true });
 	} catch (e) {
 		res.status(500).json({ error: e.message });
 	}

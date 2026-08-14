@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
-import { getConversations, getMessages, createConversation } from '../api/conversations'
+import { getConversations, getMessages, createConversation, markConversationRead } from '../api/conversations'
 import { getUsers } from '../api/users'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
@@ -74,6 +74,8 @@ function Chat() {
   
     socket.on('message:new', (msg) => {
       receiveMessage(msg.conversationId, toUiMsg(msg))
+      if (msg.conversationId === activeId && msg.userId !== user?.id)
+        markConversationRead(msg.conversationId).catch(() => {})
     })
   
     socket.on('conversation:new', (convo) => {
@@ -94,7 +96,7 @@ function Chat() {
       socket.off('message:new')
       socket.off('conversation:new')
     }
-  }, [socket, user])
+  }, [socket, user, activeId])
 
   useEffect(() => {
     async function loadConversations() {
@@ -126,6 +128,7 @@ function Chat() {
         setConversations(prev => prev.map(c =>
           c.id === activeId ? { ...c, messages: data.map(toUiMsg) } : c
         ))
+        await markConversationRead(activeId)
       } catch (e) {
         console.error('Impossible de charger les messages', e)
       }
