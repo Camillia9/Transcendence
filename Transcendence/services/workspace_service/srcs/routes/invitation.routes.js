@@ -2,7 +2,6 @@
 import express from 'express';
 
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../middleware/permissions.js';
-// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
 import { notifyUser } from '../utils/notifications.js';
 
