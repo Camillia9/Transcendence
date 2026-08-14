@@ -318,7 +318,7 @@ function Organisations() {
     loadInvitations()
   }, [])
 
-  console.log("test inv", invitations)
+  //console.log("test inv", invitations)
 
   return (
     <div className="flex flex-col gap-6">

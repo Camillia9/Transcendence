@@ -79,10 +79,19 @@ function MainLayout() {
 
   // Afficher les notifs
   function formatNotification(notif) {
+    // DEBUG :
+    //console.log('NOTIF:', notif)
     switch (notif.type) {
       case 'Assignment':
         return `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task?.title} »`
-      // Ajouter ici les autres types de notifs
+      case 'InvitationSent':
+        return `${notif.actor?.pseudo} vous a invité à rejoindre une organisation`
+      case 'InvitationAccepted':
+        return `${notif.actor?.pseudo} a accepté votre invitation`
+      case 'InvitationDeclined':
+        return `${notif.actor?.pseudo} a refusé votre invitation`
+      case 'ProjectDeleted':
+        return `${notif.actor?.pseudo} a supprimé le projet « ${notif.project?.title} »`
       default:
         return 'Nouvelle notification'
     }
