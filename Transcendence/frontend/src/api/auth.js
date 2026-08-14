@@ -47,3 +47,11 @@ export async function verify2FA(code) {
   })
   return response
 }
+
+// Se connecter apres la 2FA
+export async function login2FA(userId, code) {
+  return await apiRequest('/auth/login/2fa', {
+    method: 'POST',
+    body: JSON.stringify({ userId, code })
+  })
+}
