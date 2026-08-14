@@ -28,6 +28,7 @@ function MainLayout() {
   // reduce parcourt les conversations en accumulant un total
   const socket = useSocket()
 
+  // 2. En continu : les nouvelles poussées par le socket
   useEffect(() => {
     if (!socket) return
     socket.on('notification:new', (notif) => {
@@ -36,11 +37,12 @@ function MainLayout() {
     return () => socket.off('notification:new')
   }, [socket])
 
+  // 1. Au montage : la photo initiale (GET)
   useEffect(() => {
     async function loadNotifications() {
       try {
         const data = await getNotifs()
-        setNotifications(data)
+        setNotifications(data ?? [])
       } catch (error) {
         console.error('Impossible de charger les notifications', error)
       }
@@ -77,13 +79,23 @@ function MainLayout() {
 
   // Afficher les notifs
   function formatNotification(notif) {
-    console.log('NOTIF RECU :', notif)
     switch (notif.type) {
       case 'Assignment':
         return `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task?.title} »`
       // Ajouter ici les autres types de notifs
       default:
         return 'Nouvelle notification'
+    }
+  }
+
+  function getNotificationLink(notif) {
+    switch (notif.type) {
+      case 'Assignment':
+        const projectId = notif.projectId ?? notif.project?.id
+        if (!projectId) return null
+        return `/projet/${projectId}`  // vers le Kanban du projet concerné
+      default:
+        return null   // pas de destination connue → on ne navigue pas
     }
   }
   
@@ -139,7 +151,8 @@ function MainLayout() {
                         key={notif.id}
                         onClick={() => {
                           markAsRead(notif.id)
-                          if (notif.link) navigate(notif.link)
+                          const link = getNotificationLink(notif)
+                          if (link) navigate(link)
                           setNotifOpen(false)
                         }}
                         className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
