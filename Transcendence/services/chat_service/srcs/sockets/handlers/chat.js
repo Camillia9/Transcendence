@@ -1,4 +1,5 @@
 import prisma from '../../../../prisma/prisma.js';
+import { emitUnreadCount } from './unread.js';
 
 export function registerChatHandlers(io, socket) {
     const userId = socket.user.userId
@@ -39,6 +40,12 @@ export function registerChatHandlers(io, socket) {
             })
 
             io.to(`conversation:${conversationId}`).emit('message:new', message)
+
+            const otherMembers = await prisma.conversationMember.findMany({
+                where: { conversationId, NOT: { userId } },
+                select: { userId: true }
+            })
+            otherMembers.forEach(({ userId: recipientId }) => emitUnreadCount(io, recipientId))
         } catch (e) {
             socket.emit('error', { message: e.message })
         }
