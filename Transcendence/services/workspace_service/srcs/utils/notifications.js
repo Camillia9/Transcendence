@@ -22,6 +22,7 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 			actorId,
 			userId: member.userId,
 			type,
+			organisationId: orgId,
 		})),
 		select: {
 			id: true,
@@ -42,6 +43,12 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 					avatar: true,
 				},
 			},
+			organisation: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			task: {
 				select: {
 					id: true,
@@ -54,6 +61,12 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 					title: true,
 				},
 			},
+			invitation: {
+				select: {
+					id: true,
+					status: true,
+				},
+			},
 		},
 	});
 
@@ -63,8 +76,10 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 				id: notification.id,
 				type: notification.type,
 				actor: notification.actor,
+				organisation: notification.organisation,
 				task: notification.task,
 				project: notification.project,
+				invitation: notification.invitation,
 				createdAt: notification.createdAt.toISOString(),
 				isRead: notification.isRead,
 			}),
@@ -95,8 +110,8 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 		data: projectMembres.map((member) => ({
 			actorId,
 			userId: member.userId,
-			projectId,
 			type,
+			...(type !== 'ProjectDeleted' && { projectId }),
 		})),
 		select: {
 			id: true,
@@ -118,6 +133,12 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 					avatar: true,
 				},
 			},
+			organisation: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			task: {
 				select: {
 					id: true,
@@ -128,6 +149,12 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 				select: {
 					id: true,
 					title: true,
+				},
+			},
+			invitation: {
+				select: {
+					id: true,
+					status: true,
 				},
 			},
 		},
@@ -140,8 +167,10 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 				id: notification.id,
 				type: notification.type,
 				actor: notification.actor,
+				organisation: notification.organisation,
 				task: notification.task,
 				project: notification.project,
+				invitation: notification.invitation,
 				createdAt: notification.createdAt.toISOString(),
 				isRead: notification.isRead,
 			}),
@@ -150,14 +179,18 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 	return notifications;
 }
 
-export async function notifyUser(db, userId, actorId, type, _io = null, projectId = null, taskId = null) {
+// userId = destinataire
+// actorId = celui qui fait l'action
+export async function notifyUser(db, userId, actorId, type, _io = null, { organisationId = null, projectId = null, taskId = null, invitationId = null } = {}) {
 	const notification = await db.notification.create({
 		data: {
 			userId,
 			actorId,
 			type,
+			...(organisationId !== null && { organisationId }),
 			...(projectId !== null && { projectId }),
 			...(taskId !== null && { taskId }),
+			...(invitationId !== null && { invitationId }),
 		},
 		include: {
 			actor: {
@@ -165,6 +198,12 @@ export async function notifyUser(db, userId, actorId, type, _io = null, projectI
 					id: true,
 					pseudo: true,
 					avatar: true,
+				},
+			},
+			organisation: {
+				select: {
+					id: true,
+					name: true,
 				},
 			},
 			task: {
@@ -179,6 +218,18 @@ export async function notifyUser(db, userId, actorId, type, _io = null, projectI
 					title: true,
 				},
 			},
+			invitation: {
+				select: {
+					id: true,
+					status: true,
+					organisation: {
+						select: {
+							id: true,
+							name: true,
+						}
+					}
+				}
+			}
 		},
 	});
 
@@ -186,9 +237,11 @@ export async function notifyUser(db, userId, actorId, type, _io = null, projectI
 		id: notification.id,
 		type: notification.type,
 		actor: notification.actor,
+		organisation: notification.organisation,
 		task: notification.task,
 		project: notification.project,
-		createdAt: notif.createdAt.toISOString(),
+		invitation: notification.invitation,
+		createdAt: notification.createdAt.toISOString(),
 		isRead: notification.isRead,
 	});
 

@@ -929,3 +929,30 @@ else
 pour les notif
 actorId = celui qui a fait l'action
 userId = celui qui recoit
+
+notification qu'on peut faire
+
+Notifications personnelles = Celles qui concernent directement userId
+| Type                   | Message français                                                        |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `Assignment`           | **{actor} vous a assigné la tâche « {task} »**                          | pas de notif aux autres membres
+| `AssignmentRemoved`    | **{actor} vous a deassigné de la tâche « {task} »**                     | pas de notif aux autres membres
+| `InvitationSent`       | **{actor} vous a invité à rejoindre l'organisation « {organisation} »** |
+| `InvitationAccepted`   | **{actor} a accepté votre invitation**                                  | notif a actor
+| `InvitationDeclined`   | **{actor} a refusé votre invitation**                                   | notif a actor
+| `InvitationCancelled`  | **{actor} a annulé l'invitation**                                       | notif a user
+| `MemberLeftOrga`       | **{actor} a quitté l'organisation « {organisation} »**                  | notif aux autres membres de l'orga, sauf actor
+| `MemberRemovedOrga`    | **{actor} a retiré {user} de l'organisation « {organisation} »**        | 
+| `RemovedFromOrga`      | **Vous avez été retiré de l'organisation « {organisation} »**           | notif a actor
+| `RoleChanged`          | **Votre rôle dans l'organisation « {organisation} » a été modifié**     | notif a user
+| `AjoutProjet`          | **{actor} vous a ajouté au projet « {project} »**                       |
+| `MemberAddedProject`   | **{actor} a ajouté {user} au projet « {project} »**                     |
+| `MemberRemovedProject` | **{actor} a retiré {user} du projet « {project} »**                     |
+| `ProjectUpdated`       | **{actor} a modifié le projet « {project} »**                           |
+| `ProjectDeleted`       | **{actor} a supprimé le projet « {project} »**                          |
+| `ProjectRoleChanged`   | **Votre rôle dans le projet « {project} » a été modifié**               |
+| `DeplacementTache`     | **{actor} a déplacé la tâche « {task} »**                               | notif aux autres membres du projet, sauf actor
+| `TaskCreated`          | **{actor} a créé la tâche « {task} »**                                  | notif aux autres membres du projet, sauf actor
+| `TaskUpdated`          | **{actor} a modifié la tâche « {task} »**                               | notif aux autres membres du projet, sauf actor
+| `TaskDeleted`          | **{actor} a supprimé la tâche « {task} »**                              | notif aux autres membres du projet, sauf actor
+| `TaskCommented`        | **{actor} a commenté la tâche « {task} »**                              |

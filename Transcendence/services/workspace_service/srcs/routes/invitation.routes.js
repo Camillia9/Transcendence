@@ -63,14 +63,17 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                // await notifyUser(
-                //     tx,
-                //     userId,
-                //     req.user.userId,
-                //     'InvitationSent',
-                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io'),
-                // );
+                await notifyUser(
+                    tx,
+                    userId,
+                    req.user.userId,
+                    'InvitationSent',
+                    req.app.get('io'),
+                    {
+                        organisationId: req.orgId,
+                        invitationId: invitation.id,
+                    }
+                );
             });
 
             return res.json({
@@ -169,8 +172,12 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationAccepted',
-                    `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    // `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
                     req.app.get('io'),
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    }
                 );
             });
 
@@ -208,8 +215,12 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationDeclined',
-                    `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    // `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
                     req.app.get('io'),
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    }
                 );
             });
 
@@ -233,23 +244,30 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                 return res.status(404).json({ error: 'Invitation not found' });
 
             await prisma.$transaction(async (tx) => {
-                await tx.invitation.delete({
+                await tx.invitation.update({
                     where: {
                         id: req.invitation.id,
                     },
-                });
+                    data: {
+                        status: 'Cancelled',
+                    },
+                 });
 
-            //     await notifyUser(
-            //         tx,
-            //         req.invitation.invitedUserId,
-            //         req.user.userId,
-            //         'InvitationCancelled',
-            //         `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-            //         req.app.get('io'),
-            //     );
+                await notifyUser(
+                    tx,
+                    req.invitation.invitedUserId,
+                    req.user.userId,
+                    'InvitationCancelled',
+                    // `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    req.app.get('io'),
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    }
+                );
             });
 
-            return res.json({ message: 'Welcome to the organisation' });
+            return res.json({ message: 'Invitation cancelled' });
 
         } catch (error) {
             console.error(error);

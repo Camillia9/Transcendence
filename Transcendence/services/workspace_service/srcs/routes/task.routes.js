@@ -2,7 +2,6 @@ import express from 'express';
 import { authenticate, loadProject, loadTask, checkPermissionProject, canManageTask } from '../middleware/permissions.js';
 import prisma from '../../../prisma/prisma.js';
 import { emitUserNotification } from '../../../shared/chatClient.js';
-import { title } from 'node:process';
 
 const router = express.Router();
 
@@ -309,7 +308,6 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                     await tx.notification.createMany({
                         data: managers.map(manager => ({
                             type: 'DeplacementTache',
-                            content: `moved the task "${task.title}" from ${oldStatus} to ${status}`,
                             actorId: req.user.userId,
                             userId: manager.userId,
                             projectId: req.project.id,
