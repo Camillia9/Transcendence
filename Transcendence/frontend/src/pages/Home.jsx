@@ -168,7 +168,8 @@ function Home() {
     async function loadOrganisations() {
       try {
         const data = await getMyOrganisations()
-        console.log('ORGAS HOME', data)
+        // DEBUG :
+        //console.log('ORGAS HOME', data)
         setOrganisations(data)
       } catch (error) {
         console.error('Impossible de charger les organisations', error)
