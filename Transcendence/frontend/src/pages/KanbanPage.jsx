@@ -233,17 +233,13 @@ function KanbanPage() {
     }
   }
 
-  const handleAssignTask = async (taskId, userId) => {
-    // mAj opti (instantanee mais incomplete)
-    const updated = { ...selectedTask, assignedToId: userId }
-    setTasks(tasks.map(t => t.id === taskId ? updated : t))
-    setSelectedTask(updated) // raffraichit le panneau instante. Le nouveau commentaire apparait
-
+    const handleAssignTask = async (taskId, userId) => {
     try {
-      const saved = await assignTask(projectId, taskId, userId) // la tache complete
-      console.log(saved) // temporaire
-      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // Pour que le comteur de commentaires (task.comments.lenght) s'incremente direct. prev lit toujours l'état le plus à jour.
-      setSelectedTask(saved)
+      await assignTask(projectId, taskId, userId) // la tache complete
+      const data = await getTasks([projectId]) // recup la tache avec get pour avoir le resultats sans refresh
+      setTasks(data)
+      const fresh = data.find(t => t.id === taskId)
+      if (fresh) setSelectedTask(fresh)
     } catch (error) {
       console.error('Impossible d\'assigner la tache', error)
     }
@@ -254,7 +250,7 @@ function KanbanPage() {
       const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
 
       // On l'ajoute a la tache ouverte
-      const updated = {...selectedTask, comments: [...selectedTask.comments, saved] } // on modifie que le commentaire, on laisse les autres inchange
+      const updated = {...selectedTask, comments: [...selectedTask.comments ?? [], saved] } // on modifie que le commentaire, on laisse les autres inchange
       setSelectedTask(updated)
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
     } catch (error) {
@@ -268,7 +264,7 @@ function KanbanPage() {
 
       const updated = {
         ...selectedTask,
-        comments: selectedTask.comments.filter(c => c.id !== commentId),
+        comments: (selectedTask.comments ?? []).filter(c => c.id !== commentId),
       }
       setSelectedTask(updated)
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))

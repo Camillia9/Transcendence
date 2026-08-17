@@ -31,9 +31,10 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
   // Pour pouvoir ecrire des commentaires dans la colonne attente
   const [newComment, setNewComment] = useState('')
 
-  function submitComment() {
+  async function submitComment() {
     if (!newComment.trim()) return // refuse les commentaires vides
-    onAddComment(task.id, newComment.trim())
+    await onAddComment(task.id, newComment.trim())
+    setNewComment('') // Vide l'input apres chaque envoie reussi
   }
 
   return (
@@ -156,11 +157,11 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
                 Envoyer
               </Button>
               <label className="text-xs text-gray-400 uppercase tracking-wide">Commentaires</label>
-              {task.comments.length === 0 && (
+              {(task.comments ?? []).length === 0 && (
                 <p className="text-xs text-gray-300">Aucun commentaire pour l'instant.</p>
               )}
               
-              {task.comments.map(comment => (
+              {(task.comments ?? []).map(comment => (
                 <div key={comment.id} className="flex flex-col gap-1 bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-primary-900/20 flex items-center justify-center text-xs text-primary-900">
