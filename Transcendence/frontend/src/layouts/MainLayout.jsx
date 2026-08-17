@@ -97,10 +97,15 @@ function MainLayout() {
   // Afficher les notifs
   function formatNotification(notif) {
     // DEBUG :
-    //console.log('NOTIF:', notif)
+    //console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
+    //console.log('TYPE REÇU →', JSON.stringify(notif.type), '| longueur:', notif.type?.length)
+    //console.log ('NOTIF : ')
+    //console.log(notif)
     switch (notif.type) {
       case 'Assignment':
-        return `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task?.title} »`
+        return notif.task?.title
+          ? `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task.title} »`
+          : `${notif.actor?.pseudo} vous a assigné une tâche`
       case 'InvitationSent':
         return `${notif.actor?.pseudo} vous a invité à rejoindre une organisation`
       case 'InvitationAccepted':
@@ -108,7 +113,35 @@ function MainLayout() {
       case 'InvitationDeclined':
         return `${notif.actor?.pseudo} a refusé votre invitation`
       case 'ProjectDeleted':
-        return `${notif.actor?.pseudo} a supprimé le projet « ${notif.project?.title} »`
+        return `${notif.actor?.pseudo} a supprimé un projet`
+      case 'RemovedFromOrga':
+        return `${notif.actor?.pseudo} vous a retiré de l'organisation`
+      case 'RemovedFromProject':
+        return notif.project?.title
+          ? `${notif.actor?.pseudo} vous a retiré du projet « ${notif.project.title} »`
+          : `${notif.actor?.pseudo} vous a retiré d'un projet`
+      case 'OrgaUpdated':
+        return `${notif.actor?.pseudo} a modifié une organisation`
+      case 'MemberRemoved':
+        return `${notif.actor?.pseudo} a retiré un membre de l'organisation`
+      case 'ProjectUpdated':
+        return notif.project?.title
+          ? `${notif.actor?.pseudo} a modifié le projet « ${notif.project.title} »`
+          : `${notif.actor?.pseudo} a modifié un projet`
+      case 'OrgaDeleted':
+        return `${notif.actor?.pseudo} a supprimé une organisation`
+      case 'RoleChanged':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a modifié votre rôle dans « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a modifié votre rôle`
+      case 'InvitationCancelled':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a annulé votre invitation à « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a annulé votre invitation`
+      case 'DeplacementTache':
+        return notif.task?.title
+          ? `${notif.actor?.pseudo} a déplacé la tâche « ${notif.task.title} »`
+          : `${notif.actor?.pseudo} a déplacé une tâche`
       default:
         return 'Nouvelle notification'
     }
