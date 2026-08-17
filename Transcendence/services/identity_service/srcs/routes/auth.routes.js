@@ -14,6 +14,8 @@ import { generateToken } from '../../../shared/jwt.utils.js';
 import prisma from '../../../prisma/prisma.js';
 import { authenticate } from '../../../shared/auth.middleware.js';
 
+import passport from 'passport';
+
 const router = express.Router();
 
 // inscription email + mot de passe
