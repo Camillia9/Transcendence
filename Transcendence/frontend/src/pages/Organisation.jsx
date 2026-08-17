@@ -145,6 +145,7 @@ function Organisations() {
         setOrganisations(organisations.map(org =>
           org.id === OrganisationToEdit.id ? { ...org, ...updated } : org // « pars de l'ancien orga complet, puis les écrase avec les champs revenus du back ».
         ))
+        handleCloseNewOrganisation() // ferme la modal
       } catch (error) {
         setNewErrors({ global: "Impossible de modifier l'organisation" })
         return
@@ -221,7 +222,12 @@ function Organisations() {
 
       handleCloseInvite()
     } catch (error) {
-      setNewErrors({ global: "Impossible d'envoyer l'invitation"})
+      console.log('STATUS REÇU →', error.status)
+      if (error.status === 404) {
+        setNewErrors({ global: "Auccun utilisateur avec ce pseudo" })
+      } else {
+        setNewErrors({ global: "Impossible d'envoyer l'invitation"})
+      }
     }
   }
 

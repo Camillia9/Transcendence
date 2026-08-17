@@ -17,7 +17,9 @@ export async function apiRequest(path, options = {}) {
     if (!response.ok) {
       // Recupere l'erreur du back direct dans la console
       const errorBody = await response.json().catch(() => ({}))
-  	  throw new Error(errorBody.error || `Erreur ${response.status} sur ${path}`)
+  	  const error = new Error(errorBody.error || `Erreur ${response.status} sur ${path}`)
+	  error.status = response.status // on accroche le code http a l'erreur (404, 500...)
+	  throw error
     }
     // On décode le corps JSON et on le renvoie à celui qui a appelé.
     return await response.json()
