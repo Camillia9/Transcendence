@@ -115,8 +115,8 @@ function KanbanPage() {
   //}, [projectId])
 
 
-  // TEMPORAIRE 
-  console.log(selectedTask)
+  // TEMPORAIRE DEBUG
+  //console.log(selectedTask)
 
   // Fction helper 
   //const getNextPosition = (projId, column) =>
