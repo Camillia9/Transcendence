@@ -127,17 +127,31 @@ function Profil() {
       return
     }
 
-    if (file.size > 1 * 1024 * 1024) { // file.size est un nombre en octets. Pour poser une limite à 1 Mo, tu dois exprimer 1 Mo en octets : 1 × 1024 Ko × 1024 octets = ~1 097 152
-      setErrorAvatar('Image trop lourde (max 1 Mo)')
-      return
-    }
-
     const reader = new FileReader() // Explication dans xplain
 
     // Bloc executee QUE QUAND la lecture est fini. C'est une promesse pour plus tard, pas une action immediate. Elle range juste une fonction dans un tirroir "unload"
     reader.onload = () => {
-      console.log('onload OK', reader.result.slice(0, 30))
-      setAvatar(reader.result) // reader.result contient la chaine en base 64 complete
+      ///*Debug*/ console.log('onload OK', reader.result.slice(0, 30))
+      const img = new Image()
+      img.onload = () => {
+        // Calcule les nouvelles dimensions (max 200px), en gardant les proportions
+        const maxSize = 200
+        let { width, height } = img
+        if (width > height) {
+          if (width > maxSize) { height = height * (maxSize / width); width = maxSize }
+        } else {
+          if (height > maxSize) { width = width * (maxSize / height); height = maxSize }
+        }
+
+        // Redessine l'image réduite dans un canvas
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+
+        setAvatar(canvas.toDataURL('image/jpeg', 0.8)) // Exporte en JPEG compressé (0.8 = qualité). C'est CETTE version qu'on stocke
+      }
+      img.src = reader.result // On charge l'image a partie du base64 lu
     }
     reader.readAsDataURL(file) // lance la lecture. Elle prend quelques ms. et ensuite le navigateur va regarder dans le tirroir onload et declanchera la fonction
   }
@@ -174,7 +188,7 @@ function Profil() {
   if (!profile) return <p>Chargement...</p>
 
   // Debug 
-  console.log(profile)
+  //console.log(profile)
 
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
