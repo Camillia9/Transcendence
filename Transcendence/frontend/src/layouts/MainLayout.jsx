@@ -97,7 +97,7 @@ function MainLayout() {
   // Afficher les notifs
   function formatNotification(notif) {
     // DEBUG :
-    console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
+    //console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
     //console.log('TYPE REÇU →', JSON.stringify(notif.type), '| longueur:', notif.type?.length)
     //console.log ('NOTIF : ')
     //console.log(notif)
