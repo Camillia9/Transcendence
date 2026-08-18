@@ -160,6 +160,7 @@ function MainLayout() {
         return '/home'
 
       case 'RemovedFromOrga':
+      case 'RoleChanged':
       case 'InvitationSent':
       case 'InvitationAccepted':
       case 'InvitationDeclined':
