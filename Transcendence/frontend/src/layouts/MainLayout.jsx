@@ -150,9 +150,22 @@ function MainLayout() {
   function getNotificationLink(notif) {
     switch (notif.type) {
       case 'Assignment':
+      case 'DeplacementTache': {
         const projectId = notif.projectId ?? notif.project?.id
-        if (!projectId) return null
-        return `/projet/${projectId}`  // vers le Kanban du projet concerné
+        return projectId ? `/projet/${projectId}` : null // vers le Kanban du projet concerné si existe
+      }
+
+      case 'ProjectDeleted':
+      case 'RemovedFromProject':
+        return '/home'
+
+      case 'RemovedFromOrga':
+      case 'InvitationSent':
+      case 'InvitationAccepted':
+      case 'InvitationDeclined':
+      case 'InvitationCancelled':
+        return '/Organisation'
+
       default:
         return null   // pas de destination connue → on ne navigue pas
     }
