@@ -182,6 +182,7 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 // userId = destinataire
 // actorId = celui qui fait l'action
 export async function notifyUser(db, userId, actorId, type, _io = null, { organisationId = null, projectId = null, taskId = null, invitationId = null } = {}) {
+	if (actorId === userId) return null // Eviter d'envoyer des notifs a soi-meme
 	const notification = await db.notification.create({
 		data: {
 			userId,

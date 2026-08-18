@@ -296,7 +296,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                         projectId: req.project.id,
                         role: 'Manager',
                         userId: {
-                            not: req.user.id,
+                            not: req.user.userId,
                         },
                     },
                     select: {
@@ -386,7 +386,7 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                 });
 
                 let notification = null;
-                if (userId !== null && userId !== undefined) {
+                if (userId !== null && userId !== undefined && userId !== req.user.userId) {
                     // cree une notification
                     notification = await tx.notification.create({
                         data: {
