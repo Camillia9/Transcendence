@@ -97,7 +97,7 @@ function MainLayout() {
   // Afficher les notifs
   function formatNotification(notif) {
     // DEBUG :
-    //console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
+    console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
     //console.log('TYPE REÇU →', JSON.stringify(notif.type), '| longueur:', notif.type?.length)
     //console.log ('NOTIF : ')
     //console.log(notif)
@@ -142,6 +142,10 @@ function MainLayout() {
         return notif.task?.title
           ? `${notif.actor?.pseudo} a déplacé la tâche « ${notif.task.title} »`
           : `${notif.actor?.pseudo} a déplacé une tâche`
+      case 'MemberLeftOrga':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a quitté l'organisation « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a quitté une organisation`
       default:
         return 'Nouvelle notification'
     }
@@ -165,6 +169,8 @@ function MainLayout() {
       case 'InvitationAccepted':
       case 'InvitationDeclined':
       case 'InvitationCancelled':
+      case 'MemberLeftOrga':
+      case 'MemberRemoved':
         return '/Organisation'
 
       default:
@@ -225,6 +231,7 @@ function MainLayout() {
                         onClick={() => {
                           markAsRead(notif.id)
                           const link = getNotificationLink(notif)
+                          console.log('CLIC →', notif.type, '| lien:', link)
                           if (link) navigate(link)
                           setNotifOpen(false)
                         }}

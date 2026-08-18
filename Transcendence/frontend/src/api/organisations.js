@@ -106,3 +106,9 @@ export async function declineInvitation(id) {
         method: 'PATCH'
     })
 }
+
+export async function leaveOrganisation(orgId) {
+    return await apiRequest(`/organisations/${orgId}/me`, {
+        method: 'DELETE'
+    })
+}

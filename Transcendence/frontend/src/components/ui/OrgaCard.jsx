@@ -6,7 +6,7 @@ import { getProgressColor } from "../../utils/progressColor"
 // useAuth permet de recuperer l'utilisateur connecter
 
 
-export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation }) {
+export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation, onLeave }) {
   // DEBUG
   //console.log("ORGA =", orga);
   //console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
@@ -109,7 +109,16 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             </button>
           )}
         </div>
+
+        {/* Bouton quitter — visible pour tout membre */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onLeave(orga.id) }}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-auto"
+        >
+          Quitter
+        </button>
       </div>
+
 
       {/* Membres visibles seulement quand la carte est ouverte */}
       {expanded && (

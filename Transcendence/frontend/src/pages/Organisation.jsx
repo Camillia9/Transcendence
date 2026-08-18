@@ -4,7 +4,7 @@ import OrgaCard from "../components/ui/OrgaCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation} from "../api/organisations";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation, leaveOrganisation} from "../api/organisations";
 import { useWorkspaceSocket } from "../context/SocketContext";
 
 function Organisations() {
@@ -325,6 +325,21 @@ function Organisations() {
     loadInvitations()
   }, [])
 
+  const handleLeaveOrga = async (orgId) => {
+    if (!window.confirm("Quitter cette organisation ?")) return
+    try {
+      await leaveOrganisation(orgId)
+      const data = await getMyOrganisations()   // recharge : l'orga quittée n'y est plus
+      setOrganisations(data)
+    } catch (error) {
+      if (error.status === 400) {
+        window.alert("Vous êtes le dernier admin, vous ne pouvez pas quitter l'organisation.")
+      } else {
+        window.alert("Impossible de quitter l'organisation.")
+      }
+    }
+  }
+
   const workspaceSocket = useWorkspaceSocket()
   useEffect(() => {
     if (!workspaceSocket) return
@@ -381,6 +396,7 @@ function Organisations() {
           onDeleteMember={handleDeleteMember}
           onInvite={handleInvite}
           onDeleteInvitation={handleDeleteInvitation}
+          onLeave={handleLeaveOrga}
           key={organisation.id}
           />
         ))}
