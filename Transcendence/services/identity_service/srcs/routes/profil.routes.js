@@ -1,6 +1,7 @@
 import express from 'express';
 import prisma from '../../../prisma/prisma.js';
 import { authenticate } from '../../../shared/auth.middleware.js';
+import { emitToUsers } from '../../../shared/chatClient.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
@@ -81,8 +82,21 @@ router.patch('/profile', authenticate, async (req, res) => {
                 avatar: true,
                 statut: true,
                 langue: true,
+                isOnline: true,
             },
         });
+
+        if (statut !== undefined) {
+            const watchers = await prisma.friend.findMany({
+                where: { friendId: req.user.userId },
+                select: { userId: true },
+            });
+            await emitToUsers(watchers.map(w => w.userId), 'user:status', {
+                userId: req.user.userId,
+                statut: user.statut,
+                isOnline: user.isOnline,
+            });
+        }
 
         return res.json({
             message: 'Profile updated',

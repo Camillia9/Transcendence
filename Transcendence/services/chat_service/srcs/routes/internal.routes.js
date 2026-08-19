@@ -30,4 +30,27 @@ router.post('/notify', (req, res) => {
 	}
 });
 
+router.post('/emit', (req, res) => {
+	try {
+		const { userIds, event, payload } = req.body;
+
+		if (!Array.isArray(userIds) || !event)
+			return res.status(400).json({ error: 'userIds and event required' });
+
+		const io = req.app.get('io');
+		if (io) {
+			userIds.forEach((uid) => {
+				const id = Number(uid);
+				if (Number.isInteger(id) && id > 0)
+					io.to(`user:${id}`).emit(event, payload);
+			});
+		}
+
+		return res.json({ ok: true });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ error: 'Emit failed' });
+	}
+});
+
 export default router;

@@ -62,10 +62,35 @@ function KanbanPage() {
         ? prev.map(t => t.id === task.id ? task : t)
         : [...prev, task]
       )
+      setSelectedTask(prev => prev && prev.id === task.id ? task : prev)
     })
 
     socket.on('task:deleted', ({ taskId }) => {
       setTasks(prev => prev.filter(t => t.id !== taskId))
+    })
+
+    socket.on('task:comment-added', ({ taskId, comment }) => {
+      const addComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).some(c => c.id === comment.id) ? t.comments : [...(t.comments ?? []), comment] }
+        : t
+      setTasks(prev => prev.map(addComment))
+      setSelectedTask(prev => prev ? addComment(prev) : prev)
+    })
+
+    socket.on('task:comment-updated', ({ taskId, comment }) => {
+      const patchComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).map(c => c.id === comment.id ? comment : c) }
+        : t
+      setTasks(prev => prev.map(patchComment))
+      setSelectedTask(prev => prev ? patchComment(prev) : prev)
+    })
+
+    socket.on('task:comment-deleted', ({ taskId, commentId }) => {
+      const removeComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).filter(c => c.id !== commentId) }
+        : t
+      setTasks(prev => prev.map(removeComment))
+      setSelectedTask(prev => prev ? removeComment(prev) : prev)
     })
 
     socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
@@ -81,6 +106,9 @@ function KanbanPage() {
       socket.off('task:created')
       socket.off('task:updated')
       socket.off('task:deleted')
+      socket.off('task:comment-added')
+      socket.off('task:comment-updated')
+      socket.off('task:comment-deleted')
       socket.off('project:member-removed')
     }
   }, [socket, projectId])

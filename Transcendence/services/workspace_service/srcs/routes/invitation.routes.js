@@ -2,6 +2,7 @@
 import express from 'express';
 
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../middleware/permissions.js';
+// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
 import { notifyUser } from '../utils/notifications.js';
 
@@ -62,17 +63,14 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                await notifyUser(
-                    tx,
-                    userId,
-                    req.user.userId,
-                    'InvitationSent',
-                    req.app.get('io'),
-                    {
-                        organisationId: req.orgId,
-                        invitationId: invitation.id,
-                    }
-                );
+                // await notifyUser(
+                //     tx,
+                //     userId,
+                //     req.user.userId,
+                //     'InvitationSent',
+                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
+                //     req.app.get('io'),
+                // );
             });
 
             return res.json({
@@ -171,12 +169,8 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationAccepted',
-                    // `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
                     req.app.get('io'),
-                    {
-                        organisationId: req.invitation.orgId,
-                        invitationId: req.invitation.id,
-                    }
                 );
             });
 
@@ -214,12 +208,8 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationDeclined',
-                    // `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
+                    `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
                     req.app.get('io'),
-                    {
-                        organisationId: req.invitation.orgId,
-                        invitationId: req.invitation.id,
-                    }
                 );
             });
 
@@ -243,30 +233,23 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                 return res.status(404).json({ error: 'Invitation not found' });
 
             await prisma.$transaction(async (tx) => {
-                await tx.invitation.update({
+                await tx.invitation.delete({
                     where: {
                         id: req.invitation.id,
                     },
-                    data: {
-                        status: 'Cancelled',
-                    },
-                 });
+                });
 
-                await notifyUser(
-                    tx,
-                    req.invitation.invitedUserId,
-                    req.user.userId,
-                    'InvitationCancelled',
-                    // `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
-                    {
-                        organisationId: req.invitation.orgId,
-                        invitationId: req.invitation.id,
-                    }
-                );
+            //     await notifyUser(
+            //         tx,
+            //         req.invitation.invitedUserId,
+            //         req.user.userId,
+            //         'InvitationCancelled',
+            //         `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
+            //         req.app.get('io'),
+            //     );
             });
 
-            return res.json({ message: 'Invitation cancelled' });
+            return res.json({ message: 'Welcome to the organisation' });
 
         } catch (error) {
             console.error(error);

@@ -5,7 +5,7 @@ import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
 import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation, leaveOrganisation} from "../api/organisations";
-import { useWorkspaceSocket } from "../context/SocketContext";
+import { useSocket, useWorkspaceSocket } from "../context/SocketContext";
 
 function Organisations() {
 	// etat pour lire le tableau et pouvoir le modifier
@@ -145,7 +145,7 @@ function Organisations() {
         setOrganisations(organisations.map(org =>
           org.id === OrganisationToEdit.id ? { ...org, ...updated } : org // « pars de l'ancien orga complet, puis les écrase avec les champs revenus du back ».
         ))
-        handleCloseNewOrganisation() // ferme la modal
+        handleCloseNewOrganisation()
       } catch (error) {
         setNewErrors({ global: "Impossible de modifier l'organisation" })
         return
@@ -329,7 +329,7 @@ function Organisations() {
     if (!window.confirm("Quitter cette organisation ?")) return
     try {
       await leaveOrganisation(orgId)
-      const data = await getMyOrganisations()   // recharge : l'orga quittée n'y est plus
+      const data = await getMyOrganisations()
       setOrganisations(data)
     } catch (error) {
       if (error.status === 400) {
@@ -349,6 +349,20 @@ function Organisations() {
     workspaceSocket.on('organisation:member-removed', handleMemberRemoved)
     return () => workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
   }, [workspaceSocket])
+
+  const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined']
+  const INVITATION_NOTIF_TYPES = ['InvitationSent', 'InvitationCancelled']
+
+  const socket = useSocket()
+  useEffect(() => {
+    if (!socket) return
+    const handleNotification = (notif) => {
+      if (ORGA_NOTIF_TYPES.includes(notif.type)) loadOrganisations()
+      if (INVITATION_NOTIF_TYPES.includes(notif.type)) loadInvitations()
+    }
+    socket.on('notification:new', handleNotification)
+    return () => socket.off('notification:new', handleNotification)
+  }, [socket])
 
   //console.log("test inv", invitations)
 

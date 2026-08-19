@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { IconSearch } from '@tabler/icons-react'
 import { mockFriends } from '../data/mockFriends'
 import { getFriends, searchUsers, addFriend, removeFriend } from '../api/friends'
+import { useSocket } from '../context/SocketContext'
 import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
@@ -13,11 +14,23 @@ export default function FriendsPage() {
 	const [friends, setFriends] = useState([]) // demarre vide
 	const [results, setResults] = useState([]) // resultats stockes
 	const [selectedUser, setSelectedUser] = useState(null) // Un pour savoir si modal ouverte, un pour retenir quel utilisateur on a cliqué
+	const socket = useSocket()
 
 	// charge mes amis au montage
 	useEffect(() => {
 		loadFriends()
 	}, [])
+
+	useEffect(() => {
+		if (!socket) return
+		const handleStatus = ({ userId, statut, isOnline }) => {
+			setFriends(prev => prev.map(item =>
+				item.friend.id === userId ? { ...item, friend: { ...item.friend, statut, isOnline } } : item
+			))
+		}
+		socket.on('user:status', handleStatus)
+		return () => socket.off('user:status', handleStatus)
+	}, [socket])
 
 	async function loadFriends() {
 		try {
