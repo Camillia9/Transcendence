@@ -1,3 +1,4 @@
+import formatStatus from "../../utils/status"
 import Avatar from "./Avatar"
 
 export default function FriendCard({ friend, onClick }) {
@@ -15,7 +16,7 @@ export default function FriendCard({ friend, onClick }) {
         />
       </div>
       <span className="text-sm font-medium text-gray-800">{friend.pseudo}</span>
-      <span className="text-xs text-gray-400">{friend.statut}</span>
+      <span className="text-xs text-gray-400">{formatStatus(friend.statut)}</span>
 		</button>
 	)
 }

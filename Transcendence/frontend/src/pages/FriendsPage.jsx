@@ -7,6 +7,7 @@ import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import formatStatus from '../utils/status'
 
 export default function FriendsPage() {
 	const [query, setQuery] = useState('')
@@ -179,7 +180,7 @@ function FriendModal({ user, friends, onClose, onAdd, onRemove }) {
           <Avatar src={user.avatar} username={user.pseudo} size="lg" />
           <div className="text-center">
             <p className="text-lg font-medium text-gray-800">{user.pseudo}</p>
-            <p className="text-sm text-gray-400">{user.statut}</p>
+            <p className="text-sm text-gray-400">{formatStatus(user.statut)}</p>
           </div>
 
           {isFriend ? (
