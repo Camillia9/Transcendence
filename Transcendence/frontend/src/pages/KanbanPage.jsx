@@ -128,7 +128,11 @@ function KanbanPage() {
       const data = await getProjectById(projectId)
       setProject(data)
     } catch (error) {
-      console.error('Impossible de charger le projet', error)
+      if (error.status === 404) {
+        navigate('/home', { state: { message: "Ce projet n'existe plus" } })
+      } else {
+        console.error('Impossible de charger le projet', error)
+      }
     }
   }
 
