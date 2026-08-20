@@ -173,7 +173,6 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
                     req.orgId,
                     req.user.userId,
                     'OrgaUpdated',
-                    req.app.get('io')
                 );
 
                 return updatedOrg;
@@ -197,21 +196,35 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
     async (req, res) => {
         try {
-            await prisma.$transaction(async (tx) => {
+            const projectIds = await prisma.$transaction(async (tx) => {
                 await notifyOrgaMembers(
                     tx,
                     req.orgId,
                     req.user.userId,
                     'OrgaDeleted',
-                    req.app.get('io')
                 );
+
+                const projects = await tx.project.findMany({
+                    where: { orgId: req.orgId },
+                    select: { id: true },
+                });
+
                 // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
                 await tx.organisation.delete({
                     where: {
                         id: req.orgId
                     }
                 });
+
+                return projects.map(p => p.id);
             });
+
+            const io = req.app.get('io');
+            if (io) {
+                for (const projectId of projectIds) {
+                    io.to(`project:${projectId}`).emit('project:deleted', { projectId });
+                }
+            }
 
             return res.json({ message: 'Organisation deleted' });
 
@@ -316,8 +329,7 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
                     cible,
                     req.user.userId,
                     'RoleChanged',
-                    // `${req.user.pseudo} changed your role to ${role}`,
-                    req.app.get('io'),
+                    null,
                     {
                         organisationId: req.orgId,
                     }
@@ -383,8 +395,7 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     cible,
                     req.user.userId,
                     'RemovedFromOrga',
-                    // `You were removed from the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io'),
+                    null,
                     {
                         organisationId: req.orgId,
                     }
@@ -404,8 +415,6 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     req.orgId,
                     req.user.userId,
                     'MemberRemoved',
-                    // `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io')
                 );
             })
 
@@ -453,8 +462,6 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                     req.orgId,
                     req.user.userId,
                     'MemberLeftOrga',
-                    // `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`,
-                    req.app.get('io')
                 );
 
                 await tx.member.delete({

@@ -350,7 +350,7 @@ function Organisations() {
     return () => workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
   }, [workspaceSocket])
 
-  const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined']
+  const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined', 'InvitationSent', 'InvitationCancelled']
   const INVITATION_NOTIF_TYPES = ['InvitationSent', 'InvitationCancelled']
 
   const socket = useSocket()
