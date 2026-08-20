@@ -243,16 +243,25 @@ function Home() {
                 <label className="text-sm text-gray-500">
                   Organisation *
                 </label>
-                <select
-                  value={selectedOrgId}
-                  onChange={(e) => setSelectedOrgId(e.target.value)}
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
-                >
-                  <option value="">Choisir une organisation</option>
-                  {organisations.map(org => (
-                    <option key={org.id} value={org.id}>{org.name}</option>
-                  ))}
-                </select>
+                
+                {organisations.filter(org => org.myRole === 'Admin').length === 0 ? (
+                  // Si l'utilisateur n'est admin dans auccune orga :
+                  <p className="text-sm text-gray-400">
+                    Vous devez être admin d'une organisation pour créer un projet.
+                  </p>
+                ) : (
+                  <select
+                    value={selectedOrgId}
+                    onChange={(e) => setSelectedOrgId(e.target.value)}
+                    className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
+                  >
+                    <option value="">Choisir une organisation</option>
+                    {organisations.map(org => (
+                      <option key={org.id} value={org.id}>{org.name}</option>
+                    ))}
+                  </select>
+                )}
+
                 {newErrors.org && (
                   <p className="text-red-400 text-sm mt-1">{newErrors.org}</p>
                 )}
@@ -291,23 +300,6 @@ function Home() {
                 <p className="text-red-400 text-sm mt-1">{newErrors.deadline}</p>
               )}
             </div>
-
-            {/*Entree des membres */}
-            {/*Masquer en mode edition */}
-            {/*{!projectToEdit && (
-              <div className="flex flex-col gap-1 mb-4">
-                <label className="text-sm text-gray-500">
-                  Ajout de membres (separation par virgule !)
-                </label>
-                <Input
-                  type="text"
-                  value={newMembers}
-                  onChange={(e) => setNewMembers(e.target.value)}
-                  placeholder="Clara, Vincent, Remy"
-                  light
-                />
-              </div>
-            )}*/}
 
             {newErrors.global && (
               <p className="text-red-400 text-sm mb-2">{newErrors.global}</p>
