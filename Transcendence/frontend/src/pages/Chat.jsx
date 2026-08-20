@@ -339,9 +339,16 @@ function Chat() {
                       <p className="text-sm font-medium text-gray-800 truncate">{conv.name}</p>
                     </div>
                     {/* L'heure du dernier message (si la conv a au moins un message) */}
-                    {lastMessage && (
-                      <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
-                    )}
+                    <div className='flex items-center gap-1.5 shrink-0'>
+                      {lastMessage && (
+                        <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
+                      )}
+                      {conv.unreadCount > 0 && (
+                        <span className="min-w-5 h-5 flex items-center justify-center bg-primary-600 text-white text-[10px] font-semibold rounded-full px-1">
+                          {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Ligne du bas : aperçu du dernier message, ou "Aucun message" si vide */}
