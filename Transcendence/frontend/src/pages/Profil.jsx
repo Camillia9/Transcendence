@@ -4,9 +4,11 @@ import Avatar from '../components/ui/Avatar'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+
 import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
 import { useNavigate } from 'react-router-dom'
 import { setup2FA, verify2FA } from '../api/auth'
+import formatStatus, { STATUS_VALUES } from '../utils/status'
 
 function Profil() {
   const { user, login, logout } = useAuth()
@@ -252,9 +254,9 @@ function Profil() {
               onChange={(e) => setStatut(e.target.value)} // e.target.value contient la value de l'option selectionne
               className='text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1'
             >
-              <option value="Available">Disponible</option>
-              <option value="Busy">Occupe</option>
-              <option value="Away">Absent</option>
+              {STATUS_VALUES.map(value => (
+                <option key={value} value={value}>{formatStatus(value)}</option>
+              ))}
             </select>
         </div>
 
