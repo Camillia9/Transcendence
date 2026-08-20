@@ -4,9 +4,23 @@ import express from 'express';
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../middleware/permissions.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
-import { notifyUser, notifyOrgaMembers } from '../utils/notifications.js';
+import { notifyUser } from '../utils/notifications.js';
 
 const router = express.Router();
+
+async function broadcastToOrgaMembers(req, orgId, event, excludeUserId = null) {
+    const members = await prisma.member.findMany({
+        where: {
+            orgId,
+            ...(excludeUserId !== null && { userId: { not: excludeUserId } }),
+        },
+        select: { userId: true },
+    });
+    const io = req.app.get('io');
+    for (const member of members) {
+        io.to(`user:${member.userId}`).emit(event, { orgId });
+    }
+}
 
 // router.post('/organisation/inviter') = route pour inviter qq1
 // Avant d'exécuter la fonction, Express vérifie si l'utilisateur possède la permission inviter
@@ -75,6 +89,8 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 );
             });
+
+            await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-added', req.user.userId);
 
             return res.json({
                 message: 'Invitation sent',
@@ -181,6 +197,8 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
 
             });
 
+            await broadcastToOrgaMembers(req, req.invitation.orgId, 'organisation:member-added', req.user.userId);
+
             return res.json({ message: 'Invitation accepted' });
 
         } catch (error) {
@@ -223,6 +241,8 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                 );
             });
 
+            await broadcastToOrgaMembers(req, req.invitation.orgId, 'organisation:invitation-removed');
+
             return res.json({ message: 'Invitation declined' });
 
         } catch (error) {
@@ -261,6 +281,8 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     },
                 );
             });
+
+            await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-removed', req.user.userId);
 
             return res.json({ message: 'Welcome to the organisation' });
 

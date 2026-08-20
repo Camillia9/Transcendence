@@ -346,8 +346,22 @@ function Organisations() {
     const handleMemberRemoved = ({ orgId }) => {
       setOrganisations(prev => prev.filter(org => org.id !== orgId))
     }
+    const handleMemberAdded = () => {
+      loadOrganisations()
+    }
+    const handleInvitationChanged = () => {
+      loadOrganisations()
+    }
     workspaceSocket.on('organisation:member-removed', handleMemberRemoved)
-    return () => workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
+    workspaceSocket.on('organisation:member-added', handleMemberAdded)
+    workspaceSocket.on('organisation:invitation-added', handleInvitationChanged)
+    workspaceSocket.on('organisation:invitation-removed', handleInvitationChanged)
+    return () => {
+      workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
+      workspaceSocket.off('organisation:member-added', handleMemberAdded)
+      workspaceSocket.off('organisation:invitation-added', handleInvitationChanged)
+      workspaceSocket.off('organisation:invitation-removed', handleInvitationChanged)
+    }
   }, [workspaceSocket])
 
   const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined', 'InvitationSent', 'InvitationCancelled']
