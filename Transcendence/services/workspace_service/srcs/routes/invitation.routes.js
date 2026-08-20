@@ -74,13 +74,6 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                         invitationId: invitation.id,
                     },
                 );
-
-                await notifyOrgaMembers(
-                    tx,
-                    req.orgId,
-                    req.user.userId,
-                    'InvitationSent',
-                );
             });
 
             return res.json({
@@ -186,16 +179,6 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     },
                 );
 
-                // Diffuse aussi aux AUTRES membres de l'org (pas juste l'inviteur) pour
-                // que leur compteur de membres se mette a jour en direct. Avant ce fix,
-                // seul l'inviteur etait notifie -> les autres devaient rafraichir, ce qui
-                // donnait l'impression que ca marchait "1 fois sur 2" selon qui regardait.
-                await notifyOrgaMembers(
-                    tx,
-                    req.invitation.orgId,
-                    req.user.userId,
-                    'InvitationAccepted',
-                );
             });
 
             return res.json({ message: 'Invitation accepted' });
@@ -238,13 +221,6 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                         invitationId: req.invitation.id,
                     },
                 );
-
-                await notifyOrgaMembers(
-                    tx,
-                    req.invitation.orgId,
-                    req.user.userId,
-                    'InvitationDeclined',
-                );
             });
 
             return res.json({ message: 'Invitation declined' });
@@ -281,15 +257,8 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     null,
                     {
                         organisationId: req.orgId,
-                        invitationId: req.invitation.id,
+                        //invitationId: req.invitation.id,
                     },
-                );
-
-                await notifyOrgaMembers(
-                    tx,
-                    req.orgId,
-                    req.user.userId,
-                    'InvitationCancelled',
                 );
             });
 
