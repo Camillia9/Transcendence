@@ -70,7 +70,7 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 		},
 	});
 
-	await Promise.all(
+	Promise.all(
 		notifications.map((notification) =>
 			emitUserNotification(notification.userId, {
 				id: notification.id,
@@ -84,7 +84,7 @@ export async function notifyOrgaMembers(db, orgId, actorId, type, _io = null) {
 				isRead: notification.isRead,
 			}),
 		),
-	);
+	).catch(() => {});
 	return notifications;
 }
 
@@ -160,8 +160,7 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 		},
 	});
 
-	// envoie chaque notif en temps reel
-	await Promise.all(
+	Promise.all(
 		notifications.map((notification) =>
 			emitUserNotification(notification.userId, {
 				id: notification.id,
@@ -175,7 +174,7 @@ export async function notifyProjectMembers(db, projectId, actorId, type, _io = n
 				isRead: notification.isRead,
 			}),
 		),
-	);
+	).catch(() => {});
 	return notifications;
 }
 
@@ -234,7 +233,7 @@ export async function notifyUser(db, userId, actorId, type, _io = null, { organi
 		},
 	});
 
-	await emitUserNotification(userId, {
+	emitUserNotification(userId, {
 		id: notification.id,
 		type: notification.type,
 		actor: notification.actor,
@@ -244,7 +243,7 @@ export async function notifyUser(db, userId, actorId, type, _io = null, { organi
 		invitation: notification.invitation,
 		createdAt: notification.createdAt.toISOString(),
 		isRead: notification.isRead,
-	});
+	}).catch(() => {});
 
 	return notification;
 }

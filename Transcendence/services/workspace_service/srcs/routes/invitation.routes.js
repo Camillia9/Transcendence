@@ -4,7 +4,7 @@ import express from 'express';
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../middleware/permissions.js';
 // import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
-import { notifyUser } from '../utils/notifications.js';
+import { notifyUser, notifyOrgaMembers } from '../utils/notifications.js';
 
 const router = express.Router();
 
@@ -63,14 +63,24 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                // await notifyUser(
-                //     tx,
-                //     userId,
-                //     req.user.userId,
-                //     'InvitationSent',
-                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io'),
-                // );
+                await notifyUser(
+                    tx,
+                    userId,
+                    req.user.userId,
+                    'InvitationSent',
+                    null,
+                    {
+                        organisationId: req.orgId,
+                        invitationId: invitation.id,
+                    },
+                );
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'InvitationSent',
+                );
             });
 
             return res.json({
@@ -169,8 +179,22 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationAccepted',
-                    `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
+                    null,
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    },
+                );
+
+                // Diffuse aussi aux AUTRES membres de l'org (pas juste l'inviteur) pour
+                // que leur compteur de membres se mette a jour en direct. Avant ce fix,
+                // seul l'inviteur etait notifie -> les autres devaient rafraichir, ce qui
+                // donnait l'impression que ca marchait "1 fois sur 2" selon qui regardait.
+                await notifyOrgaMembers(
+                    tx,
+                    req.invitation.orgId,
+                    req.user.userId,
+                    'InvitationAccepted',
                 );
             });
 
@@ -208,8 +232,18 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationDeclined',
-                    `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
+                    null,
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    },
+                );
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.invitation.orgId,
+                    req.user.userId,
+                    'InvitationDeclined',
                 );
             });
 
@@ -239,14 +273,24 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     },
                 });
 
-            //     await notifyUser(
-            //         tx,
-            //         req.invitation.invitedUserId,
-            //         req.user.userId,
-            //         'InvitationCancelled',
-            //         `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-            //         req.app.get('io'),
-            //     );
+                await notifyUser(
+                    tx,
+                    req.invitation.invitedUserId,
+                    req.user.userId,
+                    'InvitationCancelled',
+                    null,
+                    {
+                        organisationId: req.orgId,
+                        invitationId: req.invitation.id,
+                    },
+                );
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'InvitationCancelled',
+                );
             });
 
             return res.json({ message: 'Welcome to the organisation' });
