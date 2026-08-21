@@ -171,6 +171,7 @@ function MainLayout() {
       case 'InvitationCancelled':
       case 'MemberLeftOrga':
       case 'MemberRemoved':
+      case 'OrgaUpdated':
         return '/Organisation'
 
       default:
