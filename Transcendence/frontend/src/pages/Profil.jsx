@@ -9,6 +9,7 @@ import { changePassword, deleteAccount, getProfile, updateProfile } from '../api
 import { useNavigate } from 'react-router-dom'
 import { setup2FA, verify2FA, disable2FA } from '../api/auth'
 import formatStatus, { STATUS_VALUES } from '../utils/status'
+import { BASE_URL } from '../api/client'
 
 function Profil() {
   const { user, login, logout } = useAuth()
@@ -112,6 +113,26 @@ function Profil() {
       navigate('/')
     } catch (error) {
       setDeleteError(error.message) // le back ecrit l'erreur
+    }
+  }
+
+  // Export des donnes (RGPD)
+  const handleExportData = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/profile/export`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      if (!res.ok) throw new Error('Export failed');
+
+      const blob = await res.blob() // le ficher pas en JSON
+      const url = URL.createObjectURL(blob) // URL temp vers le fichier
+      const a = document.createElement('a') // lien invisible
+      a.href = url
+      a.download = 'taskboard-mes-donnees.json' // le nom du ficher telecharge
+      a.click() // on "clique" dessus par code
+      URL.revokeObjectURL(url) // on nettoie l'url temporaire
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -390,6 +411,17 @@ function Profil() {
         )}
       </Card>
 
+      {/* Export des données (RGPD) */}
+      <Card className='flex flex-col gap-4'>
+        <h2 className='text-sm font-medium text-gray-800'>Mes données</h2>
+        <p className='text-sm text-gray-500'>
+          Télécharge une copie de toutes tes données personnelles au format JSON.
+        </p>
+        <Button onClick={handleExportData}>
+          Télécharger mes données
+        </Button>
+      </Card>
+
       {/*Suppression du compte (RGPD)*/}
       <Card className='flex flex-col gap-4'>
         <h2 className='text-sm font-medium text-red-800'>Suppression du compte</h2>
@@ -400,7 +432,7 @@ function Profil() {
           </Button>
         ) : (
           //2nd temps: Champs mdp releves 
-          <div className='flec flex-col gap-3'>
+          <div className='flex flex-col gap-3'>
             <p className='text-sm text-gray-500'>
               Cette action est irreversible.</p>
             <p className='text-sm text-gray-500'>
