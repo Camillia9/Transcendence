@@ -55,3 +55,11 @@ export async function login2FA(userId, code) {
     body: JSON.stringify({ userId, code })
   })
 }
+
+export async function disable2FA(password) {
+  const response = await apiRequest(`/auth/2fa/disable`, {
+    method: 'POST',
+    body: JSON.stringify({ password })
+  })
+  return response
+}

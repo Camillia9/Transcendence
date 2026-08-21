@@ -7,7 +7,7 @@ import Input from '../components/ui/Input'
 
 import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
 import { useNavigate } from 'react-router-dom'
-import { setup2FA, verify2FA } from '../api/auth'
+import { setup2FA, verify2FA, disable2FA } from '../api/auth'
 import formatStatus, { STATUS_VALUES } from '../utils/status'
 
 function Profil() {
@@ -39,7 +39,9 @@ function Profil() {
   // Etas pour gerer le 2FA
   const [qrCode, setQrCode] = useState(null)      // le QR code reçu (null tant qu'on n'a pas cliqué Activer)
   const [code, setCode] = useState('')            // le code à 6 chiffres saisi
-  const [twoFAError, setTwoFAError] = useState('') // erreur propre à la 2FA 
+  const [twoFAError, setTwoFAError] = useState('') // erreur propre à la 2FA
+  const [showDisable2FA, setShowDisable2FA] = useState(false)  // révèle la zone de confirmation
+  const [disablePassword, setDisablePassword] = useState('')   // le mot de passe saisi
 
   async function handleSave () {
     try {
@@ -186,6 +188,20 @@ function Profil() {
     }
   }
 
+  // Suppression de la 2fa 
+  async function handleDisable2FA() {
+    setTwoFAError('')
+    try {
+      await disable2FA(disablePassword)
+      setShowDisable2FA(false)
+      setDisablePassword('')
+      await loadProfile()   // refresh : twoFactorEnabled repasse à false
+    } catch (error) {
+      setTwoFAError(error.message)   // "Incorrect password", "2FA is not enabled"...
+    }
+  }
+  
+
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
 
@@ -322,8 +338,33 @@ function Profil() {
 
         {profile.twoFactorEnabled ? (
           //Etat deja active
-          <p className="text-sm text-green-600">La 2FA est activée sur ton compte.</p>
-          // TODO : Bouton desactiver a faire dans la route back
+          <div className='flex flex-col gap-2'>
+            <p className="text-sm text-green-600">La 2FA est activée sur ton compte.</p>
+            {!showDisable2FA ? (
+              <Button variant='outline' onClick={() => setShowDisable2FA(true)} className='self-start'>
+                Desactiver la 2FA
+              </Button>
+            ) : (
+              <div className='flex flex-col gap-2'>
+                <p className='text-sm text-gray-500'>Entre ton mot de passe pour la desactiver.</p>
+                <Input
+                  type="password"
+                  value={disablePassword}
+                  onChange={(e) => setDisablePassword(e.target.value)}
+                  placeholder="Mot de passe"
+                  className="w-48"
+                />
+                {twoFAError && <p className='text-sm text-red-400'>{twoFAError}</p>}
+                <div className='flex gap-2'>
+                  <Button onClick={() => { setShowDisable2FA(false); setDisablePassword(''); setTwoFAError('')}}>
+                    Annuler
+                  </Button>
+                  <Button variant="danger" onClick={handleDisable2FA}>Confirmer</Button>
+                </div>
+              </div>
+            )}
+
+          </div>
         ) : qrCode ? (
           //Etat configuration en cors (QR affiche)
           <div className="flex flex-col items-center gap-3">
