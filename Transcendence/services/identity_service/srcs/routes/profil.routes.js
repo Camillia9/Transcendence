@@ -3,8 +3,15 @@ import prisma from '../../../prisma/prisma.js';
 import { authenticate } from '../../../shared/auth.middleware.js';
 import { emitToUsers } from '../../../shared/chatClient.js';
 import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
+
+const transporter = nodemailer.createTransport({
+  host: 'mailhog',   // ← le nom du service, PAS localhost (piège du db:5432)
+  port: 1025,        // ← le port SMTP interne de Mailhog
+  secure: false,     // ← pas de TLS, c'est un serveur de dev
+});
 
 
 // voir son profil
@@ -240,6 +247,15 @@ router.delete('/profile', authenticate, async (req, res) => {
             });
         })
 
+        if (user.email) {
+            await transporter.sendMail({
+              from: 'noreply@taskboard.com',
+              to: user.email,
+              subject: 'Suppression de votre compte TaskBoard',
+              text: `Bonjour ${user.pseudo}, votre compte et toutes vos données ont été définitivement supprimés. Nous sommes désolés de vous voir partir.`,
+            });
+        }
+
         return res.json({ message: 'Profile deleted', });
 
     } catch (error) {
@@ -279,6 +295,15 @@ router.get('/profile/export', authenticate, async (req, res) => {
 
         delete data.passwordHash;
         delete data.twoFactorSecret;
+
+        if (data.email) {
+            await transporter.sendMail({
+              from: 'noreply@taskboard.com',
+              to: data.email,
+              subject: 'Export de vos données TaskBoard',
+              text: `Bonjour ${data.pseudo}, vous avez demandé l'export de vos données personnelles. Vous le trouverez en pièce jointe de cette demande.`,
+            });
+        }
 
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Disposition', 'attachment; filename="taskboard-mes-donnees.json"');
