@@ -240,7 +240,7 @@ router.delete('/profile', authenticate, async (req, res) => {
             }
 
             // si tte les orga ont encore au moins 1 admin, on peut supprimer
-            await prisma.user.delete({
+            await tx.user.delete({
                 where: {
                     id: req.user.userId,
                 },
