@@ -251,4 +251,43 @@ router.delete('/profile', authenticate, async (req, res) => {
     }
 });
 
+// export profile data (RGPD)
+router.get('/profile/export', authenticate, async (req, res) => {
+    try {
+        const data = await prisma.user.findUnique({
+            where: { id: req.user.userId },
+            include: {
+                members:               { include: { organisation: true } },
+                projectMembers:        { include: { project: true } },
+                createdTasks:          true,
+                assignedTasks:         true,
+                messages:              true,
+                comments:              true,
+                notificationsReceived: true,
+                notificationsSent:     true,
+                sentInvitations:       true,
+                receivedInvitations:   true,
+                conversationMembers:   true,
+                messageReads:          true,
+                friends:               true,
+                friendOf:              true,
+            },
+        });
+
+        if (!data)
+            return res.status(404).json({ error: 'User not found' });
+
+        delete data.passwordHash;
+        delete data.twoFactorSecret;
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', 'attachment; filename="taskboard-mes-donnees.json"');
+        return res.send(JSON.stringify(data, null, 2));
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
+});
+
 export default router;
