@@ -91,6 +91,7 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
             });
 
             await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-added', req.user.userId);
+            req.app.get('io').to(`user:${userId}`).emit('organisation:invitation-added', { orgId: req.orgId });
 
             return res.json({
                 message: 'Invitation sent',
@@ -283,6 +284,7 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
             });
 
             await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-removed', req.user.userId);
+            req.app.get('io').to(`user:${req.invitation.invitedUserId}`).emit('organisation:invitation-removed', { orgId: req.orgId });
 
             return res.json({ message: 'Welcome to the organisation' });
 

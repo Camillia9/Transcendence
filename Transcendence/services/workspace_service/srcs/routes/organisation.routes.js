@@ -365,6 +365,7 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
             if (!Number.isInteger(cible) || cible <= 0)
                 return res.status(400).json({ error: 'Invalid user id' });
 
+            let remainingMembers = [];
             await prisma.$transaction(async (tx) => {
                 const membre = await tx.member.findUnique({
                     where: { userId_orgId: {
@@ -416,9 +417,19 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                     req.user.userId,
                     'MemberRemoved',
                 );
+
+                remainingMembers = await tx.member.findMany({
+                    where: { orgId: req.orgId },
+                    select: { userId: true },
+                });
             })
 
-            req.app.get('io').to(`user:${cible}`).emit('organisation:member-removed', { orgId: req.orgId });
+            const io = req.app.get('io');
+            const payload = { orgId: req.orgId, removedUserId: cible };
+            io.to(`user:${cible}`).emit('organisation:member-removed', payload);
+            for (const m of remainingMembers) {
+                io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
+            }
 
             return res.json({ message: 'Member deleted' });
 
@@ -443,6 +454,7 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
         try {
             const membre = req.orgMembership;
 
+            let remainingMembers = [];
             // verifie qu'il y a tjs au moins 1 admin dans l'orga
             await prisma.$transaction(async (tx) => {
                 if (membre.role === 'Admin') {
@@ -472,7 +484,19 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                         }
                     }
                 });
+
+                remainingMembers = await tx.member.findMany({
+                    where: { orgId: req.orgId },
+                    select: { userId: true },
+                });
             });
+
+            const io = req.app.get('io');
+            const payload = { orgId: req.orgId, removedUserId: req.user.userId };
+            io.to(`user:${req.user.userId}`).emit('organisation:member-removed', payload);
+            for (const m of remainingMembers) {
+                io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
+            }
 
             return res.json({ message: 'You left the organisation' });
 

@@ -6,8 +6,10 @@ import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
 import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation, leaveOrganisation} from "../api/organisations";
 import { useSocket, useWorkspaceSocket } from "../context/SocketContext";
+import { useAuth } from "../context/AuthContext";
 
 function Organisations() {
+  const { user } = useAuth()
 	// etat pour lire le tableau et pouvoir le modifier
 	const [organisations, setOrganisations] = useState([])
   const [invitations, setInvitations] = useState([])
@@ -343,14 +345,19 @@ function Organisations() {
   const workspaceSocket = useWorkspaceSocket()
   useEffect(() => {
     if (!workspaceSocket) return
-    const handleMemberRemoved = ({ orgId }) => {
-      setOrganisations(prev => prev.filter(org => org.id !== orgId))
+    const handleMemberRemoved = ({ orgId, removedUserId }) => {
+      if (removedUserId === user?.id) {
+        setOrganisations(prev => prev.filter(org => org.id !== orgId))
+      } else {
+        loadOrganisations()
+      }
     }
     const handleMemberAdded = () => {
       loadOrganisations()
     }
     const handleInvitationChanged = () => {
       loadOrganisations()
+      loadInvitations()
     }
     workspaceSocket.on('organisation:member-removed', handleMemberRemoved)
     workspaceSocket.on('organisation:member-added', handleMemberAdded)
@@ -362,7 +369,7 @@ function Organisations() {
       workspaceSocket.off('organisation:invitation-added', handleInvitationChanged)
       workspaceSocket.off('organisation:invitation-removed', handleInvitationChanged)
     }
-  }, [workspaceSocket])
+  }, [workspaceSocket, user?.id])
 
   const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined', 'InvitationSent', 'InvitationCancelled']
   const INVITATION_NOTIF_TYPES = ['InvitationSent', 'InvitationCancelled']
