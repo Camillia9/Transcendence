@@ -33,7 +33,24 @@ router.get('/', authenticate, async (req, res) => {
 				},
 			},
 		});
-		res.json(convos);
+
+		const unreadCounts = await prisma.message.groupBy({
+			by: ['conversationId'],
+			where: {
+				conversationId: { in: convos.map((c) => c.id) },
+				userId: { not: userId },
+				reads: { none: { userId } },
+			},
+			_count: { id: true },
+		});
+		const unreadByConvo = new Map(unreadCounts.map((u) => [u.conversationId, u._count.id]));
+
+		const convosWithUnread = convos.map((c) => ({
+			...c,
+			unreadCount: unreadByConvo.get(c.id) ?? 0,
+		}));
+
+		res.json(convosWithUnread);
 	} catch (e) {
 		res.status(500).json({ error: e.message });
 	}

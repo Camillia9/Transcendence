@@ -74,8 +74,13 @@ function Chat() {
   
     socket.on('message:new', (msg) => {
       receiveMessage(msg.conversationId, toUiMsg(msg))
-      if (msg.conversationId === activeId && msg.userId !== user?.id)
+      if (msg.conversationId === activeId && msg.userId !== user?.id) {
         markConversationRead(msg.conversationId).catch(() => {})
+      } else if (msg.conversationId !== activeId && msg.userId !== user?.id) {
+        setConversations(prev => prev.map(c =>
+          c.id === msg.conversationId ? { ...c, unreadCount: (c.unreadCount ?? 0) + 1 } : c
+        ))
+      }
     })
   
     socket.on('conversation:new', (convo) => {
@@ -129,6 +134,9 @@ function Chat() {
           c.id === activeId ? { ...c, messages: data.map(toUiMsg) } : c
         ))
         await markConversationRead(activeId)
+        setConversations(prev => prev.map(c =>
+          c.id === activeId ? { ...c, unreadCount: 0 } : c
+        ))
       } catch (e) {
         console.error('Impossible de charger les messages', e)
       }
