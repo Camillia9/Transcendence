@@ -24,3 +24,26 @@ export async function emitUserNotification(userId, notification) {
 		console.error('Chat notify request failed:', error.message);
 	}
 }
+
+export async function emitToUsers(userIds, event, payload) {
+	if (!userIds || userIds.length === 0)
+		return;
+
+	try {
+		const res = await fetch(`${chatUrl()}/internal/emit`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-internal-key': internalKey(),
+			},
+			body: JSON.stringify({ userIds, event, payload }),
+		});
+
+		if (!res.ok) {
+			const body = await res.text();
+			console.error(`Chat emit failed ${res.status}: ${body}`);
+		}
+	} catch (error) {
+		console.error('Chat emit request failed:', error.message);
+	}
+}

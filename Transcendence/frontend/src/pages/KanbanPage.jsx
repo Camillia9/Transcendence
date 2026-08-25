@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { PRIORITIES } from "../data/priorities";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
 import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
@@ -31,6 +31,7 @@ function KanbanPage() {
   const socket = useWorkspaceSocket()
   const { id } = useParams()
   const projectId = Number(id)
+  const navigate = useNavigate()
 
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // null = panneau fermé. C'est la tache ouverte dans le taskPanel
@@ -61,10 +62,42 @@ function KanbanPage() {
         ? prev.map(t => t.id === task.id ? task : t)
         : [...prev, task]
       )
+      setSelectedTask(prev => prev && prev.id === task.id ? task : prev)
     })
 
     socket.on('task:deleted', ({ taskId }) => {
       setTasks(prev => prev.filter(t => t.id !== taskId))
+    })
+
+    socket.on('task:comment-added', ({ taskId, comment }) => {
+      const addComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).some(c => c.id === comment.id) ? t.comments : [...(t.comments ?? []), comment] }
+        : t
+      setTasks(prev => prev.map(addComment))
+      setSelectedTask(prev => prev ? addComment(prev) : prev)
+    })
+
+    socket.on('task:comment-updated', ({ taskId, comment }) => {
+      const patchComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).map(c => c.id === comment.id ? comment : c) }
+        : t
+      setTasks(prev => prev.map(patchComment))
+      setSelectedTask(prev => prev ? patchComment(prev) : prev)
+    })
+
+    socket.on('task:comment-deleted', ({ taskId, commentId }) => {
+      const removeComment = (t) => t.id === taskId
+        ? { ...t, comments: (t.comments ?? []).filter(c => c.id !== commentId) }
+        : t
+      setTasks(prev => prev.map(removeComment))
+      setSelectedTask(prev => prev ? removeComment(prev) : prev)
+    })
+
+    socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
+      if (removedProjectId !== projectId) return
+      socket.emit('project:leave', { projectId })
+      alert("Vous faites plus partie de ce projet")
+      navigate('/home')
     })
 
     return () => {
@@ -73,6 +106,10 @@ function KanbanPage() {
       socket.off('task:created')
       socket.off('task:updated')
       socket.off('task:deleted')
+      socket.off('task:comment-added')
+      socket.off('task:comment-updated')
+      socket.off('task:comment-deleted')
+      socket.off('project:member-removed')
     }
   }, [socket, projectId])
 
@@ -91,7 +128,11 @@ function KanbanPage() {
       const data = await getProjectById(projectId)
       setProject(data)
     } catch (error) {
-      console.error('Impossible de charger le projet', error)
+      if (error.status === 404) {
+        navigate('/home', { state: { message: "Ce projet n'existe plus" } })
+      } else {
+        console.error('Impossible de charger le projet', error)
+      }
     }
   }
 
@@ -106,8 +147,8 @@ function KanbanPage() {
   //}, [projectId])
 
 
-  // TEMPORAIRE 
-  console.log(selectedTask)
+  // TEMPORAIRE DEBUG
+  //console.log(selectedTask)
 
   // Fction helper 
   //const getNextPosition = (projId, column) =>
@@ -127,6 +168,7 @@ function KanbanPage() {
     const taskId = active.id
     const newColumn = over.id
     const task = tasks.find(t => t.id === taskId)
+    if (!task) return;
     if (task.status === newColumn) return // meme colonne, rien a faire
 
       // Calcule de la prochiane position loesqu'on bouge ~ jsp si elle sera utilse plus tard
@@ -146,6 +188,7 @@ function KanbanPage() {
       await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
     } catch (error) {
       console.error('Impossible de deplacer la tache', error)
+      await loadTasks() // Si erreur, on resynchronise direct, la carte ne se deplace plus visuellement
     }
   }
 
@@ -222,17 +265,13 @@ function KanbanPage() {
     }
   }
 
-  const handleAssignTask = async (taskId, userId) => {
-    // mAj opti (instantanee mais incomplete)
-    const updated = { ...selectedTask, assignedToId: userId }
-    setTasks(tasks.map(t => t.id === taskId ? updated : t))
-    setSelectedTask(updated) // raffraichit le panneau instante. Le nouveau commentaire apparait
-
+    const handleAssignTask = async (taskId, userId) => {
     try {
-      const saved = await assignTask(projectId, taskId, userId) // la tache complete
-      console.log(saved) // temporaire
-      setTasks(prev => prev.map(t => t.id === taskId ? saved : t)) // Pour que le comteur de commentaires (task.comments.lenght) s'incremente direct. prev lit toujours l'état le plus à jour.
-      setSelectedTask(saved)
+      await assignTask(projectId, taskId, userId) // la tache complete
+      const data = await getTasks([projectId]) // recup la tache avec get pour avoir le resultats sans refresh
+      setTasks(data)
+      const fresh = data.find(t => t.id === taskId)
+      if (fresh) setSelectedTask(fresh)
     } catch (error) {
       console.error('Impossible d\'assigner la tache', error)
     }
@@ -243,7 +282,7 @@ function KanbanPage() {
       const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
 
       // On l'ajoute a la tache ouverte
-      const updated = {...selectedTask, comments: [...selectedTask.comments, saved] } // on modifie que le commentaire, on laisse les autres inchange
+      const updated = {...selectedTask, comments: [...selectedTask.comments ?? [], saved] } // on modifie que le commentaire, on laisse les autres inchange
       setSelectedTask(updated)
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
     } catch (error) {
@@ -257,7 +296,7 @@ function KanbanPage() {
 
       const updated = {
         ...selectedTask,
-        comments: selectedTask.comments.filter(c => c.id !== commentId),
+        comments: (selectedTask.comments ?? []).filter(c => c.id !== commentId),
       }
       setSelectedTask(updated)
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))

@@ -1,18 +1,17 @@
-
-// invitation sil a un compte il recoit une notif d'invitation
-// quand il accepte tt le monde, recoit la notif
-
-// quand on ajoute un membre a l'orga tt le monde recoit
-// quand on supprime un membre a un projet tt le monde recoit
-// quand on ajoute qq1 a un projet tt le monde recoit
-
-
 import express from 'express';
 import prisma from '../../../prisma/prisma.js';
 import { authenticate } from '../../../shared/auth.middleware.js';
+import { emitToUsers } from '../../../shared/chatClient.js';
 import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
+
+const transporter = nodemailer.createTransport({
+  host: 'mailhog',   // ← le nom du service, PAS localhost (piège du db:5432)
+  port: 1025,        // ← le port SMTP interne de Mailhog
+  secure: false,     // ← pas de TLS, c'est un serveur de dev
+});
 
 
 // voir son profil
@@ -29,6 +28,7 @@ router.get('/profile', authenticate, async (req, res) => {
                 avatar: true,
                 statut: true,
                 langue: true,
+                twoFactorEnabled: true,
             },
         });
 
@@ -89,8 +89,21 @@ router.patch('/profile', authenticate, async (req, res) => {
                 avatar: true,
                 statut: true,
                 langue: true,
+                isOnline: true,
             },
         });
+
+        if (statut !== undefined) {
+            const watchers = await prisma.friend.findMany({
+                where: { friendId: req.user.userId },
+                select: { userId: true },
+            });
+            await emitToUsers(watchers.map(w => w.userId), 'user:status', {
+                userId: req.user.userId,
+                statut: user.statut,
+                isOnline: user.isOnline,
+            });
+        }
 
         return res.json({
             message: 'Profile updated',
@@ -227,12 +240,21 @@ router.delete('/profile', authenticate, async (req, res) => {
             }
 
             // si tte les orga ont encore au moins 1 admin, on peut supprimer
-            await prisma.user.delete({
+            await tx.user.delete({
                 where: {
                     id: req.user.userId,
                 },
             });
         })
+
+        if (user.email) {
+            await transporter.sendMail({
+              from: 'noreply@taskboard.com',
+              to: user.email,
+              subject: 'Suppression de votre compte TaskBoard',
+              text: `Bonjour ${user.pseudo}, votre compte et toutes vos données ont été définitivement supprimés. Nous sommes désolés de vous voir partir.`,
+            });
+        }
 
         return res.json({ message: 'Profile deleted', });
 
@@ -240,6 +262,54 @@ router.delete('/profile', authenticate, async (req, res) => {
         if (error.message === 'LAST_ADMIN') {
             return res.status(400).json({ error: 'An organisation must always have at least one Admin' });
         }
+        console.error(error);
+        return res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// export profile data (RGPD)
+router.get('/profile/export', authenticate, async (req, res) => {
+    try {
+        const data = await prisma.user.findUnique({
+            where: { id: req.user.userId },
+            include: {
+                members:               { include: { organisation: true } },
+                projectMembers:        { include: { project: true } },
+                createdTasks:          true,
+                assignedTasks:         true,
+                messages:              true,
+                comments:              true,
+                notificationsReceived: true,
+                notificationsSent:     true,
+                sentInvitations:       true,
+                receivedInvitations:   true,
+                conversationMembers:   true,
+                messageReads:          true,
+                friends:               true,
+                friendOf:              true,
+            },
+        });
+
+        if (!data)
+            return res.status(404).json({ error: 'User not found' });
+
+        delete data.passwordHash;
+        delete data.twoFactorSecret;
+
+        if (data.email) {
+            await transporter.sendMail({
+              from: 'noreply@taskboard.com',
+              to: data.email,
+              subject: 'Export de vos données TaskBoard',
+              text: `Bonjour ${data.pseudo}, vous avez demandé l'export de vos données personnelles. Vous le trouverez en pièce jointe de cette demande.`,
+            });
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', 'attachment; filename="taskboard-mes-donnees.json"');
+        return res.send(JSON.stringify(data, null, 2));
+
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Database error' });
     }

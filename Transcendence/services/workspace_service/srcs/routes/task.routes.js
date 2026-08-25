@@ -208,17 +208,7 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, lo
                 }
             });
 
-            // if (title)
-            //     task.title = title;
-
-            // if (description)
-            //     task.description = description;
-
-            // const allowedStatus = ['todo', 'doing', 'done'];
-
-            // if (status && allowedStatus.includes(status)){
-            //     task.status = status;
-            // }
+            req.app.get('io').to(`project:${req.project.id}`).emit('task:updated', task);
 
             return res.json({
                 message: 'Task updated',
@@ -308,7 +298,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                         projectId: req.project.id,
                         role: 'Manager',
                         userId: {
-                            not: req.user.id,
+                            not: req.user.userId,
                         },
                     },
                     select: {
@@ -316,24 +306,48 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
                     },
                 });
 
+                let notifications = [];
                 if (managers.length > 0) {
-                    await tx.notification.createMany({
+                    const created = await tx.notification.createManyAndReturn({
                         data: managers.map(manager => ({
                             type: 'DeplacementTache',
-                            content: `moved the task "${task.title}" from ${oldStatus} to ${status}`,
                             actorId: req.user.userId,
                             userId: manager.userId,
                             projectId: req.project.id,
                             taskId: task.id,
                         })),
+                        select: { id: true },
+                    });
+
+                    notifications = await tx.notification.findMany({
+                        where: { id: { in: created.map(n => n.id) } },
+                        include: {
+                            actor: { select: { id: true, pseudo: true, avatar: true } },
+                            task: { select: { id: true, title: true } },
+                            project: { select: { id: true, title: true } },
+                        },
                     });
                 }
-                return task;
+                return { task, notifications };
             });
+
+            await Promise.all(
+                updatedTask.notifications.map(notification =>
+                    emitUserNotification(notification.userId, {
+                        id: notification.id,
+                        type: notification.type,
+                        actor: notification.actor,
+                        task: notification.task,
+                        project: notification.project,
+                        createdAt: notification.createdAt.toISOString(),
+                        isRead: notification.isRead,
+                    })
+                )
+            );
 
             return res.json({
                 message: 'Task moved',
-                task: updatedTask,
+                task: updatedTask.task,
             });
         } catch (error) {
             console.error(error);
@@ -399,16 +413,37 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                 });
 
                 let notification = null;
-                if (userId !== null && userId !== undefined) {
+                if (userId !== null && userId !== undefined && userId !== req.user.userId) {
                     // cree une notification
                     notification = await tx.notification.create({
                         data: {
                             type: 'Assignment',
-                            content: `You have been assigned to the task "${task.title}"`,
+                            // content: `You have been assigned to the task "${task.title}"`,
                             actorId: req.user.userId,
                             userId,
                             projectId: req.project.id,
                             taskId: task.id,
+                        },
+                        include: {
+                            actor: {
+                                select: {
+                                    id: true,
+                                    pseudo: true,
+                                    avatar: true,
+                                },
+                            },
+                            task: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
+                            project: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
                         },
                     });
                 }
@@ -428,9 +463,11 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                 await emitUserNotification(notification.userId, {
                     id: notification.id,
                     type: notification.type,
-                    content: notification.content,
+                    actor: notification.actor,
+                    task: notification.task,
+                    project: notification.project,
                     createdAt: notification.createdAt.toISOString(),
-                    isRead: false,
+                    isRead: notification.isRead,
                 });
             }
 

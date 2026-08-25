@@ -8,6 +8,20 @@ import { notifyUser } from '../utils/notifications.js';
 
 const router = express.Router();
 
+async function broadcastToOrgaMembers(req, orgId, event, excludeUserId = null) {
+    const members = await prisma.member.findMany({
+        where: {
+            orgId,
+            ...(excludeUserId !== null && { userId: { not: excludeUserId } }),
+        },
+        select: { userId: true },
+    });
+    const io = req.app.get('io');
+    for (const member of members) {
+        io.to(`user:${member.userId}`).emit(event, { orgId });
+    }
+}
+
 // router.post('/organisation/inviter') = route pour inviter qq1
 // Avant d'exécuter la fonction, Express vérifie si l'utilisateur possède la permission inviter
 // async (req, res) => { -> cette fonction sera executer lorsque la requete est recue
@@ -63,15 +77,21 @@ router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership
                     },
                 });
 
-                // await notifyUser(
-                //     tx,
-                //     userId,
-                //     req.user.userId,
-                //     'InvitationSent',
-                //     `invited you to join the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io'),
-                // );
+                await notifyUser(
+                    tx,
+                    userId,
+                    req.user.userId,
+                    'InvitationSent',
+                    null,
+                    {
+                        organisationId: req.orgId,
+                        invitationId: invitation.id,
+                    },
+                );
             });
+
+            await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-added', req.user.userId);
+            req.app.get('io').to(`user:${userId}`).emit('organisation:invitation-added', { orgId: req.orgId });
 
             return res.json({
                 message: 'Invitation sent',
@@ -169,10 +189,16 @@ router.patch('/invitations/:id/accept', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationAccepted',
-                    `accepted your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
+                    null,
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    },
                 );
+
             });
+
+            await broadcastToOrgaMembers(req, req.invitation.orgId, 'organisation:member-added', req.user.userId);
 
             return res.json({ message: 'Invitation accepted' });
 
@@ -208,10 +234,15 @@ router.patch('/invitations/:id/decline', authenticate, loadInvitation,
                     req.invitation.inviterId,
                     req.user.userId,
                     'InvitationDeclined',
-                    `refused your invitation to join the organisation ${req.invitation.organisation.name}`,
-                    req.app.get('io'),
+                    null,
+                    {
+                        organisationId: req.invitation.orgId,
+                        invitationId: req.invitation.id,
+                    },
                 );
             });
+
+            await broadcastToOrgaMembers(req, req.invitation.orgId, 'organisation:invitation-removed');
 
             return res.json({ message: 'Invitation declined' });
 
@@ -239,15 +270,21 @@ router.delete('/organisations/:orgId/invitations/:id', authenticate, loadOrgMemb
                     },
                 });
 
-            //     await notifyUser(
-            //         tx,
-            //         req.invitation.invitedUserId,
-            //         req.user.userId,
-            //         'InvitationCancelled',
-            //         `cancelled your invitation to join the organisation ${req.invitation.organisation.name}`,
-            //         req.app.get('io'),
-            //     );
+                await notifyUser(
+                    tx,
+                    req.invitation.invitedUserId,
+                    req.user.userId,
+                    'InvitationCancelled',
+                    null,
+                    {
+                        organisationId: req.orgId,
+                        //invitationId: req.invitation.id,
+                    },
+                );
             });
+
+            await broadcastToOrgaMembers(req, req.orgId, 'organisation:invitation-removed', req.user.userId);
+            req.app.get('io').to(`user:${req.invitation.invitedUserId}`).emit('organisation:invitation-removed', { orgId: req.orgId });
 
             return res.json({ message: 'Welcome to the organisation' });
 

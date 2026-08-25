@@ -7,8 +7,13 @@ const AuthContext = createContext(null)
 // Si un user y est stocké, on le récupère directement
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => { {/* on passe une fonction d'initilisation que React execute QU'UNE seul fois au demarrage pour calculer la valeur initilale */}
-    const stored = localStorage.getItem('user')
-    return stored ? JSON.parse(stored) : null
+    try {
+      const stored = localStorage.getItem('user')
+      return stored ? JSON.parse(stored) : null
+    } catch {
+      localStorage.removeItem('user')
+      return null
+    }
   })
 
   function login(userData) {

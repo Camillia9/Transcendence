@@ -29,6 +29,11 @@ router.post('/projects/:projectId/tasks/:taskId/comments', authenticate, loadPro
                 }
             });
 
+            req.app.get('io').to(`project:${req.project.id}`).emit('task:comment-added', {
+                taskId: req.task.id,
+                comment,
+            });
+
             return res.status(201).json(comment);
 
         } catch(error) {
@@ -97,6 +102,11 @@ router.patch('/projects/:projectId/tasks/:taskId/comments/:commentId', authentic
                 }
             });
 
+            req.app.get('io').to(`project:${req.project.id}`).emit('task:comment-updated', {
+                taskId: req.task.id,
+                comment: updatedComment,
+            });
+
             return res.json({
                 message: 'Comment updated',
                 comment: updatedComment,
@@ -119,6 +129,11 @@ router.delete('/projects/:projectId/tasks/:taskId/comments/:commentId', authenti
                 where: {
                     id: req.comment.id,
                 },
+            });
+
+            req.app.get('io').to(`project:${req.project.id}`).emit('task:comment-deleted', {
+                taskId: req.task.id,
+                commentId: req.comment.id,
             });
 
             return res.json({ message: 'Comment deleted' });

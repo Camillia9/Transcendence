@@ -4,9 +4,12 @@ import OrgaCard from "../components/ui/OrgaCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation} from "../api/organisations";
+import { createOrganisation, getMyOrganisations, getOrganisationById, getMembers,updateOrganisation, updateMemberRole, deleteOrganisation, deleteMember, sendInvitation, deleteInvitation, searchUser, getMyInvitations, declineInvitation, acceptInvitation, leaveOrganisation} from "../api/organisations";
+import { useSocket, useWorkspaceSocket } from "../context/SocketContext";
+import { useAuth } from "../context/AuthContext";
 
 function Organisations() {
+  const { user } = useAuth()
 	// etat pour lire le tableau et pouvoir le modifier
 	const [organisations, setOrganisations] = useState([])
   const [invitations, setInvitations] = useState([])
@@ -144,6 +147,7 @@ function Organisations() {
         setOrganisations(organisations.map(org =>
           org.id === OrganisationToEdit.id ? { ...org, ...updated } : org // « pars de l'ancien orga complet, puis les écrase avec les champs revenus du back ».
         ))
+        handleCloseNewOrganisation()
       } catch (error) {
         setNewErrors({ global: "Impossible de modifier l'organisation" })
         return
@@ -220,7 +224,12 @@ function Organisations() {
 
       handleCloseInvite()
     } catch (error) {
-      setNewErrors({ global: "Impossible d'envoyer l'invitation"})
+      console.log('STATUS REÇU →', error.status)
+      if (error.status === 404) {
+        setNewErrors({ global: "Auccun utilisateur avec ce pseudo" })
+      } else {
+        setNewErrors({ global: "Impossible d'envoyer l'invitation"})
+      }
     }
   }
 
@@ -318,7 +327,65 @@ function Organisations() {
     loadInvitations()
   }, [])
 
-  console.log("test inv", invitations)
+  const handleLeaveOrga = async (orgId) => {
+    if (!window.confirm("Quitter cette organisation ?")) return
+    try {
+      await leaveOrganisation(orgId)
+      const data = await getMyOrganisations()
+      setOrganisations(data)
+    } catch (error) {
+      if (error.status === 400) {
+        window.alert("Vous êtes le dernier admin, vous ne pouvez pas quitter l'organisation.")
+      } else {
+        window.alert("Impossible de quitter l'organisation.")
+      }
+    }
+  }
+
+  const workspaceSocket = useWorkspaceSocket()
+  useEffect(() => {
+    if (!workspaceSocket) return
+    const handleMemberRemoved = ({ orgId, removedUserId }) => {
+      if (removedUserId === user?.id) {
+        setOrganisations(prev => prev.filter(org => org.id !== orgId))
+      } else {
+        loadOrganisations()
+      }
+    }
+    const handleMemberAdded = () => {
+      loadOrganisations()
+    }
+    const handleInvitationChanged = () => {
+      loadOrganisations()
+      loadInvitations()
+    }
+    workspaceSocket.on('organisation:member-removed', handleMemberRemoved)
+    workspaceSocket.on('organisation:member-added', handleMemberAdded)
+    workspaceSocket.on('organisation:invitation-added', handleInvitationChanged)
+    workspaceSocket.on('organisation:invitation-removed', handleInvitationChanged)
+    return () => {
+      workspaceSocket.off('organisation:member-removed', handleMemberRemoved)
+      workspaceSocket.off('organisation:member-added', handleMemberAdded)
+      workspaceSocket.off('organisation:invitation-added', handleInvitationChanged)
+      workspaceSocket.off('organisation:invitation-removed', handleInvitationChanged)
+    }
+  }, [workspaceSocket, user?.id])
+
+  const ORGA_NOTIF_TYPES = ['OrgaUpdated', 'OrgaDeleted', 'MemberLeftOrga', 'RoleChanged', 'RemovedFromOrga', 'MemberRemoved', 'InvitationAccepted', 'InvitationDeclined', 'InvitationSent', 'InvitationCancelled']
+  const INVITATION_NOTIF_TYPES = ['InvitationSent', 'InvitationCancelled']
+
+  const socket = useSocket()
+  useEffect(() => {
+    if (!socket) return
+    const handleNotification = (notif) => {
+      if (ORGA_NOTIF_TYPES.includes(notif.type)) loadOrganisations()
+      if (INVITATION_NOTIF_TYPES.includes(notif.type)) loadInvitations()
+    }
+    socket.on('notification:new', handleNotification)
+    return () => socket.off('notification:new', handleNotification)
+  }, [socket])
+
+  //console.log("test inv", invitations)
 
   return (
     <div className="flex flex-col gap-6">
@@ -364,6 +431,7 @@ function Organisations() {
           onDeleteMember={handleDeleteMember}
           onInvite={handleInvite}
           onDeleteInvitation={handleDeleteInvitation}
+          onLeave={handleLeaveOrga}
           key={organisation.id}
           />
         ))}

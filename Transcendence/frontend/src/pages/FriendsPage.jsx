@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { IconSearch } from '@tabler/icons-react'
 import { mockFriends } from '../data/mockFriends'
 import { getFriends, searchUsers, addFriend, removeFriend } from '../api/friends'
+import { useSocket } from '../context/SocketContext'
 import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import formatStatus from '../utils/status'
 
 export default function FriendsPage() {
 	const [query, setQuery] = useState('')
@@ -13,11 +15,23 @@ export default function FriendsPage() {
 	const [friends, setFriends] = useState([]) // demarre vide
 	const [results, setResults] = useState([]) // resultats stockes
 	const [selectedUser, setSelectedUser] = useState(null) // Un pour savoir si modal ouverte, un pour retenir quel utilisateur on a cliqué
+	const socket = useSocket()
 
 	// charge mes amis au montage
 	useEffect(() => {
 		loadFriends()
 	}, [])
+
+	useEffect(() => {
+		if (!socket) return
+		const handleStatus = ({ userId, statut, isOnline }) => {
+			setFriends(prev => prev.map(item =>
+				item.friend.id === userId ? { ...item, friend: { ...item.friend, statut, isOnline } } : item
+			))
+		}
+		socket.on('user:status', handleStatus)
+		return () => socket.off('user:status', handleStatus)
+	}, [socket])
 
 	async function loadFriends() {
 		try {
@@ -81,7 +95,7 @@ export default function FriendsPage() {
 	}
 
 	return (
-		<div className="relative h-full">
+		<div className="relative h-full isolate">
 			{/*En-tete : titre + recherche */}
 			<div className="flex items-center justify-between mb-6 relative z-50">
 				<h1 className="text-2xl font-semibold text-gray-800">Amis</h1>
@@ -166,7 +180,7 @@ function FriendModal({ user, friends, onClose, onAdd, onRemove }) {
           <Avatar src={user.avatar} username={user.pseudo} size="lg" />
           <div className="text-center">
             <p className="text-lg font-medium text-gray-800">{user.pseudo}</p>
-            <p className="text-sm text-gray-400">{user.statut}</p>
+            <p className="text-sm text-gray-400">{formatStatus(user.statut)}</p>
           </div>
 
           {isFriend ? (

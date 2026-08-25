@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { NOTIF_ICONS } from "../data/notifIcons"
-import { mockConversations } from "../data/mockConversations" 
 import { timeAgo } from '../utils/timeAgo'
 import Avatar from '../components/ui/Avatar'
 import Badge from '../components/ui/Badge'
@@ -12,6 +11,7 @@ import Footer from '../components/ui/Footer'
 import DesignSystem from '../pages/DesignSystem'
 import { useSocket } from '../context/SocketContext'
 import { getNotifs, markNotifRead, markAllNotifsRead } from '../api/notifications'
+import { getUnreadCount } from '../api/conversations'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 function MainLayout() {
@@ -24,23 +24,42 @@ function MainLayout() {
   const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
   const unreadCount = notifications.filter(n => !n.isRead).length
-  const unreadMessages = mockConversations.reduce((total, conv) => total + conv.unread, 0)
-  // reduce parcourt les conversations en accumulant un total
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const socket = useSocket()
 
+  // 2. En continu : les nouvelles poussées par le socket
   useEffect(() => {
     if (!socket) return
     socket.on('notification:new', (notif) => {
       setNotifications(prev => [notif, ...prev])
     })
-    return () => socket.off('notification:new')
+    socket.on('messages:unread-count', ({ count }) => {
+      setUnreadMessages(count)
+    })
+    return () => {
+      socket.off('notification:new')
+      socket.off('messages:unread-count')
+    }
   }, [socket])
+
+  // 1. Au montage : la photo initiale (GET)
+  useEffect(() => {
+    async function loadUnreadCount() {
+      try {
+        const { count } = await getUnreadCount()
+        setUnreadMessages(count)
+      } catch (error) {
+        console.error('Impossible de charger les messages non lus', error)
+      }
+    }
+    loadUnreadCount()
+  }, [])
 
   useEffect(() => {
     async function loadNotifications() {
       try {
         const data = await getNotifs()
-        setNotifications(data)
+        setNotifications(data ?? [])
       } catch (error) {
         console.error('Impossible de charger les notifications', error)
       }
@@ -74,6 +93,91 @@ function MainLayout() {
       document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [profileMenuOpen, notifOpen])
+
+  // Afficher les notifs
+  function formatNotification(notif) {
+    // DEBUG :
+    //console.log('NOTIF →', notif.type, '| id:', notif.id, '| créée:', notif.createdAt)
+    //console.log('TYPE REÇU →', JSON.stringify(notif.type), '| longueur:', notif.type?.length)
+    //console.log ('NOTIF : ')
+    //console.log(notif)
+    switch (notif.type) {
+      case 'Assignment':
+        return notif.task?.title
+          ? `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task.title} »`
+          : `${notif.actor?.pseudo} vous a assigné une tâche`
+      case 'InvitationSent':
+        return `${notif.actor?.pseudo} vous a invité à rejoindre une organisation`
+      case 'InvitationAccepted':
+        return `${notif.actor?.pseudo} a accepté votre invitation`
+      case 'InvitationDeclined':
+        return `${notif.actor?.pseudo} a refusé votre invitation`
+      case 'ProjectDeleted':
+        return `${notif.actor?.pseudo} a supprimé un projet`
+      case 'RemovedFromOrga':
+        return `${notif.actor?.pseudo} vous a retiré de l'organisation`
+      case 'RemovedFromProject':
+        return notif.project?.title
+          ? `${notif.actor?.pseudo} vous a retiré du projet « ${notif.project.title} »`
+          : `${notif.actor?.pseudo} vous a retiré d'un projet`
+      case 'OrgaUpdated':
+        return `${notif.actor?.pseudo} a modifié une organisation`
+      case 'MemberRemoved':
+        return `${notif.actor?.pseudo} a retiré un membre de l'organisation`
+      case 'ProjectUpdated':
+        return notif.project?.title
+          ? `${notif.actor?.pseudo} a modifié le projet « ${notif.project.title} »`
+          : `${notif.actor?.pseudo} a modifié un projet`
+      case 'OrgaDeleted':
+        return `${notif.actor?.pseudo} a supprimé une organisation`
+      case 'RoleChanged':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a modifié votre rôle dans « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a modifié votre rôle`
+      case 'InvitationCancelled':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a annulé votre invitation à « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a annulé votre invitation`
+      case 'DeplacementTache':
+        return notif.task?.title
+          ? `${notif.actor?.pseudo} a déplacé la tâche « ${notif.task.title} »`
+          : `${notif.actor?.pseudo} a déplacé une tâche`
+      case 'MemberLeftOrga':
+        return notif.organisation?.name
+          ? `${notif.actor?.pseudo} a quitté l'organisation « ${notif.organisation.name} »`
+          : `${notif.actor?.pseudo} a quitté une organisation`
+      default:
+        return 'Nouvelle notification'
+    }
+  }
+
+  function getNotificationLink(notif) {
+    switch (notif.type) {
+      case 'Assignment':
+      case 'DeplacementTache': {
+        const projectId = notif.projectId ?? notif.project?.id
+        return projectId ? `/projet/${projectId}` : null // vers le Kanban du projet concerné si existe
+      }
+
+      case 'ProjectDeleted':
+      case 'RemovedFromProject':
+        return '/home'
+
+      case 'RemovedFromOrga':
+      case 'RoleChanged':
+      case 'InvitationSent':
+      case 'InvitationAccepted':
+      case 'InvitationDeclined':
+      case 'InvitationCancelled':
+      case 'MemberLeftOrga':
+      case 'MemberRemoved':
+      case 'OrgaUpdated':
+        return '/Organisation'
+
+      default:
+        return null   // pas de destination connue → on ne navigue pas
+    }
+  }
   
   return (
     <div className="h-screen bg-gray-50 text-gray-800 flex flex-col overflow-hidden">
@@ -127,7 +231,9 @@ function MainLayout() {
                         key={notif.id}
                         onClick={() => {
                           markAsRead(notif.id)
-                          if (notif.link) navigate(notif.link)
+                          const link = getNotificationLink(notif)
+                          console.log('CLIC →', notif.type, '| lien:', link)
+                          if (link) navigate(link)
                           setNotifOpen(false)
                         }}
                         className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
@@ -137,7 +243,7 @@ function MainLayout() {
                           <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
                             <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                              {notif.content}
+                              {formatNotification(notif)}
                             </span>
                             <span className='text-xs text-gray-400 mt-0.5'>
                               {timeAgo(notif.createdAt)}
@@ -300,14 +406,14 @@ function MainLayout() {
                     className='flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
                   >
                     <span className="w-3 h-3 rounded-full bg-green-400 shrink-0" />
-                    En ligne
+                    {sidebarOpen && 'En ligne'}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setStatus('offline'); setStatusMenuOpen(false) }}
                     className='flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
                   >
                     <span className="w-3 h-3 rounded-full bg-red-400 shrink-0" />
-                    Hors ligne
+                    {sidebarOpen && 'Hors'}
                   </button>
                 </div>
               )}

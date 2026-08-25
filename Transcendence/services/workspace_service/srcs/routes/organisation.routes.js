@@ -39,7 +39,7 @@ router.post('/organisations', authenticate,
             console.error(error);
             //protection si 2 utilisateurs cree au meme moment et un passe le orgaAlreadyExist
             if (error.code == 'P2002')
-                return res.status(400).json({ error: 'Organisation name required' });
+                return res.status(409).json({ error: 'Organisation name already taken' });
             return res.status(500).json({ error: 'Database error' });
         }
     }
@@ -158,10 +158,25 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 
             // where pour dire de trouver l'organisation dont l'id correspond a req.orgId
             // data pour dire quel colonne a modifier
-            const org = await prisma.organisation.update({
-                where: { id: req.orgId },
-                data: { name: orgName },
-            })
+            const org = await prisma.$transaction(async (tx) => {
+                const updatedOrg = await tx.organisation.update({
+                    where: {
+                        id: req.orgId
+                    },
+                    data: {
+                        name: orgName
+                    },
+                });
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'OrgaUpdated',
+                );
+
+                return updatedOrg;
+            });
 
             return res.json({
                 message: 'Organisation updated',
@@ -181,8 +196,35 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
     async (req, res) => {
         try {
-            // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
-            await prisma.organisation.delete({ where: { id: req.orgId }});
+            const projectIds = await prisma.$transaction(async (tx) => {
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'OrgaDeleted',
+                );
+
+                const projects = await tx.project.findMany({
+                    where: { orgId: req.orgId },
+                    select: { id: true },
+                });
+
+                // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
+                await tx.organisation.delete({
+                    where: {
+                        id: req.orgId
+                    }
+                });
+
+                return projects.map(p => p.id);
+            });
+
+            const io = req.app.get('io');
+            if (io) {
+                for (const projectId of projectIds) {
+                    io.to(`project:${projectId}`).emit('project:deleted', { projectId });
+                }
+            }
 
             return res.json({ message: 'Organisation deleted' });
 
@@ -246,9 +288,9 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
 
             const updated = await prisma.$transaction(async (tx) => {
                 // verifier que la cible est bien dans l'orga
-                const membre = await prisma.member.findUnique({
-                    where: { userId_orgId:
-                        {
+                const membre = await tx.member.findUnique({
+                    where: { 
+                        userId_orgId: {
                             userId: cible,
                             orgId: req.orgId
                         }
@@ -287,8 +329,10 @@ router.patch('/organisations/:orgId/membres/:userId', authenticate, loadOrgMembe
                     cible,
                     req.user.userId,
                     'RoleChanged',
-                    `${req.user.pseudo} changed your role to ${role}`,
-                    req.app.get('io')
+                    null,
+                    {
+                        organisationId: req.orgId,
+                    }
                 );
                 return updated;
             });
@@ -321,6 +365,7 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
             if (!Number.isInteger(cible) || cible <= 0)
                 return res.status(400).json({ error: 'Invalid user id' });
 
+            let remainingMembers = [];
             await prisma.$transaction(async (tx) => {
                 const membre = await tx.member.findUnique({
                     where: { userId_orgId: {
@@ -346,23 +391,16 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                         throw new Error('LAST_ADMIN');
                 }
 
-                // await notifyUser(
-                //     tx,
-                //     cible,
-                //     req.user.userId,
-                //     'RemovedFromOrga',
-                //     `You were removed from the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io')
-                // );
-
-                // await notifyOrgaMembers(
-                //     tx,
-                //     req.orgId,
-                //     req.user.userId,
-                //     'MemberRemoved',
-                //     `${req.user.pseudo} removed a member from the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io')
-                // );
+                await notifyUser(
+                    tx,
+                    cible,
+                    req.user.userId,
+                    'RemovedFromOrga',
+                    null,
+                    {
+                        organisationId: req.orgId,
+                    }
+                );
 
                 await tx.member.delete({
                     where: {
@@ -372,7 +410,26 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                         }
                     },
                 });
+
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'MemberRemoved',
+                );
+
+                remainingMembers = await tx.member.findMany({
+                    where: { orgId: req.orgId },
+                    select: { userId: true },
+                });
             })
+
+            const io = req.app.get('io');
+            const payload = { orgId: req.orgId, removedUserId: cible };
+            io.to(`user:${cible}`).emit('organisation:member-removed', payload);
+            for (const m of remainingMembers) {
+                io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
+            }
 
             return res.json({ message: 'Member deleted' });
 
@@ -397,6 +454,7 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
         try {
             const membre = req.orgMembership;
 
+            let remainingMembers = [];
             // verifie qu'il y a tjs au moins 1 admin dans l'orga
             await prisma.$transaction(async (tx) => {
                 if (membre.role === 'Admin') {
@@ -411,14 +469,12 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                         throw new Error('LAST_ADMIN');
                 }
 
-                // await notifyOrgaMembers(
-                //     tx,
-                //     req.orgId,
-                //     req.user.userId,
-                //     'MemberLeftOrga',
-                //     `${req.user.pseudo} left the organisation ${req.orgMembership.organisation.name}`,
-                //     req.app.get('io')
-                // );
+                await notifyOrgaMembers(
+                    tx,
+                    req.orgId,
+                    req.user.userId,
+                    'MemberLeftOrga',
+                );
 
                 await tx.member.delete({
                     where: {
@@ -428,7 +484,19 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
                         }
                     }
                 });
+
+                remainingMembers = await tx.member.findMany({
+                    where: { orgId: req.orgId },
+                    select: { userId: true },
+                });
             });
+
+            const io = req.app.get('io');
+            const payload = { orgId: req.orgId, removedUserId: req.user.userId };
+            io.to(`user:${req.user.userId}`).emit('organisation:member-removed', payload);
+            for (const m of remainingMembers) {
+                io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
+            }
 
             return res.json({ message: 'You left the organisation' });
 

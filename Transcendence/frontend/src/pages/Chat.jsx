@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
-import { getConversations, getMessages, createConversation } from '../api/conversations'
+import { getConversations, getMessages, createConversation, markConversationRead } from '../api/conversations'
 import { getUsers } from '../api/users'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
@@ -74,6 +74,13 @@ function Chat() {
   
     socket.on('message:new', (msg) => {
       receiveMessage(msg.conversationId, toUiMsg(msg))
+      if (msg.conversationId === activeId && msg.userId !== user?.id) {
+        markConversationRead(msg.conversationId).catch(() => {})
+      } else if (msg.conversationId !== activeId && msg.userId !== user?.id) {
+        setConversations(prev => prev.map(c =>
+          c.id === msg.conversationId ? { ...c, unreadCount: (c.unreadCount ?? 0) + 1 } : c
+        ))
+      }
     })
   
     socket.on('conversation:new', (convo) => {
@@ -94,7 +101,7 @@ function Chat() {
       socket.off('message:new')
       socket.off('conversation:new')
     }
-  }, [socket, user])
+  }, [socket, user, activeId])
 
   useEffect(() => {
     async function loadConversations() {
@@ -125,6 +132,10 @@ function Chat() {
         const data = await getMessages(activeId)
         setConversations(prev => prev.map(c =>
           c.id === activeId ? { ...c, messages: data.map(toUiMsg) } : c
+        ))
+        await markConversationRead(activeId)
+        setConversations(prev => prev.map(c =>
+          c.id === activeId ? { ...c, unreadCount: 0 } : c
         ))
       } catch (e) {
         console.error('Impossible de charger les messages', e)
@@ -336,9 +347,16 @@ function Chat() {
                       <p className="text-sm font-medium text-gray-800 truncate">{conv.name}</p>
                     </div>
                     {/* L'heure du dernier message (si la conv a au moins un message) */}
-                    {lastMessage && (
-                      <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
-                    )}
+                    <div className='flex items-center gap-1.5 shrink-0'>
+                      {lastMessage && (
+                        <span className="text-xs text-gray-400 shrink-0">{lastMessage.time}</span>
+                      )}
+                      {conv.unreadCount > 0 && (
+                        <span className="min-w-5 h-5 flex items-center justify-center bg-primary-600 text-white text-[10px] font-semibold rounded-full px-1">
+                          {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Ligne du bas : aperçu du dernier message, ou "Aucun message" si vide */}

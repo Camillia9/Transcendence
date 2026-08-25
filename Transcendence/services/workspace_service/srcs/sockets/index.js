@@ -6,6 +6,7 @@ export function initSockets(io) {
 
 	io.on('connection', (socket) => {
 		console.log(`Workspace socket connected : user ${socket.user.userId}`)
+		socket.join(`user:${socket.user.userId}`)
 		registerKanbanHandlers(io, socket)
 	})
 }

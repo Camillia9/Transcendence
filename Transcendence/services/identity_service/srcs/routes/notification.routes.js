@@ -18,6 +18,18 @@ router.get('/notifications', authenticate, async (req, res) => {
                         avatar: true,
                     },
                 },
+                task: {
+                    select: {
+                        id: true,
+                        title: true,
+                    },
+                },
+                project: {
+                    select: {
+                        id: true,
+                        title: true,
+                    },
+                },
             },
         });
 

@@ -4,8 +4,12 @@ import Avatar from '../components/ui/Avatar'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+
 import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
 import { useNavigate } from 'react-router-dom'
+import { setup2FA, verify2FA, disable2FA } from '../api/auth'
+import formatStatus, { STATUS_VALUES } from '../utils/status'
+import { BASE_URL } from '../api/client'
 
 function Profil() {
   const { user, login, logout } = useAuth()
@@ -31,7 +35,14 @@ function Profil() {
   // Champs RGPD: Suppression profil 
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState('') // save l'erreur si le mdp pour confirmer le mdp du compte a sa suppresion est pas ok
-  const [confirmDelete, setConfirmDelete] = useState(false) 
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // Etas pour gerer le 2FA
+  const [qrCode, setQrCode] = useState(null)      // le QR code reçu (null tant qu'on n'a pas cliqué Activer)
+  const [code, setCode] = useState('')            // le code à 6 chiffres saisi
+  const [twoFAError, setTwoFAError] = useState('') // erreur propre à la 2FA
+  const [showDisable2FA, setShowDisable2FA] = useState(false)  // révèle la zone de confirmation
+  const [disablePassword, setDisablePassword] = useState('')   // le mot de passe saisi
 
   async function handleSave () {
     try {
@@ -105,6 +116,26 @@ function Profil() {
     }
   }
 
+  // Export des donnes (RGPD)
+  const handleExportData = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/profile/export`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      if (!res.ok) throw new Error('Export failed');
+
+      const blob = await res.blob() // le ficher pas en JSON
+      const url = URL.createObjectURL(blob) // URL temp vers le fichier
+      const a = document.createElement('a') // lien invisible
+      a.href = url
+      a.download = 'taskboard-mes-donnees.json' // le nom du ficher telecharge
+      a.click() // on "clique" dessus par code
+      URL.revokeObjectURL(url) // on nettoie l'url temporaire
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   function cancelDelete() {
     setConfirmDelete(false)
     setDeletePassword('')
@@ -121,17 +152,31 @@ function Profil() {
       return
     }
 
-    if (file.size > 1 * 1024 * 1024) { // file.size est un nombre en octets. Pour poser une limite à 1 Mo, tu dois exprimer 1 Mo en octets : 1 × 1024 Ko × 1024 octets = ~1 097 152
-      setErrorAvatar('Image trop lourde (max 1 Mo)')
-      return
-    }
-
     const reader = new FileReader() // Explication dans xplain
 
     // Bloc executee QUE QUAND la lecture est fini. C'est une promesse pour plus tard, pas une action immediate. Elle range juste une fonction dans un tirroir "unload"
     reader.onload = () => {
-      console.log('onload OK', reader.result.slice(0, 30))
-      setAvatar(reader.result) // reader.result contient la chaine en base 64 complete
+      ///*Debug*/ console.log('onload OK', reader.result.slice(0, 30))
+      const img = new Image()
+      img.onload = () => {
+        // Calcule les nouvelles dimensions (max 200px), en gardant les proportions
+        const maxSize = 200
+        let { width, height } = img
+        if (width > height) {
+          if (width > maxSize) { height = height * (maxSize / width); width = maxSize }
+        } else {
+          if (height > maxSize) { width = width * (maxSize / height); height = maxSize }
+        }
+
+        // Redessine l'image réduite dans un canvas
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+
+        setAvatar(canvas.toDataURL('image/jpeg', 0.8)) // Exporte en JPEG compressé (0.8 = qualité). C'est CETTE version qu'on stocke
+      }
+      img.src = reader.result // On charge l'image a partie du base64 lu
     }
     reader.readAsDataURL(file) // lance la lecture. Elle prend quelques ms. et ensuite le navigateur va regarder dans le tirroir onload et declanchera la fonction
   }
@@ -140,11 +185,49 @@ function Profil() {
     setAvatar('')
   }
 
+  // Recuperer le QrCode (2FA)
+  async function handleSetup2FA() {
+    setTwoFAError('')
+    try {
+      const data = await setup2FA()
+      setQrCode(data.qrCode) // le back renvoie qrCode
+    } catch (error) {
+      setTwoFAError('Impossible de demarrer la configuration')
+    }
+  }
+
+  // saisie du code et confirmation
+  async function handleVerify2FA() {
+    setTwoFAError('')
+    try {
+      await verify2FA(code)
+      setQrCode(null) // quitte le mode config
+      setCode('')
+      await loadProfile() // recharge le profil : twoFactorEnabled devient true
+    } catch (error) {
+      setTwoFAError('Code invalide') // le back renvoie 'Invalid mode'
+    }
+  }
+
+  // Suppression de la 2fa 
+  async function handleDisable2FA() {
+    setTwoFAError('')
+    try {
+      await disable2FA(disablePassword)
+      setShowDisable2FA(false)
+      setDisablePassword('')
+      await loadProfile()   // refresh : twoFactorEnabled repasse à false
+    } catch (error) {
+      setTwoFAError(error.message)   // "Incorrect password", "2FA is not enabled"...
+    }
+  }
+  
+
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
 
   // Debug 
-  //console.log('avatar dans le render', avatar)
+  //console.log(profile)
 
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
@@ -208,9 +291,9 @@ function Profil() {
               onChange={(e) => setStatut(e.target.value)} // e.target.value contient la value de l'option selectionne
               className='text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1'
             >
-              <option value="Available">Disponible</option>
-              <option value="Busy">Occupe</option>
-              <option value="Away">Absent</option>
+              {STATUS_VALUES.map(value => (
+                <option key={value} value={value}>{formatStatus(value)}</option>
+              ))}
             </select>
         </div>
 
@@ -271,6 +354,74 @@ function Profil() {
           {passwordSuccess && <p className="text-sm text-green-500">{passwordSuccess}</p>}
       </Card>
 
+      <Card className='flex flex-col gap-3'>
+        <h2 className="text-sm font-medium text-gray-700">Double authentification (2FA)</h2>
+
+        {profile.twoFactorEnabled ? (
+          //Etat deja active
+          <div className='flex flex-col gap-2'>
+            <p className="text-sm text-green-600">La 2FA est activée sur ton compte.</p>
+            {!showDisable2FA ? (
+              <Button variant='outline' onClick={() => setShowDisable2FA(true)} className='self-start'>
+                Desactiver la 2FA
+              </Button>
+            ) : (
+              <div className='flex flex-col gap-2'>
+                <p className='text-sm text-gray-500'>Entre ton mot de passe pour la desactiver.</p>
+                <Input
+                  type="password"
+                  value={disablePassword}
+                  onChange={(e) => setDisablePassword(e.target.value)}
+                  placeholder="Mot de passe"
+                  className="w-48"
+                />
+                {twoFAError && <p className='text-sm text-red-400'>{twoFAError}</p>}
+                <div className='flex gap-2'>
+                  <Button onClick={() => { setShowDisable2FA(false); setDisablePassword(''); setTwoFAError('')}}>
+                    Annuler
+                  </Button>
+                  <Button variant="danger" onClick={handleDisable2FA}>Confirmer</Button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        ) : qrCode ? (
+          //Etat configuration en cors (QR affiche)
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-gray-500">Scanne ce QR code avec ton application d'authentification, puis entre le code généré.</p>
+            <img src={qrCode} alt="QR code 2FA" className="w-40 h-40" />
+            <Input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Code a 6 chiffres"
+              className="w-40 text-center"
+            />
+            {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
+            <Button onClick={handleVerify2FA}>Confirmer</Button>
+          </div>
+        ) : (
+          //Etat : Desactiver (bouton pour l'activer)
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-gray-500">Ajoute une couche de sécurité à ton compte.</p>
+            {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
+            <Button onClick={handleSetup2FA} className="self-start">Activer la 2FA</Button>
+          </div>
+        )}
+      </Card>
+
+      {/* Export des données (RGPD) */}
+      <Card className='flex flex-col gap-4'>
+        <h2 className='text-sm font-medium text-gray-800'>Mes données</h2>
+        <p className='text-sm text-gray-500'>
+          Télécharge une copie de toutes tes données personnelles au format JSON.
+        </p>
+        <Button onClick={handleExportData}>
+          Télécharger mes données
+        </Button>
+      </Card>
+
       {/*Suppression du compte (RGPD)*/}
       <Card className='flex flex-col gap-4'>
         <h2 className='text-sm font-medium text-red-800'>Suppression du compte</h2>
@@ -281,7 +432,7 @@ function Profil() {
           </Button>
         ) : (
           //2nd temps: Champs mdp releves 
-          <div className='flec flex-col gap-3'>
+          <div className='flex flex-col gap-3'>
             <p className='text-sm text-gray-500'>
               Cette action est irreversible.</p>
             <p className='text-sm text-gray-500'>
