@@ -94,7 +94,7 @@ function StatusPage() {
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* En-tête simple avec retour à l'accueil */}
       <header className="bg-white border-b border-gray-100 px-6 py-4">
-        <Link to="/">
+        <Link to="/home">
           <Logo />
         </Link>
       </header>
