@@ -172,12 +172,41 @@ services:
       && npx prisma db seed"
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      - FORCE_SEED=${FORCE_SEED:-0}
+    volumes:
+      - ./services/prisma:/app/prisma:z
+      - ./services/prisma.config.ts:/app/prisma.config.ts:z
     depends_on:
       db:
         condition: service_healthy
     networks:
       - backend-network
     restart: "no"
+
+  # Backups Postgres automatiques (pg_dump + rotation)
+  backup:
+    image: docker.io/library/postgres:16-alpine
+    container_name: transcendence_backup
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend-network
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/scripts/backup.sh:ro
+      - ./scripts/backup-loop.sh:/scripts/backup-loop.sh:ro
+    environment:
+      - PGHOST=db
+      - PGPORT=5432
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - PGDATABASE=${POSTGRES_DB}
+      - BACKUP_DIR=/backups
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS}
+      - BACKUP_INTERVAL_SECONDS=${BACKUP_INTERVAL_SECONDS}
+    entrypoint: ["/bin/sh", "/scripts/backup-loop.sh"]
+    restart: always
 
 networks:
   frontend-network:

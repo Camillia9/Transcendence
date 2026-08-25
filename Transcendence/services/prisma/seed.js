@@ -45,6 +45,11 @@ const TypeConversation = {
 };
 
 async function main() {
+  const existingUsers = await prisma.user.count();
+  if (existingUsers > 0 && process.env.FORCE_SEED !== "1") {
+    console.log(`Seed ignoré: ${existingUsers} utilisateur(s) déjà en base (FORCE_SEED=1 pour écraser).`);
+    return;
+  }
 
   // Nettoyage base
   await prisma.comment.deleteMany();

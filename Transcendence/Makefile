@@ -1,4 +1,5 @@
 COMPOSE_FILE := ./docker-compose.yml
+BACKUP_DIR := ./backups
 
 COMPOSE := $(shell \
     if docker compose version >/dev/null 2>&1; then \
@@ -41,4 +42,25 @@ re: down up
 
 rebuild: fclean up
 
-.PHONY: all up down fclean stop start ps logs re rebuild
+# --- Backups / disaster recovery ---
+# Dump immédiat (nécessite le service backup ou db up)
+backup:
+	@mkdir -p $(BACKUP_DIR)
+	@$(COMPOSE_CMD) up -d db backup
+	@$(COMPOSE_CMD) exec -T backup /bin/sh /scripts/backup.sh
+
+# Liste les dumps locaux
+backups:
+	@ls -lah $(BACKUP_DIR)/transcendence_*.sql.gz 2>/dev/null || echo "Aucun dump dans $(BACKUP_DIR)"
+
+# Restauration : make restore FILE=backups/transcendence_YYYYMMDD_HHMMSS.sql.gz
+restore:
+	@test -n "$(FILE)" || (echo "Usage: make restore FILE=backups/transcendence_....sql.gz"; exit 1)
+	@chmod +x ./scripts/restore.sh
+	./scripts/restore.sh "$(FILE)"
+
+# Réinjecte les comptes démo (alice/bob/charlie) — ÉCRASE les données
+seed:
+	FORCE_SEED=1 $(COMPOSE_CMD) run --rm -e FORCE_SEED=1 migrate
+
+.PHONY: all up down fclean stop start ps logs re rebuild backup backups restore seed
