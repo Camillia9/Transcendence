@@ -44,7 +44,7 @@ function OAuthSuccess() {
             console.error('Erreur OAuth:', error)
             navigate('/login', { replace: true })
         }
-    }, [searchParams, navigate, login])
+    }, [])
 
     // On attend que AuthContext soit réellement mis à jour
     // useEffect(() => {
@@ -53,7 +53,7 @@ function OAuthSuccess() {
     //     }
     // }, [user, navigate])
 
-    return <p>Connexion avec GitHub...</p>
+    return <p>Connexion en cours...</p>
 }
 
 export default OAuthSuccess

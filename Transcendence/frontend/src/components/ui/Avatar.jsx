@@ -17,7 +17,7 @@ function Avatar({ src, username, size = "md", className = "" }) {
   return (
     <div className={twMerge(base, sizes[size], className)}>
       {src
-        ? <img src={src} alt={username} className="w-full h-full object-cover" />
+        ? <img src={src} referrerPolicy="no-referrer" alt={username} className="w-full h-full object-cover" />
         : <span>{initials}</span>
       }
     </div>
