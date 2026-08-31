@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { PRIORITIES } from "../data/priorities";
 import { useParams, useNavigate } from "react-router-dom";
@@ -44,6 +44,11 @@ function KanbanPage() {
 
   const [showMembers, setShowMembers] = useState(false) // modal ouverte ?
   const [availableMembers, setAvailableMembers] = useState([]) // gens de l'orga ajoutable
+
+  const projectRef = useRef(null)
+  useEffect(() => {
+    projectRef.current = project
+  }, [project])
 
   useEffect(() => {
     if (!socket || !projectId) return
@@ -100,6 +105,19 @@ function KanbanPage() {
       navigate('/home')
     })
 
+    socket.on('project:deleted', ({ projectId: deletedProjectId }) => {
+      if (deletedProjectId !== projectId) return
+      alert("Ce projet n'existe plus, l'organisation a été supprimée")
+      navigate('/home')
+    })
+
+    socket.on('organisation:member-removed', ({ orgId, removedUserId }) => {
+      if (removedUserId !== user?.id) return
+      if (projectRef.current?.orgId !== orgId) return
+      alert("Vous avez été retiré de cette organisation")
+      navigate('/home')
+    })
+
     return () => {
       socket.emit('project:leave', { projectId })
       socket.off('task:moved')
@@ -110,6 +128,8 @@ function KanbanPage() {
       socket.off('task:comment-updated')
       socket.off('task:comment-deleted')
       socket.off('project:member-removed')
+      socket.off('project:deleted')
+      socket.off('organisation:member-removed')
     }
   }, [socket, projectId])
 
