@@ -55,7 +55,7 @@ function KanbanPage() {
     socket.emit('project:join', { projectId })
 
     socket.on('task:moved', ({ taskId, toColumn }) => {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: toColumn } : t))
+      loadTasks()
     })
 
     socket.on('task:created', (task) => {
