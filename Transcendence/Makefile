@@ -2,12 +2,12 @@ COMPOSE_FILE := ./docker-compose.yml
 BACKUP_DIR := ./backups
 
 COMPOSE := $(shell \
-    if docker compose version >/dev/null 2>&1; then \
-        echo "docker compose"; \
+    if podman compose version >/dev/null 2>&1; then \
+        echo "podman compose"; \
     elif command -v docker-compose >/dev/null 2>&1; then \
         echo "docker-compose"; \
-    elif podman compose version >/dev/null 2>&1; then \
-        echo "podman compose"; \
+    elif docker compose version >/dev/null 2>&1; then \
+        echo "docker compose"; \
     else \
         exit 1; \
     fi)
@@ -20,26 +20,30 @@ up:
 	$(COMPOSE_CMD) up -d --build
 
 down:
-	$(COMPOSE_CMD) down
+	@$(COMPOSE_CMD) down
 
 cleanbackups:
 	rm -rf ./backups/transcendence_*.sql.gz
 
 fclean:
-	$(COMPOSE_CMD) down -v --rmi all --remove-orphans
-	docker system prune -af --volumes
+	@$(COMPOSE_CMD) down -v --rmi all --remove-orphans
+	@docker system prune -af --volumes
 
 stop:
-	$(COMPOSE_CMD) stop
+	@$(COMPOSE_CMD) stop
 
 start:
-	$(COMPOSE_CMD) start
+	@$(COMPOSE_CMD) start
 
 ps:
-	$(COMPOSE_CMD) ps
+	@$(COMPOSE_CMD) ps
+
+log:
+	@test -n "$(SERVICE)" || (echo "Usage: make log SERVICE=\"service name\""; exit 1)
+	@$(COMPOSE) logs $(SERVICE)
 
 logs:
-	$(COMPOSE_CMD) logs -f
+	$(COMPOSE_CMD) logs
 
 re: down up
 
@@ -62,4 +66,4 @@ restore:
 seed:
 	FORCE_SEED=1 $(COMPOSE_CMD) run --rm -e FORCE_SEED=1 migrate
 
-.PHONY: all up down cleanbackups fclean stop start ps logs re rebuild backup backups restore seed
+.PHONY: all up down cleanbackups fclean stop start ps log logs re rebuild backup backups restore seed
