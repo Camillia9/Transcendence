@@ -1,4 +1,4 @@
-import { IconPaletteFilled, IconBell, IconBulb, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers, IconUserHeart } from '@tabler/icons-react'
+import { IconPaletteFilled, IconBell, IconHome, IconLanguage, IconLayoutSidebar, IconMessageCircle, IconMessageCircle2, IconUsers, IconUserHeart } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -364,14 +364,6 @@ function MainLayout() {
                       </span>
                     )}
                   </>
-                )}
-              </button>
-              <button
-                className='flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
-              >
-                <IconBulb size={18} className='shrink-0'/>
-                { sidebarOpen && (
-                  <span>Tutoriel</span>
                 )}
               </button>
 
