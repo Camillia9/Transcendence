@@ -2,7 +2,7 @@
 # Boucle de backups automatiques pour le service Compose `backup`.
 set -eu
 
-INTERVAL="${BACKUP_INTERVAL_SECONDS}"
+INTERVAL="${BACKUP_INTERVAL_SECONDS:-900}"
 PGHOST="${PGHOST}"
 PGPORT="${PGPORT}"
 PGUSER="${PGUSER}"
