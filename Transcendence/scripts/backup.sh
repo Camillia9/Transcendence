@@ -12,7 +12,7 @@ PGPASSWORD="${PGPASSWORD}"
 
 mkdir -p "$BACKUP_DIR"
 
-STAMP="$(date +%Y%m%d_%H%M%S)"
+STAMP="$(TZ=UTC-2 date +%Y%m%d_%H%M%S)"
 FILE="${BACKUP_DIR}/transcendence_${STAMP}.sql.gz"
 TMP="${FILE}.tmp"
 
