@@ -276,12 +276,12 @@ router.post('/auth/2fa/verify', authenticate, async(req, res) => {
         if (!user.twoFactorSecret)
             return res.status(400).json({ error: "2FA not configured" });
 
-        const valid = await verify({
+        const result = await verify({
             token: code,
             secret: user.twoFactorSecret
         });
 
-        if (!valid)
+        if (!result.valid)
             return res.status(400).json({ error: "Invalid code" });
 
         await prisma.user.update({
@@ -321,12 +321,12 @@ router.post('/auth/login/2fa', async(req, res) => {
         if (!user.twoFactorEnabled)
             return res.status(400).json({ error: "2FA is not enabled" });
 
-        const valid = await verify({
+        const result = await verify({
             token: code,
             secret: user.twoFactorSecret
         });
 
-        if (!valid)
+        if (!result.valid)
             return res.status(401).json({ error: 'Invalid code' });
 
         const token = generateToken(user);
