@@ -13,9 +13,9 @@ function Login() {
   const { t } = useTranslation()
 
   const [identifier, setIdentifier] = useState('')
-  const [password, setPassword]     = useState('')
-  const [errors, setErrors]         = useState({})
-  const [loading, setLoading]       = useState(false)
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   //2FA
   //Quand twoFactorUserId est null :affiches le formulaire email/mdp. Quand il est rempli : affiches le champ code.
@@ -73,7 +73,7 @@ function Login() {
       login(data.user)
       navigate('/home')
     } catch (error) {
-      setErrors({ global: 'Code invalide' })
+      setErrors({ global: t('login.errors.invalidCode') })
     } finally {
       setLoading(false)
     }
@@ -90,15 +90,15 @@ function Login() {
         {twoFactorUserId ? (
           /* MODE 2FA : saisie du code */
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-gray-500">Entre le code de ton application d'authentification.</p>
+            <p className="text-sm text-gray-500">{t('login.twoFactor.instructions')}</p>
             <Input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Code à 6 chiffres"
+              placeholder={t('login.twoFactor.codePlaceholder')}
             />
             {errors.global && <p className="text-sm text-red-400">{errors.global}</p>}
-            <Button onClick={handleVerify2FALogin} disabled={loading}>Valider</Button>
+            <Button onClick={handleVerify2FALogin} disabled={loading}>{t('login.twoFactor.submit')}</Button>
           </div>
         ) : (
           <div>

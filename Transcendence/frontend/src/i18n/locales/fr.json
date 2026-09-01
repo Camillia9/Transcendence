@@ -14,9 +14,11 @@
     "required": "Ce champ est requis",
     "yes": "Oui",
     "no": "Non",
-    "back": "Retour"
+    "back": "Retour",
+    "continueWithGoogle": "Continuer avec Google",
+    "continueWithGithub": "Continuer avec GitHub",
+    "or": "ou"
   },
-
   "login": {
     "title": "Connexion",
     "subtitle": "Content de te revoir",
@@ -24,10 +26,40 @@
     "identifierPlaceholder": "Nom d'utilisateur ou email",
     "passwordPlaceholder": "Mot de passe",
     "submit": "Se connecter",
+    "twoFactor": {
+      "instructions": "Entre le code de ton application d'authentification.",
+      "codePlaceholder": "Code à 6 chiffres",
+      "submit": "Valider"
+    },
     "errors": {
       "identifierRequired": "Ton nom d'utilisateur ou email est requis",
       "passwordRequired": "Le mot de passe est requis",
-      "invalidCredentials": "Identifiant ou mot de passe incorrect"
+      "invalidCredentials": "Identifiant ou mot de passe incorrect",
+      "invalidCode": "Code invalide"
+    }
+  },
+
+  "signup": {
+    "title": "Inscription",
+    "subtitle": "Crée ton compte",
+    "swapText": "Déjà inscrit ? Se connecter",
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Mot de passe",
+    "confirmPasswordPlaceholder": "Confirme le mot de passe",
+    "submit": "Créer mon compte",
+    "errors": {
+      "usernameRequired": "Le nom d'utilisateur est requis",
+      "usernameTooShort": "Minimum 3 caractères",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Format d'email invalide",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordTooShort": "Minimum 6 caractères",
+      "confirmPasswordRequired": "Confirme ton mot de passe",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "usernameTaken": "Ce pseudo est déjà utilisé",
+      "emailTaken": "Cet email est déjà utilisé",
+      "generic": "Impossible de créer le compte"
     }
   }
 }

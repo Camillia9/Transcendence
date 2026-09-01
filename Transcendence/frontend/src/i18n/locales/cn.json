@@ -1,33 +1,65 @@
 {
 	"common": {
-  	"save": "保存",
-  	"cancel": "取消",
-  	"delete": "删除",
-  	"edit": "编辑",
-  	"create": "创建",
-  	"add": "添加",
-  	"close": "关闭",
-  	"confirm": "确认",
-  	"search": "搜索",
-  	"loading": "加载中...",
-  	"error": "发生错误",
-  	"required": "此项为必填",
-  	"yes": "是",
-  	"no": "否",
-  	"back": "返回"
+		"save": "保存",
+		"cancel": "取消",
+		"delete": "删除",
+		"edit": "编辑",
+		"create": "创建",
+		"add": "添加",
+		"close": "关闭",
+		"confirm": "确认",
+		"search": "搜索",
+		"loading": "加载中...",
+		"error": "发生错误",
+		"required": "此项为必填",
+		"yes": "是",
+		"no": "否",
+		"back": "返回",
+		"continueWithGoogle": "使用 Google 继续",
+		"continueWithGithub": "使用 GitHub 继续",
+		"or": "或"
+	},
+	"login": {
+		"title": "登录",
+		"subtitle": "欢迎回来",
+		"swapText": "还没有账号？注册",
+		"identifierPlaceholder": "用户名或邮箱",
+		"passwordPlaceholder": "密码",
+		"submit": "登录",
+		"twoFactor": {
+			"instructions": "请输入身份验证器应用中的代码。",
+			"codePlaceholder": "6位数字代码",
+			"submit": "验证"
+		},
+		"errors": {
+			"identifierRequired": "请输入用户名或邮箱",
+			"passwordRequired": "请输入密码",
+			"invalidCredentials": "用户名或密码错误",
+			"invalidCode": "验证码无效"
+		}
 	},
 
-	"login": {
-  	"title": "登录",
-  	"subtitle": "欢迎回来",
-  	"swapText": "还没有账号？注册",
-  	"identifierPlaceholder": "用户名或邮箱",
-  	"passwordPlaceholder": "密码",
-  	"submit": "登录",
-  	"errors": {
-  	  "identifierRequired": "请输入用户名或邮箱",
-  	  "passwordRequired": "请输入密码",
-  	  "invalidCredentials": "用户名或密码错误"
-  	}
+"signup": {
+		"title": "注册",
+		"subtitle": "创建你的账户",
+		"swapText": "已有账户？登录",
+		"usernamePlaceholder": "用户名",
+		"emailPlaceholder": "邮箱",
+		"passwordPlaceholder": "密码",
+		"confirmPasswordPlaceholder": "确认密码",
+		"submit": "创建账户",
+		"errors": {
+			"usernameRequired": "用户名为必填项",
+			"usernameTooShort": "至少3个字符",
+			"emailRequired": "邮箱为必填项",
+			"emailInvalid": "邮箱格式无效",
+			"passwordRequired": "密码为必填项",
+			"passwordTooShort": "至少6个字符",
+			"confirmPasswordRequired": "请确认你的密码",
+			"passwordMismatch": "两次密码不一致",
+			"usernameTaken": "该用户名已被使用",
+			"emailTaken": "该邮箱已被使用",
+			"generic": "无法创建账户"
+		}
 	}
 }
