@@ -65,7 +65,14 @@ function Signup() {
       login(data.user)
       navigate('/home')
     } catch (error) {
-      setErrors({ global: "Impossible de créer le compte. Cet email est peut-être déjà utilisé." })
+      const msg = error.message
+      if (msg === 'Pseudo already used'){
+        setErrors({ username: 'Ce pseudo est deja utilise.' })
+      } else if (msg === 'Email already used') {
+        setErrors({ email: 'Cet email deja utilise.'})
+      } else {
+        setErrors({ global: "Impossible de creer le compte."})
+      }
     } finally {
       setLoading(false)
     }

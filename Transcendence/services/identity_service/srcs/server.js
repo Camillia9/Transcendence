@@ -43,6 +43,23 @@ app.use('/api', notificationRouter);
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Identity service listening on http://localhost:${PORT}`);
 });
+
+// Graceful shutdown handler
+const shutdown = (signal) => {
+  console.log(`Identity service received ${signal}, shutting down gracefully…`);
+  server.close(() => {
+    console.log('Identity service shut down complete.');
+    process.exit(0);
+  });
+  // Force shutdown after 5 seconds
+  setTimeout(() => {
+    console.error('Forced shutdown after 5 seconds');
+    process.exit(1);
+  }, 5000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

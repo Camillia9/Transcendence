@@ -226,9 +226,9 @@ function Profil() {
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
 
-  // Debug 
-  //console.log(profile)
-
+  // Verif si connexion Oauth ou normal
+  const isOAuth = profile && profile.hasPassword === false
+  
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
 
@@ -354,62 +354,64 @@ function Profil() {
           {passwordSuccess && <p className="text-sm text-green-500">{passwordSuccess}</p>}
       </Card>
 
-      <Card className='flex flex-col gap-3'>
-        <h2 className="text-sm font-medium text-gray-700">Double authentification (2FA)</h2>
+      {!isOAuth && (
+        <Card className='flex flex-col gap-3'>
+          <h2 className="text-sm font-medium text-gray-700">Double authentification (2FA)</h2>
 
-        {profile.twoFactorEnabled ? (
-          //Etat deja active
-          <div className='flex flex-col gap-2'>
-            <p className="text-sm text-green-600">La 2FA est activée sur ton compte.</p>
-            {!showDisable2FA ? (
-              <Button variant='outline' onClick={() => setShowDisable2FA(true)} className='self-start'>
-                Desactiver la 2FA
-              </Button>
-            ) : (
-              <div className='flex flex-col gap-2'>
-                <p className='text-sm text-gray-500'>Entre ton mot de passe pour la desactiver.</p>
-                <Input
-                  type="password"
-                  value={disablePassword}
-                  onChange={(e) => setDisablePassword(e.target.value)}
-                  placeholder="Mot de passe"
-                  className="w-48"
-                />
-                {twoFAError && <p className='text-sm text-red-400'>{twoFAError}</p>}
-                <div className='flex gap-2'>
-                  <Button onClick={() => { setShowDisable2FA(false); setDisablePassword(''); setTwoFAError('')}}>
-                    Annuler
-                  </Button>
-                  <Button variant="danger" onClick={handleDisable2FA}>Confirmer</Button>
+          {profile.twoFactorEnabled ? (
+            //Etat deja active
+            <div className='flex flex-col gap-2'>
+              <p className="text-sm text-green-600">La 2FA est activée sur ton compte.</p>
+              {!showDisable2FA ? (
+                <Button variant='outline' onClick={() => setShowDisable2FA(true)} className='self-start'>
+                  Desactiver la 2FA
+                </Button>
+              ) : (
+                <div className='flex flex-col gap-2'>
+                  <p className='text-sm text-gray-500'>Entre ton mot de passe pour la desactiver.</p>
+                  <Input
+                    type="password"
+                    value={disablePassword}
+                    onChange={(e) => setDisablePassword(e.target.value)}
+                    placeholder="Mot de passe"
+                    className="w-48"
+                  />
+                  {twoFAError && <p className='text-sm text-red-400'>{twoFAError}</p>}
+                  <div className='flex gap-2'>
+                    <Button onClick={() => { setShowDisable2FA(false); setDisablePassword(''); setTwoFAError('')}}>
+                      Annuler
+                    </Button>
+                    <Button variant="danger" onClick={handleDisable2FA}>Confirmer</Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-          </div>
-        ) : qrCode ? (
-          //Etat configuration en cors (QR affiche)
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-sm text-gray-500">Scanne ce QR code avec ton application d'authentification, puis entre le code généré.</p>
-            <img src={qrCode} alt="QR code 2FA" className="w-40 h-40" />
-            <Input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Code a 6 chiffres"
-              className="w-40 text-center"
-            />
-            {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
-            <Button onClick={handleVerify2FA}>Confirmer</Button>
-          </div>
-        ) : (
-          //Etat : Desactiver (bouton pour l'activer)
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-gray-500">Ajoute une couche de sécurité à ton compte.</p>
-            {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
-            <Button onClick={handleSetup2FA} className="self-start">Activer la 2FA</Button>
-          </div>
-        )}
-      </Card>
+            </div>
+          ) : qrCode ? (
+            //Etat configuration en cors (QR affiche)
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm text-gray-500">Scanne ce QR code avec ton application d'authentification, puis entre le code généré.</p>
+              <img src={qrCode} alt="QR code 2FA" className="w-40 h-40" />
+              <Input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Code a 6 chiffres"
+                className="w-40 text-center"
+              />
+              {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
+              <Button onClick={handleVerify2FA}>Confirmer</Button>
+            </div>
+          ) : (
+            //Etat : Desactiver (bouton pour l'activer)
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-500">Ajoute une couche de sécurité à ton compte.</p>
+              {twoFAError && <p className="text-sm text-red-400">{twoFAError}</p>}
+              <Button onClick={handleSetup2FA} className="self-start">Activer la 2FA</Button>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Export des données (RGPD) */}
       <Card className='flex flex-col gap-4'>
@@ -434,16 +436,27 @@ function Profil() {
           //2nd temps: Champs mdp releves 
           <div className='flex flex-col gap-3'>
             <p className='text-sm text-gray-500'>
-              Cette action est irreversible.</p>
-            <p className='text-sm text-gray-500'>
-              Entre ton mot de passe pour supprimer ton compte</p>
-            <Input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder="Mot de passe"
-            />
-            {deletePassword && <p className='text-sm text-red-400'>{deleteError}</p>}
+              Cette action est irreversible.
+            </p>
+
+            {isOAuth ? (
+              <p className='text-sm text-gray-500'>
+                Confirme la suppression definitive de ton compte.
+              </p>
+            ) : (
+              <>
+                <p className='text-sm text-gray-500'>
+                  Entre ton mot de passe pour supprimer ton compte
+                </p>
+                <Input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Mot de passe"
+                />
+                {deletePassword && <p className='text-sm text-red-400'>{deleteError}</p>}
+              </>
+            )}
             <div className='flex justify-end gap-2'>
               <Button onClick={cancelDelete}>Annuler</Button>
               <Button variant='danger' onClick={handleDeleteAccount}>

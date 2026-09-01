@@ -50,3 +50,21 @@ const PORT = process.env.PORT || 3003;
 httpServer.listen(PORT, () => {
   console.log(`Workspace service listening on http://localhost:${PORT}`);
 });
+
+// Graceful shutdown handler
+const shutdown = (signal) => {
+  console.log(`Workspace service received ${signal}, shutting down gracefully…`);
+  io.close();
+  httpServer.close(() => {
+    console.log('Workspace service shut down complete.');
+    process.exit(0);
+  });
+  // Force shutdown after 5 seconds
+  setTimeout(() => {
+    console.error('Forced shutdown after 5 seconds');
+    process.exit(1);
+  }, 5000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

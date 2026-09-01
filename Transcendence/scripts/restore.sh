@@ -1,21 +1,17 @@
 #!/bin/sh
-# Restaure un dump .sql.gz dans le conteneur Postgres du projet.
-# Usage (depuis Transcendence/) :
-#   ./scripts/restore.sh backups/transcendence_YYYYMMDD_HHMMSS.sql.gz
-#   make restore FILE=backups/transcendence_....sql.gz
 set -eu
 
 cd "$(dirname "$0")/.."
 
 FILE="${1:-}"
 if [ -z "$FILE" ]; then
-	echo "Usage: $0 <chemin/vers/dump.sql.gz>" >&2
-	echo "Exemple: $0 backups/transcendence_20260825_120000.sql.gz" >&2
+	echo "[restore] Usage: $0 <path/to/dump.sql.gz>" >&2
+	echo "[restore] Example: $0 backups/transcendence_[...].sql.gz" >&2
 	exit 1
 fi
 
 if [ ! -f "$FILE" ]; then
-	echo "ERREUR: fichier introuvable: $FILE" >&2
+	echo "[restore] ERROR: file doesn't exist: $FILE" >&2
 	exit 1
 fi
 
@@ -24,14 +20,12 @@ if ! docker compose version >/dev/null 2>&1; then
 	if command -v docker-compose >/dev/null 2>&1; then
 		COMPOSE="docker-compose"
 	else
-		echo "ERREUR: docker compose introuvable" >&2
+		echo "[restore] ERROR: can't find docker compose" >&2
 		exit 1
 	fi
 fi
 
-# Charge .env pour afficher le nom de la DB (docker compose injecte déjà les vars)
 if [ -f .env ]; then
-	# shellcheck disable=SC1091
 	set -a
 	. ./.env
 	set +a
@@ -79,11 +73,9 @@ CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 SQL
 
-# gunzip sur l'hôte → stdin du conteneur
 gunzip -c "$FILE" | docker exec -i "$DB_CONTAINER" psql -U "$PGUSER" -d "$PGDATABASE" -v ON_ERROR_STOP=1 >/dev/null
 
 echo "[restore] restarting stack…"
-# migrate relance prisma db seed : le seed est no-op si la base n'est pas vide.
 $COMPOSE up -d
 
-echo "[restore] OK. Check https://localhost:8443/status and reconnect if needed."
+echo "[restore] database restored."

@@ -171,7 +171,7 @@ function StatusPage() {
                 </div>
                 <span
                   className={[
-                    'inline-flex min-w-[4.5rem] justify-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide',
+                    'inline-flex min-w-18 justify-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide',
                     ok
                       ? 'bg-emerald-100 text-emerald-800'
                       : svc

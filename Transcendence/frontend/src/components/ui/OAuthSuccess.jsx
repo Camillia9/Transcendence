@@ -14,8 +14,9 @@ function OAuthSuccess() {
         const token = searchParams.get('token')
         const userParam = searchParams.get('user')
 
-        console.log('TOKEN OAUTH:', token)
-        console.log('USER PARAM:', userParam)
+        //DEbug
+        //console.log('TOKEN OAUTH:', token)
+        //console.log('USER PARAM:', userParam)
 
         if (!token || !userParam) {
             navigate('/login', { replace: true })
@@ -25,7 +26,8 @@ function OAuthSuccess() {
         try {
             const user = JSON.parse(userParam)
 
-            console.log('USER DANS OAUTH SUCCESS:', user)
+            //Debug 
+            //console.log('USER DANS OAUTH SUCCESS:', user)
 
             // Sauvegarde du JWT
             localStorage.setItem('token', token)
@@ -33,7 +35,8 @@ function OAuthSuccess() {
             // Informe ton AuthContext que l'utilisateur est connecté
             login(user)
 
-            console.log('Connexion OAuth réussie')
+            // debug
+            //console.log('Connexion OAuth réussie')
 
             // Va vers ton application
             navigate('/home', { replace: true })
@@ -41,7 +44,7 @@ function OAuthSuccess() {
             console.error('Erreur OAuth:', error)
             navigate('/login', { replace: true })
         }
-    }, [searchParams, navigate, login])
+    }, [])
 
     // On attend que AuthContext soit réellement mis à jour
     // useEffect(() => {
@@ -50,7 +53,7 @@ function OAuthSuccess() {
     //     }
     // }, [user, navigate])
 
-    return <p>Connexion avec GitHub...</p>
+    return <p>Connexion en cours...</p>
 }
 
 export default OAuthSuccess

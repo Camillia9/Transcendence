@@ -26,6 +26,8 @@ dist-ssr
 */.env
 **/.env
 **/TEST.jsx
+services/generated/
+frontend/note.txt
 
 # Postgres dumps
 backups/*.sql

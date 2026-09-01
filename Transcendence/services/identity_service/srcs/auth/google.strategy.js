@@ -94,24 +94,12 @@ const googleStrategy = new GoogleStrategy(
                 });
             }
 
-            if (user.twoFactorEnabled) {
-                return done (null, {
-                    twoFactorRequired: true,
-                    user: {
-                        id: user.id,
-                        pseudo: user.pseudo,
-                        email: user.email,
-                        avatar: user.avatar
-                    }
-                });
-            }
-
             const token = generateToken( user );
 
             // // finir la connexion : passport attend qu'on appelle done (...)
             // // 1er parametre est l'erreur donc null si tout s'est bien passer
             // // 2eme parametre contient ce qu'on veut renvoyer, ici token et user mais pas tout le user juste ce qu'on veut
-            return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar } });
+            return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash, } });
 
             } catch (error) {
                 return done (error, null);

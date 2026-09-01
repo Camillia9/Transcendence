@@ -72,7 +72,7 @@ router.post('/auth/register', async (req, res) => {
         res.status(201).json({
             message: 'Account successfully created',
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar },
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash },
         });
     } catch (err) {
         // quand ya une erreur, ca cree automatiquement une variable avec le catch et on met le nom qu'on veut ici err
@@ -124,7 +124,7 @@ router.post('/auth/login', async (req, res) => {
 
         res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash }
         });
     } catch (error) {
         console.error(error);
@@ -164,12 +164,6 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
     passport.authenticate('google', { session:false, failureRedirect: '/login'}),
     (req, res) => {
-        if (req.user.twoFactorRequired) {
-            return res.json({
-                twoFactorRequired: true,
-                userId: req.user.user.id
-            });
-        }
 
         const { token, user } = req.user;
         // rediriger vers le front avec le token dans l'URL
@@ -187,21 +181,15 @@ router.get('/auth/github/callback',
     passport.authenticate('github', { session: false, failureRedirect: '/login' }),
     (req, res) => {
 
-        console.log('🔥 GITHUB CALLBACK ATTEINT');
-        console.log('req.user =', req.user);
-        if (req.user.twoFactorRequired) {
-            return res.json({
-                twoFactorRequired: true,
-                userId: req.user.user.id
-            });
-        }
+        //console.log('🔥 GITHUB CALLBACK ATTEINT');
+        //console.log('req.user =', req.user);
 
-        console.log('GITHUB USER:', req.user);
+        //console.log('GITHUB USER:', req.user);
 
         const { token, user } = req.user;
 
-        console.log('GITHUB TOKEN:', token);
-        console.log('GITHUB USER DATA:', user);
+        //console.log('GITHUB TOKEN:', token);
+        //console.log('GITHUB USER DATA:', user);
 
         res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
@@ -276,12 +264,12 @@ router.post('/auth/2fa/verify', authenticate, async(req, res) => {
         if (!user.twoFactorSecret)
             return res.status(400).json({ error: "2FA not configured" });
 
-        const valid = await verify({
+        const result = await verify({
             token: code,
             secret: user.twoFactorSecret
         });
 
-        if (!valid)
+        if (!result.valid)
             return res.status(400).json({ error: "Invalid code" });
 
         await prisma.user.update({
@@ -321,19 +309,19 @@ router.post('/auth/login/2fa', async(req, res) => {
         if (!user.twoFactorEnabled)
             return res.status(400).json({ error: "2FA is not enabled" });
 
-        const valid = await verify({
+        const result = await verify({
             token: code,
             secret: user.twoFactorSecret
         });
 
-        if (!valid)
+        if (!result.valid)
             return res.status(401).json({ error: 'Invalid code' });
 
         const token = generateToken(user);
 
         return res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash }
         });
     } catch (error) {
         console.error(error);

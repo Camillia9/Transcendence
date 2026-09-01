@@ -69,21 +69,9 @@ const gitHubStrategy = new GitHubStrategy (
                 });
             }
 
-            if (user.twoFactorEnabled) {
-                return done (null, {
-                    twoFactorRequired: true,
-                    user: {
-                        id: user.id,
-                        pseudo: user.pseudo,
-                        email: user.email,
-                        avatar: user.avatar
-                    }
-                });
-            }
-
             const token = generateToken( user );
 
-            return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, }, });
+            return done(null, { token, user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash }, });
 
             } catch (error) {
                 return done (error, null);
