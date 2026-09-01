@@ -199,7 +199,7 @@ function Chat() {
   // ou quand on ouvre une autre conversation. Pas de variable "messages" isolée :
   // les messages vivent dans activeConversation.messages.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [activeConversation?.messages.length, activeId])
 
   return (
@@ -268,7 +268,7 @@ function Chat() {
       </div>
 
       {/* COLONNE DROITE : conversation ouverte  */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {activeConversation ? (
           <>
             {/* En-tête */}
