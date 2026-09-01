@@ -134,7 +134,7 @@ NS_BINDING_ABORTED
 
 ---
 
-## 🏠 Home (projets)
+## 🏠 Home (projets) NICOOOOOO
 
 - [ok] Créer un projet → le **select d'organisation** ne montre que les orgas où tu es **admin**
 - [~] Créer un projet sans titre → validation, refusé
@@ -199,19 +199,19 @@ NS_BINDING_ABORTED
 - [ok] User **sans avatar** → avatar par défaut affiché
 - [ok] **Changer de mot de passe** : ancien + nouveau → OK
 - [ok] Changer de mot de passe avec **mauvais ancien mot de passe** → refusé
-- [~] **Activer la 2FA** : QR code affiché, code de vérification accepté
-- [~] **Désactiver la 2FA** : confirmation par mot de passe
+- [ok] **Activer la 2FA** : QR code affiché, code de vérification accepté
+- [ok] **Désactiver la 2FA** : confirmation par mot de passe
 - [ok] **RGPD — Export** : bouton « Télécharger mes données » → fichier JSON téléchargé
 - [ok] Le JSON exporté **ne contient PAS** `passwordHash` ni `twoFactorSecret`
 - [ok] Le JSON exporté est **lisible** et contient bien les données de l'user
 - [ok] Un **mail d'export** apparaît dans Mailhog
 	-> OU trouver la pj dans mailhog ?
-- [~] **RGPD — Suppression** : demande **confirmation par mot de passe**
+- [ok] **RGPD — Suppression** : demande **confirmation par mot de passe**
 	-> Impossible de supprimer un compte github car pas de mdp (database error)
 - [ok] Suppression bloquée si **dernier admin** d'une orga (message clair)
 - [ok] Un **mail de suppression** apparaît dans Mailhog
-- [?] Préférence de **langue** persiste après reload
-- [~] Console propre
+- [ok] Préférence de **langue** persiste après reload
+- [ok] Console propre
 
 ---
 
