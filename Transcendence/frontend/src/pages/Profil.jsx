@@ -228,10 +228,6 @@ function Profil() {
 
   // Verif si connexion Oauth ou normal
   const isOAuth = profile && profile.hasPassword === false
-  // Debug 
-  console.log('user:', user)
-  console.log('hasPassword:', user?.hasPassword)
-  console.log('isOAuth:', isOAuth)
   
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
