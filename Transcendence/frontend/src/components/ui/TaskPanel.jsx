@@ -113,19 +113,6 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
               ))}
             </div>
           </div>
-          {/*Menu deroulant ~ NameColonne*/}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">Colonne</label>
-            <select
-              value={task.status}
-              onChange={(e) => onUpdate({ ...task, status: e.target.value })}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
-            >
-              {COLUMN_OPTIONS.map(col => (
-                <option key={col.value} value={col.value}>{col.label}</option>
-              ))}
-            </select>
-          </div>
           {/*Champs de description*/}
           <div className="flex flex-col gap-2">
             <label className="text-xs text-gray-400 uppercase tracking-wide">Description</label>
