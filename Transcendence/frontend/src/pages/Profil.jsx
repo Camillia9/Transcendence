@@ -226,9 +226,13 @@ function Profil() {
   // Tant que le GET n'a pas repondu on attend. Ensuite profile devient l'objet et le vrai ccontenu s'affcihe
   if (!profile) return <p>Chargement...</p>
 
+  // Verif si connexion Oauth ou normal
+  const isOAuth = profile && profile.hasPassword === false
   // Debug 
-  //console.log(profile)
-
+  console.log('user:', user)
+  console.log('hasPassword:', user?.hasPassword)
+  console.log('isOAuth:', isOAuth)
+  
   return (
     <div className="max-w-lg mx-auto flex flex-col gap-6 py-10">
 
@@ -434,16 +438,27 @@ function Profil() {
           //2nd temps: Champs mdp releves 
           <div className='flex flex-col gap-3'>
             <p className='text-sm text-gray-500'>
-              Cette action est irreversible.</p>
-            <p className='text-sm text-gray-500'>
-              Entre ton mot de passe pour supprimer ton compte</p>
-            <Input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder="Mot de passe"
-            />
-            {deletePassword && <p className='text-sm text-red-400'>{deleteError}</p>}
+              Cette action est irreversible.
+            </p>
+
+            {isOAuth ? (
+              <p className='text-sm text-gray-500'>
+                Confirme la suppression definitive de ton compte.
+              </p>
+            ) : (
+              <>
+                <p className='text-sm text-gray-500'>
+                  Entre ton mot de passe pour supprimer ton compte
+                </p>
+                <Input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Mot de passe"
+                />
+                {deletePassword && <p className='text-sm text-red-400'>{deleteError}</p>}
+              </>
+            )}
             <div className='flex justify-end gap-2'>
               <Button onClick={cancelDelete}>Annuler</Button>
               <Button variant='danger' onClick={handleDeleteAccount}>

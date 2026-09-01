@@ -29,13 +29,19 @@ router.get('/profile', authenticate, async (req, res) => {
                 statut: true,
                 langue: true,
                 twoFactorEnabled: true,
+                passwordHash: true,
             },
         });
 
         if (!user)
             return res.status(404).json({ error: 'User not found' });
 
-        return res.json(user);
+        // Retourner le profil avec hasPassword (ne pas retourner le hash)
+        const { passwordHash, ...profileData } = user;
+        return res.json({
+            ...profileData,
+            hasPassword: !!passwordHash,
+        });
 
     } catch (error) {
         console.error(error);
@@ -198,9 +204,6 @@ router.delete('/profile', authenticate, async (req, res) => {
     try {
         const { password } = req.body;
 
-        if (!password)
-            return res.status(400).json({ error: 'Password required' });
-
         const user = await prisma.user.findUnique({
             where: {
                 id: req.user.userId,
@@ -210,10 +213,17 @@ router.delete('/profile', authenticate, async (req, res) => {
         if (!user)
             return res.status(404).json({ error: 'User not found' });
 
-        const match = await bcrypt.compare(password, user.passwordHash);
+        // Compte classique : on exige et on vérifie le mot de passe.
+        // Compte OAuth (pas de passwordHash) : on saute cette vérif, le token suffit.
+        if (user.passwordHash) {
+            if (!password)
+                return res.status(400).json({ error: 'Password required' });
 
-        if (!match)
-            return res.status(401).json({ error: 'Incorrect password' });
+            const match = await bcrypt.compare(password, user.passwordHash);
+
+            if (!match)
+                return res.status(401).json({ error: 'Incorrect password' });
+        }
 
         // recupere tte les orga ou le user est admin
         await prisma.$transaction(async (tx) => {

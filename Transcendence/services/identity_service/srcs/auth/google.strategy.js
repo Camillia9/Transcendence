@@ -101,7 +101,8 @@ const googleStrategy = new GoogleStrategy(
                         id: user.id,
                         pseudo: user.pseudo,
                         email: user.email,
-                        avatar: user.avatar
+                        avatar: user.avatar,
+                        hasPassword: !!user.passwordHash
                     }
                 });
             }
