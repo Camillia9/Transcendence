@@ -178,5 +178,68 @@
 		"busy": "Busy",
 		"away": "Away",
 		"offline": "Offline"
+	},
+	"kanban": {
+		"columns": {
+			"todo": "To do",
+			"doing": "In progress",
+			"done": "Done",
+			"blocked": "Blocked"
+		},
+		"membersButton": "Members",
+		"newTask": "New task",
+		"newTaskModal": {
+			"title": "New task"
+		},
+		"taskTitleLabel": "Title",
+		"taskTitlePlaceholder": "E.g. Build the login page",
+		"createTaskSubmit": "Create task",
+		"membersModal": {
+			"title": "Project members"
+		},
+		"currentMembers": "Current members",
+		"addFromOrg": "Add from organisation",
+		"allMembersAdded": "All members of the organisation are already in the project.",
+		"editRoleModal": {
+			"title": "Edit role"
+		},
+		"removeMemberTooltip": "Remove",
+		"memberLabel": "Member",
+		"roleLabel": "Role",
+		"roles": {
+			"user": "User",
+			"manager": "Manager"
+		},
+		"priority": {
+			"urgent": "Urgent",
+			"normal": "Normal",
+			"low": "Low"
+		},
+		"task": {
+			"deadlineLabel": "Deadline",
+			"assigneeLabel": "Assignee",
+			"unassigned": "Unassigned",
+			"priorityLabel": "Priority",
+			"descriptionLabel": "Description",
+			"descriptionPlaceholder": "Add a description...",
+			"deleteTask": "Delete task",
+			"commentPlaceholder": "Add a comment...",
+			"sendComment": "Send",
+			"commentsLabel": "Comments",
+			"noComments": "No comments yet.",
+			"createdByLabel": "Created by",
+			"unknownCreator": "Unknown"
+		},
+		"alerts": {
+			"removedFromProject": "You are no longer part of this project",
+			"projectDeleted": "This project no longer exists, it has been deleted",
+			"removedFromOrg": "You have been removed from this organisation",
+			"projectNoLongerExists": "This project no longer exists"
+		},
+		"errors": {
+			"titleRequired": "The title is required",
+			"titleTooLong": "The title must not exceed 20 characters",
+			"createFailed": "Unable to create the task"
+		}
 	}
 }

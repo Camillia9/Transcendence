@@ -178,5 +178,68 @@
 		"busy": "忙碌",
 		"away": "离开",
 		"offline": "离线"
+	},
+	"kanban": {
+		"columns": {
+			"todo": "待办",
+			"doing": "进行中",
+			"done": "已完成",
+			"blocked": "已阻塞"
+		},
+		"membersButton": "成员",
+		"newTask": "新建任务",
+		"newTaskModal": {
+			"title": "新建任务"
+		},
+		"taskTitleLabel": "标题",
+		"taskTitlePlaceholder": "例如：搭建登录页面",
+		"createTaskSubmit": "创建任务",
+		"membersModal": {
+			"title": "项目成员"
+		},
+		"currentMembers": "当前成员",
+		"addFromOrg": "从组织中添加",
+		"allMembersAdded": "该组织的所有成员都已在项目中。",
+		"editRoleModal": {
+			"title": "编辑角色"
+		},
+		"removeMemberTooltip": "移除",
+		"memberLabel": "成员",
+		"roleLabel": "角色",
+		"roles": {
+			"user": "User",
+			"manager": "Manager"
+		},
+		"priority": {
+			"urgent": "紧急",
+			"normal": "普通",
+			"low": "低"
+		},
+		"task": {
+			"deadlineLabel": "截止日期",
+			"assigneeLabel": "负责人",
+			"unassigned": "未分配",
+			"priorityLabel": "优先级",
+			"descriptionLabel": "描述",
+			"descriptionPlaceholder": "添加描述...",
+			"deleteTask": "删除任务",
+			"commentPlaceholder": "添加评论...",
+			"sendComment": "发送",
+			"commentsLabel": "评论",
+			"noComments": "暂无评论。",
+			"createdByLabel": "创建者",
+			"unknownCreator": "未知"
+		},
+		"alerts": {
+			"removedFromProject": "你已不再属于该项目",
+			"projectDeleted": "该项目已不存在，已被删除",
+			"removedFromOrg": "你已被移出该组织",
+			"projectNoLongerExists": "该项目已不存在"
+		},
+		"errors": {
+			"titleRequired": "标题为必填项",
+			"titleTooLong": "标题不能超过20个字符",
+			"createFailed": "无法创建任务"
+		}
 	}
 }

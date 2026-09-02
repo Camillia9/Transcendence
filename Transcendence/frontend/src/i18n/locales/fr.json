@@ -178,5 +178,68 @@
     "busy": "Occupé",
     "away": "Absent",
     "offline": "Hors ligne"
+  },
+  "kanban": {
+    "columns": {
+      "todo": "À faire",
+      "doing": "En cours",
+      "done": "Terminée",
+      "blocked": "En attente"
+    },
+    "membersButton": "Membres",
+    "newTask": "Nouvelle tache",
+    "newTaskModal": {
+      "title": "Nouvelle tache"
+    },
+    "taskTitleLabel": "Titre",
+    "taskTitlePlaceholder": "Ex: Creation de la page login",
+    "createTaskSubmit": "Cree la tache",
+    "membersModal": {
+      "title": "Membres du projet"
+    },
+    "currentMembers": "Membres actuels",
+    "addFromOrg": "Ajouter depuis l'organisation",
+    "allMembersAdded": "Tous les membres de l'organisation sont déjà dans le projet.",
+    "editRoleModal": {
+      "title": "Modifier le role"
+    },
+    "removeMemberTooltip": "Retirer",
+    "memberLabel": "Membre",
+    "roleLabel": "Role",
+    "roles": {
+      "user": "User",
+      "manager": "Manager"
+    },
+    "priority": {
+      "urgent": "Urgent",
+      "normal": "Normal",
+      "low": "Faible"
+    },
+    "task": {
+      "deadlineLabel": "Deadline",
+      "assigneeLabel": "Assigne",
+      "unassigned": "Non assigne",
+      "priorityLabel": "Priorite",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Ajouter une description...",
+      "deleteTask": "Supprimer la tache",
+      "commentPlaceholder": "Ajouter un commentaire...",
+      "sendComment": "Envoyer",
+      "commentsLabel": "Commentaires",
+      "noComments": "Aucun commentaire pour l'instant.",
+      "createdByLabel": "Créé par",
+      "unknownCreator": "Inconnu"
+    },
+    "alerts": {
+      "removedFromProject": "Vous ne faites plus partie de ce projet",
+      "projectDeleted": "Ce projet n'existe plus, il a été supprimé",
+      "removedFromOrg": "Vous avez été retiré de cette organisation",
+      "projectNoLongerExists": "Ce projet n'existe plus"
+    },
+    "errors": {
+      "titleRequired": "Le titre est obligatoire",
+      "titleTooLong": "Le titre ne doit pas dépasser 20 caractères",
+      "createFailed": "Impossible de creer la tache"
+    }
   }
 }

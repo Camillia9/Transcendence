@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from 'react-i18next'
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
-import { PRIORITIES } from "../data/priorities";
+import { getPriorities } from "../data/priorities";
 import { useParams, useNavigate } from "react-router-dom";
 import { CURRENT_USER } from "../data/currentUser";
 import { useAuth } from "../context/AuthContext";
@@ -17,14 +18,19 @@ import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, add
 import { addProjectMember, getAvailableMembers, getProjectById, removeProjectMember, updateProjectMemberRole } from "../api/projects";
 import { IconPlug, IconPlus, IconTrash, IconPencil } from "@tabler/icons-react";
 
-const COLUMNS = [
-  { id: "ToDo", label: "À faire" },
-  { id: "Doing", label: "En cours" },
-  { id: "Done", label: "Terminée" },
-  { id: "Blocked", label: "En attente" },
-];
+function getColumns(t) {
+  return [
+    { id: "ToDo", label: t('kanban.columns.todo') },
+    { id: "Doing", label: t('kanban.columns.doing') },
+    { id: "Done", label: t('kanban.columns.done') },
+    { id: "Blocked", label: t('kanban.columns.blocked') },
+  ]
+}
 
 function KanbanPage() {
+  const { t } = useTranslation()
+  const COLUMNS = getColumns(t)
+  const PRIORITIES = getPriorities(t)
 
   const { user } = useAuth()
 
@@ -104,20 +110,20 @@ function KanbanPage() {
     socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
       if (removedProjectId !== projectId) return
       socket.emit('project:leave', { projectId })
-      alert("Vous faites plus partie de ce projet")
+      alert(t('kanban.alerts.removedFromProject'))
       navigate('/home')
     })
 
     socket.on('project:deleted', ({ projectId: deletedProjectId }) => {
       if (deletedProjectId !== projectId) return
-      alert("Ce projet n'existe plus, il a été supprimé")
+      alert(t('kanban.alerts.projectDeleted'))
       navigate('/home')
     })
 
     socket.on('organisation:member-removed', ({ orgId, removedUserId }) => {
       if (removedUserId !== user?.id) return
       if (projectRef.current?.orgId !== orgId) return
-      alert("Vous avez été retiré de cette organisation")
+      alert(t('kanban.alerts.removedFromOrg'))
       navigate('/home')
     })
 
@@ -152,7 +158,7 @@ function KanbanPage() {
       setProject(data)
     } catch (error) {
       if (error.status === 404) {
-        navigate('/home', { state: { message: "Ce projet n'existe plus" } })
+        navigate('/home', { state: { message: t('kanban.alerts.projectNoLongerExists') } })
       } else {
         console.error('Impossible de charger le projet', error)
       }
@@ -164,18 +170,6 @@ function KanbanPage() {
     loadTasks()
     loadProject()
   }, [projectId]) // permet de recharger les taches si on navigue vers un autre projet
-
-  //useEffect(() => {
-  //  loadProject()
-  //}, [projectId])
-
-
-  // TEMPORAIRE DEBUG
-  //console.log(selectedTask)
-
-  // Fction helper 
-  //const getNextPosition = (projId, column) =>
-  //  tasks.filter(t => t.projectId === projId && t.status === column).length
 
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
@@ -194,24 +188,19 @@ function KanbanPage() {
     if (!task) return;
     if (task.status === newColumn) return // meme colonne, rien a faire
 
-      // Calcule de la prochiane position loesqu'on bouge ~ jsp si elle sera utilse plus tard
-    //const nextPosition = getNextPosition(projectId, newColumn)
-
-    // Met a jour directement la position des cartes lorsqu'une est bouge
     setTasks(tasks.map(t =>
       t.id === taskId ? { ...t, status: newColumn } : t
     ))
     
-    // le back calcule lui-meme la position
     try {
       await moveTask(projectId, taskId, newColumn)
        if (socket) {
       socket.emit('task:moved', { projectId, taskId, fromColumn: task.status, toColumn: newColumn })
     }
-      await loadTasks() // Apres chaque move, recupere nouvelle donnes du back qui calcule les nouvelles positions
+      await loadTasks()
     } catch (error) {
       console.error('Impossible de deplacer la tache', error)
-      await loadTasks() // Si erreur, on resynchronise direct, la carte ne se deplace plus visuellement
+      await loadTasks()
     }
   }
 
@@ -229,13 +218,10 @@ function KanbanPage() {
     })
   )
 
-  // Maj de la tache depuis le paneau (panel)
   const handleUpdateTask = async (updatedTask) => {
-    // MaJ imediate a l'ecran
     setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
     setSelectedTask(updatedTask)
 
-    // On envoie au back uniquement les champs que la route accepte
     try {
       await updateTask(projectId, updatedTask.id, {
         title: updatedTask.title,
@@ -248,7 +234,6 @@ function KanbanPage() {
     }
   }
 
-  // Remettre tout au propre lorsqu'on a fini de cree la tache
   const handleCloseNewTask = () => {
     setNewTaskColumn(null)
     setNewTaskTitle('')
@@ -258,35 +243,32 @@ function KanbanPage() {
 
   const handleCreateTask = async () => {
     if (!newTaskTitle.trim()) {
-      setNewTaskError('Le titre est obligatoire')
+      setNewTaskError(t('kanban.errors.titleRequired'))
       return
     }
     if (newTaskTitle.trim().length > 20) {
-      setNewTaskError('Le titre ne doit pas dépasser 20 caractères')
+      setNewTaskError(t('kanban.errors.titleTooLong'))
       return
     }
-    //const nextPosition = getNextPosition(projectId, newTaskColumn)
     try {
-      // On envoie uniquement ce que la route accepte
       const newTask = await createTask(projectId, {
         title: newTaskTitle.trim(),
         priority: newTaskPriority,
         description: null,
         deadline: null,
       })
-      // le back renvoie la task complete
       setTasks([newTask, ...tasks])
       handleCloseNewTask()
     } catch (error) {
-      setNewTaskError('Impossible de creer la tache')
+      setNewTaskError(t('kanban.errors.createFailed'))
     }
   }
 
   const handleDeleteTask = async (taskId) => {
     try {
       await deleteTask(projectId, taskId)
-      setTasks(tasks.filter(t => t.id !== taskId)) // On retire la tache du state
-      setSelectedTask(null) // et on ferme le panneau
+      setTasks(tasks.filter(t => t.id !== taskId))
+      setSelectedTask(null)
     } catch (error) {
       console.error('Impossible de supprimer la tache', error)
     }
@@ -294,8 +276,8 @@ function KanbanPage() {
 
     const handleAssignTask = async (taskId, userId) => {
     try {
-      await assignTask(projectId, taskId, userId) // la tache complete
-      const data = await getTasks([projectId]) // recup la tache avec get pour avoir le resultats sans refresh
+      await assignTask(projectId, taskId, userId)
+      const data = await getTasks([projectId])
       setTasks(data)
       const fresh = data.find(t => t.id === taskId)
       if (fresh) setSelectedTask(fresh)
@@ -306,10 +288,9 @@ function KanbanPage() {
 
   const handleAddComment = async (taskId, content) => {
     try {
-      const saved = await addComment(projectId, taskId, content) // commentaire complet avec .user
+      const saved = await addComment(projectId, taskId, content)
 
-      // On l'ajoute a la tache ouverte
-      const updated = {...selectedTask, comments: [...selectedTask.comments ?? [], saved] } // on modifie que le commentaire, on laisse les autres inchange
+      const updated = {...selectedTask, comments: [...selectedTask.comments ?? [], saved] }
       setSelectedTask(updated)
       setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
     } catch (error) {
@@ -332,7 +313,6 @@ function KanbanPage() {
     }
   }
 
-  // Bouton pour afficher modal d'ajouts
   async function openMembers() {
     setShowMembers(true)
     try {
@@ -343,19 +323,17 @@ function KanbanPage() {
     }
   }
 
-  // Ajouter ces personnes
   async function handleAddMember(userId) {
     try {
       await addProjectMember(projectId, userId)
-      await loadProject() // rafraichit les membres actuels
+      await loadProject()
       const data = await getAvailableMembers(projectId)
-      setAvailableMembers(data) // rafraichit les personnes dispo
+      setAvailableMembers(data)
     } catch (error) {
       console.error('Impossible d\'ajouter le membre', error)
     }
   }
 
-  // Supprimer les membres
   async function handleRemoveMember(userId) {
     try {
       await removeProjectMember(projectId, userId)
@@ -379,11 +357,8 @@ function KanbanPage() {
     }
   }
 
-  // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
-  // Si on ne met pas cela, ca plante. 
-  if (!project) return <p>Chargement…</p>
+  if (!project) return <p>{t('common.loading')}</p>
 
-  // Affiche la tache seulement au Mananger ou a la personne assignee (pour l'instant CUREENT_USER, A MODIF AVEC BACK)
   const memberships = project.projectMembers ?? []
   const members = memberships.map(m => m.user)
   const myRole = memberships.find(m => m.user.id === user?.id)?.role
@@ -404,11 +379,11 @@ function KanbanPage() {
         <div className="flex gap-2">
           {myRole === 'Manager' && (
             <Button variant="outline" onClick={openMembers}>
-              Membres
+              {t('kanban.membersButton')}
             </Button>
           )}
           <Button onClick={() => setNewTaskColumn('ToDo')}>
-            + Nouvelle tache
+            + {t('kanban.newTask')}
           </Button>
         </div>
 
@@ -416,10 +391,10 @@ function KanbanPage() {
       {/*Les colonnes */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {COLUMNS.map((col) => { // Fabrication de mes 4 colonnes une par une. Ce qui suis s'execute 4 fois (todo, doing etc)
+          {COLUMNS.map((col) => {
             const colTasks = visibleTasks
-              .filter((t) => t.status === col.id) // Parrcourt les taches visible et affiche que celle qui correspondent a sa colonne 
-              .sort((a, b) => a.position - b.position) // Range l'ordre des cartes. Si a est negatif -> au dessus, positif -> en dessous
+              .filter((t) => t.status === col.id)
+              .sort((a, b) => a.position - b.position)
             return (
               <KanbanColumn key={col.id} col={col} colTasks={colTasks}>
                 {colTasks.map(task => (
@@ -461,14 +436,14 @@ function KanbanPage() {
       <Modal
         isOpen={!!newTaskColumn}
         onClose={handleCloseNewTask}
-        title="Nouvelle tache"
+        title={t('kanban.newTaskModal.title')}
       >
         {/*Titre*/}
         <div className="flex flex-col gap-1 mb-4">
-          <label className="text-sm text-gray-500">Titre *</label>
+          <label className="text-sm text-gray-500">{t('kanban.taskTitleLabel')} *</label>
           <Input
             type="text"
-            placeholder="Ex: Creation de la page login"
+            placeholder={t('kanban.taskTitlePlaceholder')}
             value={newTaskTitle}
             onChange={(e) => {
               setNewTaskTitle(e.target.value)
@@ -482,7 +457,7 @@ function KanbanPage() {
         </div>
         {/*Priorite*/}
         <div className="flex flex-col gap-2 mb-6">
-          <label className="text-sm text-gray-500">Priorite</label>
+          <label className="text-sm text-gray-500">{t('kanban.task.priorityLabel')}</label>
           <div className="flex gap-2">
             {PRIORITIES.map(p => (
               <button
@@ -499,10 +474,10 @@ function KanbanPage() {
         {/*Boutons*/}
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleCloseNewTask}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleCreateTask}>
-            Cree la tache
+            {t('kanban.createTaskSubmit')}
           </Button>
         </div>
       </Modal>
@@ -511,11 +486,11 @@ function KanbanPage() {
       <Modal
         isOpen={showMembers}
         onClose={() => setShowMembers(false)}
-        title="Membres du projet"
+        title={t('kanban.membersModal.title')}
       >
         {/*Membres actuels*/}
         <div className="flex flex-col gap-2 mb-6">
-          <h3 className="text-sm font-medium text-gray-700">Membres actuels</h3>
+          <h3 className="text-sm font-medium text-gray-700">{t('kanban.currentMembers')}</h3>
           {memberships.map(m => (
             <div key={m.user.id} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -524,7 +499,7 @@ function KanbanPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-500">{m.role}</span>
+                <span className="text-xs text-gray-500">{m.role === 'Manager' ? t('kanban.roles.manager') : t('kanban.roles.user')}</span>
 
                 <button
                   onClick={() => {
@@ -536,7 +511,7 @@ function KanbanPage() {
                     setNewRole(m.role)
                   }}
                   className="text-gray-300 hover:text-primary-600 transition-colors"
-                  title="Modifier le role"
+                  title={t('kanban.editRoleModal.title')}
                 >
                   <IconPencil size={16} />
                 </button>
@@ -544,7 +519,7 @@ function KanbanPage() {
                 <button
                   onClick={() => handleRemoveMember(m.user.id)}
                   className="text-gray-300 hover:text-red-400 transition-colors"
-                  title="Retirer"
+                  title={t('kanban.removeMemberTooltip')}
                 >
                   <IconTrash size={16} />
                 </button>
@@ -555,9 +530,9 @@ function KanbanPage() {
 
         {/*Membres ajoutables*/}
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium text-gray-700">Ajouter depuis l'organisation</h3>
+          <h3 className="text-sm font-medium text-gray-700">{t('kanban.addFromOrg')}</h3>
           {availableMembers.length === 0 ? (
-            <p className="text-xs text-gray-400">Tous les membres de l'organisation sont déjà dans le projet.</p>
+            <p className="text-xs text-gray-400">{t('kanban.allMembersAdded')}</p>
           ) : (
             availableMembers.map(u => (
               <div key={u.id} className="flex items-center justify-between">
@@ -568,7 +543,7 @@ function KanbanPage() {
                 <button
                   onClick={() => handleAddMember(u.id)}
                   className="text-gray-400 hover:text-primary-600 transition-colors"
-                  title="Ajouter"
+                  title={t('common.add')}
                 >
                   <IconPlug size={18} />
                 </button>
@@ -588,25 +563,25 @@ function KanbanPage() {
             setMemberToEdit(null)
             setNewRole('')
           }}
-          title="Modifier le role"
+          title={t('kanban.editRoleModal.title')}
           >
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">Membre</label>
+              <label className="text-sm text-gray-500">{t('kanban.memberLabel')}</label>
               <p className="text-sm text-gray-700">
                 {memberToEdit.pseudo}
               </p>
             </div>
 
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">Role</label>
+              <label className="text-sm text-gray-500">{t('kanban.roleLabel')}</label>
 
               <select
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               >
-                <option value="User">User</option>
-                <option value="Manager">Manager</option>
+                <option value="User">{t('kanban.roles.user')}</option>
+                <option value="Manager">{t('kanban.roles.manager')}</option>
               </select>
             </div>
 
@@ -618,14 +593,14 @@ function KanbanPage() {
                   setNewRole('')
                 }}
               >
-                Annuler
+                {t('common.cancel')}
               </Button>
 
               <Button
                 variant="primary"
                 onClick={saveRole}
               >
-                Enregistrer
+                {t('common.save')}
               </Button>
             </div>
           </Modal>
