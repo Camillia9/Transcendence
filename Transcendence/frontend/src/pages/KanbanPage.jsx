@@ -107,7 +107,7 @@ function KanbanPage() {
 
     socket.on('project:deleted', ({ projectId: deletedProjectId }) => {
       if (deletedProjectId !== projectId) return
-      alert("Ce projet n'existe plus, l'organisation a été supprimée")
+      alert("Ce projet n'existe plus, il a été supprimé")
       navigate('/home')
     })
 

@@ -194,7 +194,7 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
 router.delete('/projects/:projectId', authenticate, loadProject, checkPermissionProject('delete_project'),
     async (req, res) => {
         try {
-            await prisma.$transaction(async (tx) => {
+            const memberIds = await prisma.$transaction(async (tx) => {
                 await notifyProjectMembers(
                     tx,
                     req.project.id,
@@ -204,12 +204,26 @@ router.delete('/projects/:projectId', authenticate, loadProject, checkPermission
                     req.app.get('io')
                 );
 
+                const members = await tx.projectMember.findMany({
+                    where: { projectId: req.project.id },
+                    select: { userId: true },
+                });
+
                 await tx.project.delete({
                     where: {
                         id: req.project.id
                     }
                 });
+
+                return members.map(m => m.userId);
             });
+
+            const io = req.app.get('io');
+            if (io) {
+                for (const userId of memberIds) {
+                    io.to(`user:${userId}`).emit('project:deleted', { projectId: req.project.id });
+                }
+            }
 
             return res.json({ message: 'Project deleted' });
 

@@ -188,11 +188,16 @@ function Home() {
     const handleMemberAdded = (project) => {
       setProjects(prev => prev.some(p => p.id === project.id) ? prev : [project, ...prev])
     }
+    const handleProjectDeleted = ({ projectId }) => {
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+    }
     workspaceSocket.on('project:member-removed', handleMemberRemoved)
     workspaceSocket.on('project:member-added', handleMemberAdded)
+    workspaceSocket.on('project:deleted', handleProjectDeleted)
     return () => {
       workspaceSocket.off('project:member-removed', handleMemberRemoved)
       workspaceSocket.off('project:member-added', handleMemberAdded)
+      workspaceSocket.off('project:deleted', handleProjectDeleted)
     }
   }, [workspaceSocket])
 
