@@ -25,7 +25,7 @@ function normalizeConversation(convo, userId, fallbackType = 'private') {
   return {
     ...convo,
     name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
-    //avatar: other?.user?.avatar ?? null,
+    avatar: other?.user?.avatar ?? null,
     type: convo.type?.toLowerCase() ?? fallbackType,
     messages: (convo.messages ?? []).map(toUiMsg),
   }
@@ -288,9 +288,14 @@ function Chat() {
           <>
             {/* En-tête */}
             <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center text-sm font-medium text-primary-900 shrink-0">
-                {activeConversation.name[0]}
-              </div>
+              {activeConversation.type === 'group'
+                ? (
+                  <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center shrink-0">
+                    <IconUsers size={18} className="text-primary-900" />
+                  </div>
+                )
+                : <Avatar src={activeConversation.avatar} username={activeConversation.name} size="md" className="shrink-0" />
+              }
               <div>
                 <h2 className="text-lg font-medium text-primary-900 leading-tight">
                   {activeConversation.name}
