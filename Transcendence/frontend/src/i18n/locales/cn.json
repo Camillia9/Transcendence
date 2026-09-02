@@ -305,5 +305,50 @@
 		"memberCount_other": "{{count}} 名成员",
 		"pendingInviteCount_one": "{{count}} 个邀请",
 		"pendingInviteCount_other": "{{count}} 个邀请"
+	},
+	"profile": {
+		"editPhoto": "编辑",
+		"removePhoto": "删除头像",
+		"pseudoLabel": "用户名",
+		"newPseudoPlaceholder": "新用户名",
+		"languageLabel": "语言",
+		"reset": "重置",
+		"changePasswordTitle": "修改密码",
+		"currentPasswordLabel": "当前密码",
+		"newPasswordLabel": "新密码",
+		"changePasswordSubmit": "修改",
+		"passwordChanged": "密码已修改",
+		"passwordPlaceholder": "密码",
+		"twoFactor": {
+			"title": "双重验证（2FA）",
+			"enabled": "你的账户已启用双重验证。",
+			"disable": "关闭双重验证",
+			"enterPasswordToDisable": "输入密码以关闭双重验证。",
+			"scanQrCode": "使用你的身份验证器应用扫描此二维码，然后输入生成的验证码。",
+			"qrCodeAlt": "双重验证二维码",
+			"codePlaceholder": "6位数字代码",
+			"addSecurityLayer": "为你的账户增加一层安全保护。",
+			"enable": "启用双重验证",
+			"errors": {
+				"setupFailed": "无法启动配置",
+				"invalidCode": "验证码无效"
+			}
+		},
+		"myData": {
+			"title": "我的数据",
+			"description": "以 JSON 格式下载你所有个人数据的副本。",
+			"download": "下载我的数据"
+		},
+		"deleteAccount": {
+			"title": "删除账户",
+			"button": "删除我的账户",
+			"irreversible": "此操作不可撤销。",
+			"confirmOAuth": "确认永久删除你的账户。",
+			"enterPassword": "输入密码以删除你的账户",
+			"confirmButton": "确认删除"
+		},
+		"errors": {
+			"avatarNotImage": "文件必须是图片"
+		}
 	}
 }

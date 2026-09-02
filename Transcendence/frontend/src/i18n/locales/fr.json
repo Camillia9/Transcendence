@@ -305,5 +305,50 @@
     "memberCount_other": "{{count}} membres",
     "pendingInviteCount_one": "{{count}} invite",
     "pendingInviteCount_other": "{{count}} invites"
+  },
+  "profile": {
+    "editPhoto": "Modifier",
+    "removePhoto": "Supprimer la photo",
+    "pseudoLabel": "Pseudo",
+    "newPseudoPlaceholder": "Nouveau pseudo",
+    "languageLabel": "Langue",
+    "reset": "Reinitialiser",
+    "changePasswordTitle": "Modifier le mot de passe",
+    "currentPasswordLabel": "Mot de passe actuel",
+    "newPasswordLabel": "Nouveau mot de passe",
+    "changePasswordSubmit": "Changer",
+    "passwordChanged": "Mot de passe change",
+    "passwordPlaceholder": "Mot de passe",
+    "twoFactor": {
+      "title": "Double authentification (2FA)",
+      "enabled": "La 2FA est activée sur ton compte.",
+      "disable": "Desactiver la 2FA",
+      "enterPasswordToDisable": "Entre ton mot de passe pour la desactiver.",
+      "scanQrCode": "Scanne ce QR code avec ton application d'authentification, puis entre le code généré.",
+      "qrCodeAlt": "QR code 2FA",
+      "codePlaceholder": "Code a 6 chiffres",
+      "addSecurityLayer": "Ajoute une couche de sécurité à ton compte.",
+      "enable": "Activer la 2FA",
+      "errors": {
+        "setupFailed": "Impossible de demarrer la configuration",
+        "invalidCode": "Code invalide"
+      }
+    },
+    "myData": {
+      "title": "Mes données",
+      "description": "Télécharge une copie de toutes tes données personnelles au format JSON.",
+      "download": "Télécharger mes données"
+    },
+    "deleteAccount": {
+      "title": "Suppression du compte",
+      "button": "Supprimer mon compte",
+      "irreversible": "Cette action est irreversible.",
+      "confirmOAuth": "Confirme la suppression definitive de ton compte.",
+      "enterPassword": "Entre ton mot de passe pour supprimer ton compte",
+      "confirmButton": "Confirmer la suppression"
+    },
+    "errors": {
+      "avatarNotImage": "Le fichier doit etre une image"
+    }
   }
 }

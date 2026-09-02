@@ -305,5 +305,50 @@
 		"memberCount_other": "{{count}} members",
 		"pendingInviteCount_one": "{{count}} invite",
 		"pendingInviteCount_other": "{{count}} invites"
+	},
+	"profile": {
+		"editPhoto": "Edit",
+		"removePhoto": "Remove photo",
+		"pseudoLabel": "Username",
+		"newPseudoPlaceholder": "New username",
+		"languageLabel": "Language",
+		"reset": "Reset",
+		"changePasswordTitle": "Change password",
+		"currentPasswordLabel": "Current password",
+		"newPasswordLabel": "New password",
+		"changePasswordSubmit": "Change",
+		"passwordChanged": "Password changed",
+		"passwordPlaceholder": "Password",
+		"twoFactor": {
+			"title": "Two-factor authentication (2FA)",
+			"enabled": "2FA is enabled on your account.",
+			"disable": "Disable 2FA",
+			"enterPasswordToDisable": "Enter your password to disable it.",
+			"scanQrCode": "Scan this QR code with your authenticator app, then enter the generated code.",
+			"qrCodeAlt": "2FA QR code",
+			"codePlaceholder": "6-digit code",
+			"addSecurityLayer": "Add a layer of security to your account.",
+			"enable": "Enable 2FA",
+			"errors": {
+				"setupFailed": "Unable to start the setup",
+				"invalidCode": "Invalid code"
+			}
+		},
+		"myData": {
+			"title": "My data",
+			"description": "Download a copy of all your personal data in JSON format.",
+			"download": "Download my data"
+		},
+		"deleteAccount": {
+			"title": "Account deletion",
+			"button": "Delete my account",
+			"irreversible": "This action is irreversible.",
+			"confirmOAuth": "Confirm the permanent deletion of your account.",
+			"enterPassword": "Enter your password to delete your account",
+			"confirmButton": "Confirm deletion"
+		},
+		"errors": {
+			"avatarNotImage": "The file must be an image"
+		}
 	}
 }
