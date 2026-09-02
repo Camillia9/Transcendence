@@ -85,7 +85,6 @@
     "status": "Statut",
     "copyright": "© {{year}} TaskBoard"
   },
-
   "status": {
     "title": "Statut des services",
     "errors": {
@@ -109,5 +108,33 @@
     "autoRefresh": "Rafraîchissement auto toutes les 15 s",
     "refresh": "Actualiser",
     "refreshing": "Actualisation…"
+  },
+  "home": {
+    "backendStatus": "État du backend :",
+    "backendUnreachable": "injoignable",
+    "title": "Mes projets",
+    "newProject": "Nouveau Projet",
+    "emptyState": "Tu n'as pas encore de projets.",
+    "organisationLabel": "Organisation",
+    "noAdminOrg": "Vous devez être admin d'une organisation pour créer un projet.",
+    "selectOrgPlaceholder": "Choisir une organisation",
+    "projectNameLabel": "Nom du projet",
+    "deadlineLabel": "Deadline",
+    "submitCreate": "Créer le projet",
+    "deleteModal": {
+      "title": "Supprimer ce projet ?",
+      "confirm": "{{title}} sera supprimé définitivement"
+    },
+    "editModal": {
+      "title": "Modifier le projet"
+    },
+    "errors": {
+      "nameRequired": "Le nom du projet est obligatoire",
+      "nameTooLong": "Le nom du projet ne doit pas dépasser 20 caractères",
+      "orgRequired": "Choisis une organisation",
+      "deadlinePast": "La deadline ne peut pas être antérieure à aujourd'hui",
+      "editFailed": "Impossible de modifier le projet",
+      "createFailed": "Impossible de créer le projet"
+    }
   }
 }

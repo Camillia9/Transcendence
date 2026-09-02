@@ -108,5 +108,33 @@
 		"autoRefresh": "每 15 秒自动刷新",
 		"refresh": "刷新",
 		"refreshing": "正在刷新…"
+	},
+	"home": {
+		"backendStatus": "后端状态：",
+		"backendUnreachable": "无法连接",
+		"title": "我的项目",
+		"newProject": "新建项目",
+		"emptyState": "你还没有任何项目。",
+		"organisationLabel": "组织",
+		"noAdminOrg": "你必须是某个组织的管理员才能创建项目。",
+		"selectOrgPlaceholder": "选择一个组织",
+		"projectNameLabel": "项目名称",
+		"deadlineLabel": "截止日期",
+		"submitCreate": "创建项目",
+		"deleteModal": {
+			"title": "删除该项目？",
+			"confirm": "{{title}} 将被永久删除"
+		},
+		"editModal": {
+			"title": "编辑项目"
+		},
+		"errors": {
+			"nameRequired": "项目名称为必填项",
+			"nameTooLong": "项目名称不能超过20个字符",
+			"orgRequired": "请选择一个组织",
+			"deadlinePast": "截止日期不能早于今天",
+			"editFailed": "无法编辑项目",
+			"createFailed": "无法创建项目"
+		}
 	}
 }

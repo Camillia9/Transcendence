@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
@@ -10,6 +11,8 @@ import { getMyOrganisations } from "../api/organisations";
 import { useWorkspaceSocket } from "../context/SocketContext";
 
 function Home() {
+  const { t } = useTranslation()
+
   // L'etat: Le projet qu'on veut supp
   const [projectToDelete, setProjectToDelete] = useState(null)
   // L'etat: Le projet qu'on veut add ou edit
@@ -72,19 +75,19 @@ function Home() {
 
     // Si le nameProject ne contient rien ou que des espaces on stock l'erreur dans errors
     if (!newName.trim())
-      errors.title = "Le nom du projet est obligatoire"
+      errors.title = t('home.errors.nameRequired')
     else if (newName.trim().length > 20)
-      errors.title = "Le nom du projet ne doit pas dépasser 20 caractères"
+      errors.title = t('home.errors.nameTooLong')
 
     if (!projectToEdit && !selectedOrgId)
-      errors.org = "Choisis une organisation"
+      errors.org = t('home.errors.orgRequired')
 
     if (newDeadline) { // Si on met une Deadline
       const today = new Date() // recupere plusieurs infos comme la date l'heure etc
       today.setHours(0, 0, 0, 0) // met l'heure a 0 (miniuit) ce jour-ci.
       const chosen = new Date(newDeadline) // transforme string en vrai date -> ("2026-06-01" => 1 juin 2026)
       if (chosen < today) // Si la date entre dans la deadline est inferieur a la date actuelle: erreur
-        errors.deadline = "Deadline inferieur a aujourd'hui"
+        errors.deadline = t('home.errors.deadlinePast')
     }
     // return l'objet complet
     return errors
@@ -117,7 +120,7 @@ function Home() {
         ))
         handleCloseNewProject()
       } catch (error) {
-        setNewErrors({ global: "Impossible de modifier le projet" })
+        setNewErrors({ global: t('home.errors.editFailed') })
         return
       }
       // Sert a parcourir tout les projets pour modifier celui qu'on veut. 
@@ -132,7 +135,7 @@ function Home() {
         setProjects(data)
         handleCloseNewProject()
       } catch (error) {
-        setNewErrors({ global: "Impossible de creer le projet" })
+        setNewErrors({ global: t('home.errors.createFailed') })
       }
     }
   }
@@ -140,7 +143,7 @@ function Home() {
   // BRANCHEMENT BACK/FRONT:
   // état local pour stocker ce que le back nous répond.
   // TEST de depart. A supp des qu'on aurra remplace les mock par de vraie donnees
-  const [health, setHealth] = useState('...')
+  const [health, setHealth] = useState(t('common.loading'))
 
   // useEffect avec [] : s'execute une fois au montage.
   useEffect(() => {
@@ -151,11 +154,11 @@ function Home() {
         setHealth(data.status)
       } catch (error) {
         // Si le back ne repond pas on le note plutot que de planter 
-        setHealth('injoignable')
+        setHealth(t('home.backendUnreachable'))
       }
     }
     checkBackend()
-  }, [])
+  }, [t])
 
   useEffect(() => {
     async function loadProjects() {
@@ -206,21 +209,21 @@ function Home() {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-primary-700">
-        État du backend :{' '}
+        {t('home.backendStatus')}{' '}
         <Link to="/status" className="font-medium text-primary-800 underline-offset-2 hover:underline">
           {health}
         </Link>
       </p>
         {/*Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-primary-900"> Mes projets </h1>
+        <h1 className="text-2xl font-medium text-primary-900"> {t('home.title')} </h1>
         <Button onClick={() => setShowNewProject(true)}>
-          + Nouveau Projet
+          + {t('home.newProject')}
         </Button>
       </div>
         {/*Grille responsive*/}
         {projects.length === 0 ? (
-          <p className="text-sm text-gray-400">Tu n'as pas encore de projets.</p>
+          <p className="text-sm text-gray-400">{t('home.emptyState')}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map(project => (
@@ -238,12 +241,12 @@ function Home() {
             <Modal
               isOpen={!!projectToDelete}
               onClose={() => setProjectToDelete(null)}
-              title="Supprimer ce projet ?"
+              title={t('home.deleteModal.title')}
             >
-              <p> {projectToDelete.title} sera supprime definitivement </p>
+              <p>{t('home.deleteModal.confirm', { title: projectToDelete.title })}</p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setProjectToDelete(null)}> Annuler </Button>
-                <Button variant="danger" onClick={confirmDelete}> Supprimer </Button>
+                <Button variant="outline" onClick={() => setProjectToDelete(null)}> {t('common.cancel')} </Button>
+                <Button variant="danger" onClick={confirmDelete}> {t('common.delete')} </Button>
               </div>
             </Modal>
           )}
@@ -251,19 +254,19 @@ function Home() {
           <Modal
             isOpen={showNewProject}
             onClose={handleCloseNewProject}
-            title={projectToEdit ? "Modifier le projet" : "Nouveau Projet"}
+            title={projectToEdit ? t('home.editModal.title') : t('home.newProject')}
           >
             {/* Choix de l'organisation (création uniquement) */}
             {!projectToEdit && (
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-sm text-gray-500">
-                  Organisation *
+                  {t('home.organisationLabel')} *
                 </label>
                 
                 {organisations.filter(org => org.myRole === 'Admin').length === 0 ? (
                   // Si l'utilisateur n'est admin dans auccune orga :
                   <p className="text-sm text-gray-400">
-                    Vous devez être admin d'une organisation pour créer un projet.
+                    {t('home.noAdminOrg')}
                   </p>
                 ) : (
                   <select
@@ -271,7 +274,7 @@ function Home() {
                     onChange={(e) => setSelectedOrgId(e.target.value)}
                     className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
                   >
-                    <option value="">Choisir une organisation</option>
+                    <option value="">{t('home.selectOrgPlaceholder')}</option>
                     {organisations.map(org => (
                       <option key={org.id} value={org.id}>{org.name}</option>
                     ))}
@@ -287,14 +290,14 @@ function Home() {
             <div className="flex flex-col gap-1 mb-4">
               {/*Label = tire du champs*/}
               <label className="text-sm text-gray-500"> 
-                Nom du projet *
+                {t('home.projectNameLabel')} *
               </label>
               {/*Input = zone saisie */}
               <Input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Nom du projet"
+                placeholder={t('home.projectNameLabel')}
                 light
               />
               {newErrors.title && (
@@ -304,7 +307,7 @@ function Home() {
             {/*Entree de la Deadline */}
             <div className="flex flex-col gap-1 mb-4">
               <label className="text-sm text-gray-500">
-                Deadline
+                {t('home.deadlineLabel')}
               </label> 
               <Input
                 type="date"
@@ -323,9 +326,9 @@ function Home() {
 
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCloseNewProject}> Annuler </Button>
+              <Button variant="outline" onClick={handleCloseNewProject}> {t('common.cancel')} </Button>
               <Button variant="primary" onClick={handleSubmitProject}>
-                {projectToEdit ? "Enregistrer" : "Cree le projet"}
+                {projectToEdit ? t('common.save') : t('home.submitCreate')}
               </Button>
             </div>
           </Modal>

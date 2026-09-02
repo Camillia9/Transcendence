@@ -108,5 +108,33 @@
 		"autoRefresh": "Auto-refreshing every 15s",
 		"refresh": "Refresh",
 		"refreshing": "Refreshing…"
+	},
+	"home": {
+		"backendStatus": "Backend status:",
+		"backendUnreachable": "unreachable",
+		"title": "My projects",
+		"newProject": "New Project",
+		"emptyState": "You don't have any projects yet.",
+		"organisationLabel": "Organisation",
+		"noAdminOrg": "You must be an admin of an organisation to create a project.",
+		"selectOrgPlaceholder": "Choose an organisation",
+		"projectNameLabel": "Project name",
+		"deadlineLabel": "Deadline",
+		"submitCreate": "Create project",
+		"deleteModal": {
+			"title": "Delete this project?",
+			"confirm": "{{title}} will be permanently deleted"
+		},
+		"editModal": {
+			"title": "Edit project"
+		},
+		"errors": {
+			"nameRequired": "The project name is required",
+			"nameTooLong": "The project name must not exceed 20 characters",
+			"orgRequired": "Choose an organisation",
+			"deadlinePast": "The deadline cannot be earlier than today",
+			"editFailed": "Unable to edit the project",
+			"createFailed": "Unable to create the project"
+		}
 	}
 }
