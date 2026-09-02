@@ -64,3 +64,12 @@ export async function removeProjectMember(projectId, userId) {
 		method: 'DELETE'
 	})
 }
+
+export async function updateProjectMemberRole(projectId, userId, role) {
+	const response = await apiRequest(`/projects/${projectId}/members/${userId}`, {
+		method: 'PATCH',
+		body: JSON.stringify({ role }),
+	});
+
+	return response;
+}
