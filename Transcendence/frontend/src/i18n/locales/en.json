@@ -39,7 +39,7 @@
 		}
 	},
 
-"signup": {
+	"signup": {
 		"title": "Sign up",
 		"subtitle": "Create your account",
 		"swapText": "Already have an account? Log in",
@@ -61,5 +61,9 @@
 			"emailTaken": "This email is already in use",
 			"generic": "Unable to create the account"
 		}
+	},
+
+	"legal": {
+		"lastUpdated": "Last updated: {{date}}"
 	}
 }

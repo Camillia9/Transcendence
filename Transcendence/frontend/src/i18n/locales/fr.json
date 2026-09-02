@@ -61,5 +61,9 @@
       "emailTaken": "Cet email est déjà utilisé",
       "generic": "Impossible de créer le compte"
     }
+  },
+
+  "legal": {
+    "lastUpdated": "Dernière mise à jour : {{date}}"
   }
 }
