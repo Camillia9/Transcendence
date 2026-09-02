@@ -1,5 +1,6 @@
 import { IconUser, IconUsers, IconSend, IconMessage2, IconPlus, IconCheck, IconSearch } from '@tabler/icons-react'
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import { getConversations, getMessages, createConversation, markConversationRead } from '../api/conversations'
@@ -8,31 +9,37 @@ import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 
+// Correspondance entre les codes de langue de l'app et les locales reconnues par toLocaleTimeString
+const LOCALE_MAP = { fr: 'fr-FR', en: 'en-US', cn: 'zh-CN' }
+
 // Transforme un message brut du back en message prêt pour l'affichage.
-function toUiMsg(msg) {
+function toUiMsg(msg, locale = 'fr-FR') {
   return {
     id: msg.id,
     author: msg.user?.pseudo ?? String(msg.userId),
     text: msg.content,
-    time: new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    time: new Date(msg.createdAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
   }
 }
 
 // Transforme une conversation brute du back en conversation prête pour l'UI.
 // Utilisée au chargement, à la réception socket et à la création (d'où l'extraction).
-function normalizeConversation(convo, userId, fallbackType = 'private') {
+function normalizeConversation(convo, userId, { fallbackType = 'private', unknownLabel = 'Unknown', locale = 'fr-FR' } = {}) {
   const other = convo.conversationMembers?.find(m => m.userId !== userId)
   return {
     ...convo,
-    name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
+    name: convo.name ?? other?.user?.pseudo ?? unknownLabel,
     avatar: other?.user?.avatar ?? null,
     type: convo.type?.toLowerCase() ?? fallbackType,
-    messages: (convo.messages ?? []).map(toUiMsg),
+    messages: (convo.messages ?? []).map(msg => toUiMsg(msg, locale)),
   }
 }
 
 
 function Chat() {
+  const { t, i18n } = useTranslation()
+  const locale = LOCALE_MAP[i18n.language] || 'fr-FR'
+
   // State
   const [conversations, setConversations] = useState([]) // Liste complete des conversations
   const [activeId, setActiveId] = useState(null)   // conversation ouverte
@@ -74,7 +81,7 @@ function Chat() {
     if (!draft.trim()) return
     const text = draft.trim()
     if (text.length > 500) {
-      setDraftError('Le message ne doit pas dépasser 500 caractères')
+      setDraftError(t('chat.errors.messageTooLong'))
       return
     }
     setDraftError('')
@@ -86,9 +93,9 @@ function Chat() {
       // Fallback sans socket : on l'affiche localement
       receiveMessage(activeId, {
         id: Date.now(),
-        author: user?.pseudo ?? 'Moi',
+        author: user?.pseudo ?? t('chat.me'),
         text,
-        time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        time: new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
       })
     }
     setDraft('')
@@ -112,7 +119,7 @@ function Chat() {
   const handleCreateConversation = async () => {
     try {
       const convo = await createConversation(selectedIds, convType, groupName)
-      const normalized = normalizeConversation(convo, user?.id, convType)
+      const normalized = normalizeConversation(convo, user?.id, { fallbackType: convType, unknownLabel: t('chat.unknownUser'), locale })
       setConversations(prev =>
         prev.some(c => c.id === normalized.id) ? prev : [normalized, ...prev]
       )
@@ -130,7 +137,7 @@ function Chat() {
     async function loadConversations() {
       try {
         const data = await getConversations()
-        const normalized = data.map(c => normalizeConversation(c, user?.id))
+        const normalized = data.map(c => normalizeConversation(c, user?.id, { unknownLabel: t('chat.unknownUser'), locale }))
         setConversations(normalized)
         if (normalized.length > 0) setActiveId(normalized[0].id)
       } catch (error) {
@@ -160,7 +167,7 @@ function Chat() {
       try {
         const data = await getMessages(activeId)
         setConversations(prev => prev.map(c =>
-          c.id === activeId ? { ...c, messages: data.map(toUiMsg) } : c
+          c.id === activeId ? { ...c, messages: data.map(msg => toUiMsg(msg, locale)) } : c
         ))
         await markConversationRead(activeId)
         setConversations(prev => prev.map(c =>
@@ -178,7 +185,7 @@ function Chat() {
     if (!socket) return
 
     socket.on('message:new', (msg) => {
-      receiveMessage(msg.conversationId, toUiMsg(msg))
+      receiveMessage(msg.conversationId, toUiMsg(msg, locale))
       const fromSomeoneElse = msg.userId !== user?.id
       if (msg.conversationId === activeId && fromSomeoneElse) {
         markConversationRead(msg.conversationId).catch(() => {})
@@ -191,7 +198,7 @@ function Chat() {
     })
 
     socket.on('conversation:new', (convo) => {
-      const normalized = normalizeConversation(convo, user?.id)
+      const normalized = normalizeConversation(convo, user?.id, { unknownLabel: t('chat.unknownUser'), locale })
       setConversations(prev =>
         prev.some(c => c.id === normalized.id) ? prev : [normalized, ...prev]
       )
@@ -202,7 +209,7 @@ function Chat() {
       socket.off('message:new')
       socket.off('conversation:new')
     }
-  }, [socket, user, activeId])
+  }, [socket, user, activeId, locale])
 
   // Auto-scroll : redescend en bas quand un message arrive (la longueur change)
   // ou quand on ouvre une autre conversation. Pas de variable "messages" isolée :
@@ -221,7 +228,7 @@ function Chat() {
           className="flex items-center justify-center gap-2 mb-2 px-3 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <IconPlus size={16} />
-          Nouvelle conversation
+          {t('chat.newConversation')}
         </button>
 
         {/* La liste des conversations (seule elle scrolle) */}
@@ -239,7 +246,6 @@ function Chat() {
                   : 'border-transparent hover:bg-gray-100'
                   }`}
               >
-                {/* Avatar */}
                 {/* Avatar */}
                 {conv.type === 'group'
                   ? (
@@ -273,7 +279,7 @@ function Chat() {
 
                   {/* Ligne du bas : aperçu du dernier message, ou "Aucun message" si vide */}
                   <p className="text-xs text-gray-400 truncate">
-                    {lastMessage?.text || 'Aucun message'}
+                    {lastMessage?.text || t('chat.noMessages')}
                   </p>
                 </div>
               </div>
@@ -301,7 +307,7 @@ function Chat() {
                   {activeConversation.name}
                 </h2>
                 <p className="text-xs text-gray-400">
-                  {activeConversation.type === 'group' ? 'Conversation de groupe' : 'Conversation privée'}
+                  {activeConversation.type === 'group' ? t('chat.groupConversation') : t('chat.privateConversation')}
                 </p>
               </div>
             </div>
@@ -311,8 +317,8 @@ function Chat() {
               {activeConversation.messages.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center gap-2">
                   <IconMessage2 size={40} className="text-gray-200" />
-                  <p className="text-sm text-gray-400">Aucun message pour l'instant</p>
-                  <p className="text-xs text-gray-300">Envoie le premier message !</p>
+                  <p className="text-sm text-gray-400">{t('chat.emptyConversation.title')}</p>
+                  <p className="text-xs text-gray-300">{t('chat.emptyConversation.subtitle')}</p>
                 </div>
               ) : (
                 activeConversation.messages.map(msg => {
@@ -353,7 +359,7 @@ function Chat() {
                     setDraftError('')
                   }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Écris un message..."
+                  placeholder={t('chat.messagePlaceholder')}
                   className="flex-1 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary-600 transition-colors"
                 />
                 <button
@@ -362,7 +368,7 @@ function Chat() {
                   className="flex items-center gap-1.5 bg-primary-600 text-white rounded-xl px-4 text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <IconSend size={16} />
-                  Envoyer
+                  {t('chat.send')}
                 </button>
               </div>
               {draftError && (
@@ -371,7 +377,7 @@ function Chat() {
             </div>
           </>
         ) : (
-          <p className="m-auto text-sm text-gray-400">Sélectionne une conversation</p>
+          <p className="m-auto text-sm text-gray-400">{t('chat.selectConversation')}</p>
         )}
       </div>
 
@@ -379,7 +385,7 @@ function Chat() {
       <Modal
         isOpen={showNewConv}
         onClose={handleCloseNewConv}
-        title="Nouvelle conversation"
+        title={t('chat.newConversation')}
       >
         {/*Champs de recherche*/}
         <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 mb-3">
@@ -388,7 +394,7 @@ function Chat() {
             type="text"
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
-            placeholder="Rechercher un utilisateur..."
+            placeholder={t('chat.searchUserPlaceholder')}
             className="flex-1 text-sm focus:outline-none"
           />
         </div>
@@ -396,7 +402,7 @@ function Chat() {
         {/* Liste des utilisateurs, cliquable */}
         <div className="max-h-64 overflow-y-auto flex flex-col gap-1 mb-3">
           {filteredUsers.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Aucun utilisateur trouvé</p>
+            <p className="text-sm text-gray-400 text-center py-4">{t('chat.noUsersFound')}</p>
           ) : (
             filteredUsers.map(u => {
               const isSelected = selectedIds.includes(u.id)
@@ -420,25 +426,25 @@ function Chat() {
         {/* Nom du groupe : seulement si 2+ personnes sélectionnées */}
         {convType === 'group' && (
           <div className="flex flex-col gap-1 mb-3">
-            <label className="text-sm text-gray-500">Nom du groupe</label>
+            <label className="text-sm text-gray-500">{t('chat.groupNameLabel')}</label>
             <input
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Ex: Équipe Frontend"
+              placeholder={t('chat.groupNamePlaceholder')}
               className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-600"
             />
           </div>
         )}
         {/* Boutons */}
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCloseNewConv}>Annuler</Button>
+          <Button variant="outline" onClick={handleCloseNewConv}>{t('common.cancel')}</Button>
           <Button
             variant="primary"
             onClick={handleCreateConversation}
             disabled={selectedIds.length === 0}
           >
-            {convType === 'group' ? 'Créer le groupe' : 'Démarrer la conversation'}
+            {convType === 'group' ? t('chat.createGroup') : t('chat.startConversation')}
           </Button>
         </div>
       </Modal>
