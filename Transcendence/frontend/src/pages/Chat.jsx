@@ -6,6 +6,7 @@ import { getConversations, getMessages, createConversation, markConversationRead
 import { getUsers } from '../api/users'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import Avatar from '../components/ui/Avatar'
 
 // Transforme un message brut du back en message prêt pour l'affichage.
 function toUiMsg(msg) {
@@ -24,10 +25,12 @@ function normalizeConversation(convo, userId, fallbackType = 'private') {
   return {
     ...convo,
     name: convo.name ?? other?.user?.pseudo ?? 'Inconnu',
+    //avatar: other?.user?.avatar ?? null,
     type: convo.type?.toLowerCase() ?? fallbackType,
     messages: (convo.messages ?? []).map(toUiMsg),
   }
 }
+
 
 function Chat() {
   // State
@@ -231,9 +234,15 @@ function Chat() {
                   }`}
               >
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center text-sm font-medium text-primary-900 shrink-0">
-                  {conv.name[0]}
-                </div>
+                {/* Avatar */}
+                {conv.type === 'group'
+                  ? (
+                    <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center shrink-0">
+                      <IconUsers size={18} className="text-primary-900" />
+                    </div>
+                  )
+                  : <Avatar src={conv.avatar} username={conv.name} size="md" className="shrink-0" />
+                }
                 
                 {/* Bloc texte : nom + aperçu. */}
                 <div className="flex-1 min-w-0">
@@ -380,10 +389,7 @@ function Chat() {
                     isSelected ? 'bg-primary-900/5' : 'hover:bg-gray-50'
                   }`}
                 >
-                  {/* Avatar initiale */}
-                  <div className="w-8 h-8 rounded-full bg-primary-900/15 flex items-center justify-center text-xs font-medium text-primary-900 shrink-0">
-                    {u.pseudo[0]}
-                  </div>
+                  <Avatar src={u.avatar} username={u.pseudo} size="sm" className="shrink-0" />
                   <span className="flex-1 text-sm text-gray-800">{u.pseudo}</span>
                   {isSelected && <IconCheck size={16} className="text-primary-600 shrink-0" />}
                 </button>
