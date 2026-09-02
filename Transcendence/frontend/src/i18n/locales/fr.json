@@ -350,5 +350,46 @@
     "errors": {
       "avatarNotImage": "Le fichier doit etre une image"
     }
+  },
+  "mainLayout": {
+    "notificationsTitle": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification",
+    "editProfile": "Editer le profil",
+    "logout": "Deconnexion",
+    "sidebar": {
+      "home": "Accueil",
+      "organisations": "Organisations",
+      "friends": "Amis",
+      "chat": "Chat",
+      "designSystem": "Design système"
+    },
+    "notifications": {
+      "assignment": "{{actor}} vous a assigné une tâche",
+      "assignmentWithTask": "{{actor}} vous a assigné la tâche « {{title}} »",
+      "invitationSent": "{{actor}} vous a invité à rejoindre une organisation",
+      "invitationAccepted": "{{actor}} a accepté votre invitation",
+      "invitationDeclined": "{{actor}} a refusé votre invitation",
+      "projectDeleted": "{{actor}} a supprimé un projet",
+      "removedFromOrga": "{{actor}} vous a retiré de l'organisation",
+      "removedFromProject": "{{actor}} vous a retiré d'un projet",
+      "removedFromProjectWithTitle": "{{actor}} vous a retiré du projet « {{title}} »",
+      "orgaUpdated": "{{actor}} a modifié une organisation",
+      "memberRemoved": "{{actor}} a retiré un membre de l'organisation",
+      "projectUpdated": "{{actor}} a modifié un projet",
+      "projectUpdatedWithTitle": "{{actor}} a modifié le projet « {{title}} »",
+      "orgaDeleted": "{{actor}} a supprimé une organisation",
+      "roleChanged": "{{actor}} a modifié votre rôle",
+      "roleChangedWithOrg": "{{actor}} a modifié votre rôle dans « {{orgName}} »",
+      "invitationCancelled": "{{actor}} a annulé votre invitation",
+      "invitationCancelledWithOrg": "{{actor}} a annulé votre invitation à « {{orgName}} »",
+      "taskMoved": "{{actor}} a déplacé une tâche",
+      "taskMovedWithTitle": "{{actor}} a déplacé la tâche « {{title}} »",
+      "memberLeftOrga": "{{actor}} a quitté une organisation",
+      "memberLeftOrgaWithOrg": "{{actor}} a quitté l'organisation « {{orgName}} »",
+      "projectRoleUpdated": "{{actor}} a modifié votre rôle",
+      "projectRoleUpdatedWithTitle": "{{actor}} a modifié votre rôle dans « {{title}} »",
+      "default": "Nouvelle notification"
+    }
   }
 }

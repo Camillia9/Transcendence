@@ -25,14 +25,12 @@ function MainLayout() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
-  //const [status, setStatus] = useState('online')       // 'online' ou 'offline'
   const [statut, setStatut] = useState(user?.statut ?? 'Available')
-  const [statusMenuOpen, setStatusMenuOpen] = useState(false) // gere l'ouverture de petit menu
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false)
   const unreadCount = notifications.filter(n => !n.isRead).length
   const [unreadMessages, setUnreadMessages] = useState(0)
   const socket = useSocket()
 
-  // 2. En continu : les nouvelles poussées par le socket
   useEffect(() => {
     if (!socket) return
     socket.on('notification:new', (notif) => {
@@ -47,7 +45,6 @@ function MainLayout() {
     }
   }, [socket])
 
-  // 1. Au montage : la photo initiale (GET)
   useEffect(() => {
     async function loadUnreadCount() {
       try {
@@ -70,7 +67,7 @@ function MainLayout() {
       }
     }
     loadNotifications()
-  }, []) // Recharge une fois au demarage. Pas de boucle infini
+  }, [])
   
   useEffect(() => {
     const handleClickOutside = () => {
@@ -110,59 +107,59 @@ function MainLayout() {
     }
   }
 
-  // Afficher les notifs
   function formatNotification(notif) {
+    const actor = notif.actor?.pseudo
     switch (notif.type) {
       case 'Assignment':
         return notif.task?.title
-          ? `${notif.actor?.pseudo} vous a assigné la tâche « ${notif.task.title} »`
-          : `${notif.actor?.pseudo} vous a assigné une tâche`
+          ? t('mainLayout.notifications.assignmentWithTask', { actor, title: notif.task.title })
+          : t('mainLayout.notifications.assignment', { actor })
       case 'InvitationSent':
-        return `${notif.actor?.pseudo} vous a invité à rejoindre une organisation`
+        return t('mainLayout.notifications.invitationSent', { actor })
       case 'InvitationAccepted':
-        return `${notif.actor?.pseudo} a accepté votre invitation`
+        return t('mainLayout.notifications.invitationAccepted', { actor })
       case 'InvitationDeclined':
-        return `${notif.actor?.pseudo} a refusé votre invitation`
+        return t('mainLayout.notifications.invitationDeclined', { actor })
       case 'ProjectDeleted':
-        return `${notif.actor?.pseudo} a supprimé un projet`
+        return t('mainLayout.notifications.projectDeleted', { actor })
       case 'RemovedFromOrga':
-        return `${notif.actor?.pseudo} vous a retiré de l'organisation`
+        return t('mainLayout.notifications.removedFromOrga', { actor })
       case 'RemovedFromProject':
         return notif.project?.title
-          ? `${notif.actor?.pseudo} vous a retiré du projet « ${notif.project.title} »`
-          : `${notif.actor?.pseudo} vous a retiré d'un projet`
+          ? t('mainLayout.notifications.removedFromProjectWithTitle', { actor, title: notif.project.title })
+          : t('mainLayout.notifications.removedFromProject', { actor })
       case 'OrgaUpdated':
-        return `${notif.actor?.pseudo} a modifié une organisation`
+        return t('mainLayout.notifications.orgaUpdated', { actor })
       case 'MemberRemoved':
-        return `${notif.actor?.pseudo} a retiré un membre de l'organisation`
+        return t('mainLayout.notifications.memberRemoved', { actor })
       case 'ProjectUpdated':
         return notif.project?.title
-          ? `${notif.actor?.pseudo} a modifié le projet « ${notif.project.title} »`
-          : `${notif.actor?.pseudo} a modifié un projet`
+          ? t('mainLayout.notifications.projectUpdatedWithTitle', { actor, title: notif.project.title })
+          : t('mainLayout.notifications.projectUpdated', { actor })
       case 'OrgaDeleted':
-        return `${notif.actor?.pseudo} a supprimé une organisation`
+        return t('mainLayout.notifications.orgaDeleted', { actor })
       case 'RoleChanged':
         return notif.organisation?.name
-          ? `${notif.actor?.pseudo} a modifié votre rôle dans « ${notif.organisation.name} »`
-          : `${notif.actor?.pseudo} a modifié votre rôle`
+          ? t('mainLayout.notifications.roleChangedWithOrg', { actor, orgName: notif.organisation.name })
+          : t('mainLayout.notifications.roleChanged', { actor })
       case 'InvitationCancelled':
         return notif.organisation?.name
-          ? `${notif.actor?.pseudo} a annulé votre invitation à « ${notif.organisation.name} »`
-          : `${notif.actor?.pseudo} a annulé votre invitation`
+          ? t('mainLayout.notifications.invitationCancelledWithOrg', { actor, orgName: notif.organisation.name })
+          : t('mainLayout.notifications.invitationCancelled', { actor })
       case 'DeplacementTache':
         return notif.task?.title
-          ? `${notif.actor?.pseudo} a déplacé la tâche « ${notif.task.title} »`
-          : `${notif.actor?.pseudo} a déplacé une tâche`
+          ? t('mainLayout.notifications.taskMovedWithTitle', { actor, title: notif.task.title })
+          : t('mainLayout.notifications.taskMoved', { actor })
       case 'MemberLeftOrga':
         return notif.organisation?.name
-          ? `${notif.actor?.pseudo} a quitté l'organisation « ${notif.organisation.name} »`
-          : `${notif.actor?.pseudo} a quitté une organisation`
+          ? t('mainLayout.notifications.memberLeftOrgaWithOrg', { actor, orgName: notif.organisation.name })
+          : t('mainLayout.notifications.memberLeftOrga', { actor })
       case 'ProjectRoleUpdated':
         return notif.project?.name
-          ? `${notif.actor?.pseudo} a modifié votre rôle dans « ${notif.project.title} »`
-          : `${notif.actor?.pseudo} a modifié votre rôle`
+          ? t('mainLayout.notifications.projectRoleUpdatedWithTitle', { actor, title: notif.project.title })
+          : t('mainLayout.notifications.projectRoleUpdated', { actor })
       default:
-        return 'Nouvelle notification'
+        return t('mainLayout.notifications.default')
     }
   }
 
@@ -171,7 +168,7 @@ function MainLayout() {
       case 'Assignment':
       case 'DeplacementTache': {
         const projectId = notif.projectId ?? notif.project?.id
-        return projectId ? `/projet/${projectId}` : null // vers le Kanban du projet concerné si existe
+        return projectId ? `/projet/${projectId}` : null
       }
 
       case 'ProjectDeleted':
@@ -191,20 +188,17 @@ function MainLayout() {
         return '/Organisation'
 
       default:
-        return null   // pas de destination connue → on ne navigue pas
+        return null
     }
   }
   
   return (
     <div className="h-screen bg-gray-50 text-gray-800 flex flex-col overflow-hidden">
-      {/*Navbar du haut */}
       <nav className='bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between'>
-        <Logo /> {/* qui sera a gauche. Tout le reste a droite:*/}
+        <Logo />
         
-          {/*centre les elements horizontalement avec espace 4 entre chaque element*/}
           <div className='flex items-center gap-4'>
 
-            {/*Cloche et son bouton rouge de notifs*/}
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setNotifOpen(!notifOpen) }}
@@ -218,26 +212,23 @@ function MainLayout() {
                 )}
               </button>
 
-              {/*Panneau deroulant*/}
               {notifOpen && (
                 <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
-                  {/*En tete*/}
                   <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <span className='text-sm font-medium text-gray-700'>Notifications</span>
+                    <span className='text-sm font-medium text-gray-700'>{t('mainLayout.notificationsTitle')}</span>
                     {unreadCount > 0 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); markAllAsRead()}}
                         className='text-xs text-primary-400 hover:text-primary-600 font-medium transition-colors'
                       >
-                        Tout marquer comme lu
+                        {t('mainLayout.markAllRead')}
                       </button>
                     )}
                   </div>
 
-                  {/*Liste*/}
                   <div className='max-h-96 overflow-y-auto flex flex-col'>
                     {notifications.length === 0 ? (
-                      <p className='px-4 py-6 text-sm text-gray-400 text-center'>Aucune notification</p>
+                      <p className='px-4 py-6 text-sm text-gray-400 text-center'>{t('mainLayout.noNotifications')}</p>
                     ) : (
                       notifications.map(notif => {
                         const config = NOTIF_ICONS[notif.type]
@@ -248,14 +239,12 @@ function MainLayout() {
                         onClick={() => {
                           markAsRead(notif.id)
                           const link = getNotificationLink(notif)
-                          console.log('CLIC →', notif.type, '| lien:', link)
                           if (link) navigate(link)
                           setNotifOpen(false)
                         }}
                         className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
                         >
                           {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
-                          {/*Pastille bleu - Non lu*/}
                           <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
                           <div className='flex flex-col'>
                             <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
@@ -274,17 +263,14 @@ function MainLayout() {
                 </div>
               )}
             </div>
-            {/*Langue */}
             <LanguageSwitcher/>
 
-            {/*Profil */}
-            <div className="relative"> {/*relative car le menu deroulant absolute doit se positionner par raport a lui*/}
-              {/* toogle ('!') sur le menu deroulant*/}
+            <div className="relative">
               <div 
                 onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
                 className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
               >
-                <Avatar src={user?.avatar} username={user?.pseudo} size="sm" /> {/*  le ? c'est l'optional chaining. Si user est null (pas encore chargé), ça retourne undefined au lieu de planter. Toujours utiliser ça quand tu accèdes aux données du contexte. */}
+                <Avatar src={user?.avatar} username={user?.pseudo} size="sm" />
                 <span className='text-sm text-gray-700'>{user?.pseudo}</span>
               </div>
               {profileMenuOpen && (
@@ -293,13 +279,13 @@ function MainLayout() {
                     className='px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
                     onClick={() => { navigate('/profil'); setProfileMenuOpen(false)}}
                   >
-                    Editer le profil
+                    {t('mainLayout.editProfile')}
                   </button>
                   <button
                     className='px-4 py-3 text-sm text-red-400 hover:bg-red-50 text-left transition-colors'
                     onClick={() => { handleLogout(); setProfileMenuOpen(false)}}
                   >
-                    Deconnexion
+                    {t('mainLayout.logout')}
                   </button>
                 </div>
               )}
@@ -309,10 +295,7 @@ function MainLayout() {
           </div>
       </nav>
 
-      {/*Corps : sidebar + contenu */}
-      {/*Le flex les met côte à côte, le flex-1 fait que ce bloc prend toute la hauteur restante sous la navbar.*/}
       <div className='flex flex-1 min-h-0'>
-        {/*Sidebar */}
         <aside className={`bg-white border-r border-gray-100 flex flex-col overflow-y-auto transition-all duration-300 ${sidebarOpen ? 'w-56' : 'w-14'}`}>
           <button
             className='p-4 hover:bg-gray-100 transition-colors self-start'
@@ -328,7 +311,7 @@ function MainLayout() {
             >
               <IconHome size={18} className='shrink-0'/>
                 { sidebarOpen && (
-                  <span> Home </span>
+                  <span>{t('mainLayout.sidebar.home')}</span>
                 )}
             </button>
 
@@ -338,7 +321,7 @@ function MainLayout() {
             >
               <IconUsers size={18} className='shrink-0'/>
               {sidebarOpen && (
-                <span>Organisations</span>
+                <span>{t('mainLayout.sidebar.organisations')}</span>
               )}
             </button>
 
@@ -348,7 +331,7 @@ function MainLayout() {
             >
               <IconUserHeart size={18} className='shrink-0'/>
               {sidebarOpen && (
-                <span>Friends</span>
+                <span>{t('mainLayout.sidebar.friends')}</span>
               )}
             </button>
 
@@ -359,10 +342,8 @@ function MainLayout() {
                 onClick={() => navigate('/chat')}
                 className='relative flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
               >
-                {/* L'icône, avec le badge en pastille quand la sidebar est FERMÉE */}
                 <div className="relative shrink-0">
                   <IconMessageCircle size={18} />
-                  {/* Sidebar fermée + des non-lus → pastille rouge sur l'icône (comme la cloche) */}
                   {!sidebarOpen && unreadMessages > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
@@ -370,10 +351,9 @@ function MainLayout() {
                   )}
                 </div>
                 
-                {/* Le texte "Chat" + le compteur à droite quand la sidebar est OUVERTE */}
                 {sidebarOpen && (
                   <>
-                    <span>Chat</span>
+                    <span>{t('mainLayout.sidebar.chat')}</span>
                     {unreadMessages > 0 && (
                       <span className="ml-auto w-5 h-5 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
                         {unreadMessages > 9 ? '9+' : unreadMessages}
@@ -389,7 +369,7 @@ function MainLayout() {
               >
                 <IconPaletteFilled size={18} className='shrink-0' />
                 { sidebarOpen && (
-                  <span>Design systeme</span>
+                  <span>{t('mainLayout.sidebar.designSystem')}</span>
                 )}
               </button>
 
@@ -421,7 +401,6 @@ function MainLayout() {
           </div>
         </aside>
 
-        {/*Contenu de la page */}
         <main className="flex-1 min-w-0 overflow-y-auto overflow-x-auto flex flex-col">
           <div className='flex-1 p-6'>
             <Outlet/>

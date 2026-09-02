@@ -350,5 +350,47 @@
 		"errors": {
 			"avatarNotImage": "文件必须是图片"
 		}
+	},
+	"mainLayout": {
+		"notificationsTitle": "通知",
+		"markAllRead": "全部标记为已读",
+		"noNotifications": "暂无通知",
+		"editProfile": "编辑资料",
+		"logout": "退出登录",
+		"sidebar": {
+			"home": "首页",
+			"organisations": "组织",
+			"friends": "好友",
+			"chat": "聊天",
+			"designSystem": "设计系统"
+		},
+		"notifications": {
+			"assignment": "{{actor}} 给你分配了一个任务",
+			"assignmentWithTask": "{{actor}} 给你分配了任务「{{title}}」",
+			"invitationSent": "{{actor}} 邀请你加入一个组织",
+			"invitationAccepted": "{{actor}} 接受了你的邀请",
+			"invitationDeclined": "{{actor}} 拒绝了你的邀请",
+			"projectDeleted": "{{actor}} 删除了一个项目",
+			"removedFromOrga": "{{actor}} 将你移出了该组织",
+			"removedFromProject": "{{actor}} 将你移出了一个项目",
+			"removedFromProjectWithTitle": "{{actor}} 将你移出了项目「{{title}}」",
+			"orgaUpdated": "{{actor}} 更新了一个组织",
+			"memberRemoved": "{{actor}} 将一名成员移出了该组织",
+			"projectUpdated": "{{actor}} 更新了一个项目",
+			"projectUpdatedWithTitle": "{{actor}} 更新了项目「{{title}}」",
+			"orgaDeleted": "{{actor}} 删除了一个组织",
+			"roleChanged": "{{actor}} 更改了你的角色",
+			"roleChangedWithOrg": "{{actor}} 更改了你在「{{orgName}}」中的角色",
+			"invitationCancelled": "{{actor}} 取消了你的邀请",
+			"invitationCancelledWithOrg": "{{actor}} 取消了你加入「{{orgName}}」的邀请",
+			"taskMoved": "{{actor}} 移动了一个任务",
+			"taskMovedWithTitle": "{{actor}} 移动了任务「{{title}}」",
+			"memberLeftOrga": "{{actor}} 退出了一个组织",
+			"memberLeftOrgaWithOrg": "{{actor}} 退出了组织「{{orgName}}」",
+			"projectRoleUpdated": "{{actor}} 更改了你的角色",
+			"projectRoleUpdatedWithTitle": "{{actor}} 更改了你在「{{title}}」中的角色",
+			"default": "新通知"
+		}
 	}
+	
 }

@@ -350,5 +350,46 @@
 		"errors": {
 			"avatarNotImage": "The file must be an image"
 		}
+	},
+	"mainLayout": {
+		"notificationsTitle": "Notifications",
+		"markAllRead": "Mark all as read",
+		"noNotifications": "No notifications",
+		"editProfile": "Edit profile",
+		"logout": "Log out",
+		"sidebar": {
+			"home": "Home",
+			"organisations": "Organisations",
+			"friends": "Friends",
+			"chat": "Chat",
+			"designSystem": "Design System"
+		},
+		"notifications": {
+			"assignment": "{{actor}} assigned you a task",
+			"assignmentWithTask": "{{actor}} assigned you the task \"{{title}}\"",
+			"invitationSent": "{{actor}} invited you to join an organisation",
+			"invitationAccepted": "{{actor}} accepted your invitation",
+			"invitationDeclined": "{{actor}} declined your invitation",
+			"projectDeleted": "{{actor}} deleted a project",
+			"removedFromOrga": "{{actor}} removed you from the organisation",
+			"removedFromProject": "{{actor}} removed you from a project",
+			"removedFromProjectWithTitle": "{{actor}} removed you from the project \"{{title}}\"",
+			"orgaUpdated": "{{actor}} updated an organisation",
+			"memberRemoved": "{{actor}} removed a member from the organisation",
+			"projectUpdated": "{{actor}} updated a project",
+			"projectUpdatedWithTitle": "{{actor}} updated the project \"{{title}}\"",
+			"orgaDeleted": "{{actor}} deleted an organisation",
+			"roleChanged": "{{actor}} changed your role",
+			"roleChangedWithOrg": "{{actor}} changed your role in \"{{orgName}}\"",
+			"invitationCancelled": "{{actor}} cancelled your invitation",
+			"invitationCancelledWithOrg": "{{actor}} cancelled your invitation to \"{{orgName}}\"",
+			"taskMoved": "{{actor}} moved a task",
+			"taskMovedWithTitle": "{{actor}} moved the task \"{{title}}\"",
+			"memberLeftOrga": "{{actor}} left an organisation",
+			"memberLeftOrgaWithOrg": "{{actor}} left the organisation \"{{orgName}}\"",
+			"projectRoleUpdated": "{{actor}} changed your role",
+			"projectRoleUpdatedWithTitle": "{{actor}} changed your role in \"{{title}}\"",
+			"default": "New notification"
+		}
 	}
 }
