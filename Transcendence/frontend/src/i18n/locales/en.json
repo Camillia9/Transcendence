@@ -38,7 +38,6 @@
 			"invalidCode": "Invalid code"
 		}
 	},
-
 	"signup": {
 		"title": "Sign up",
 		"subtitle": "Create your account",
@@ -64,11 +63,9 @@
 			"generic": "Unable to create the account"
 		}
 	},
-
 	"legal": {
 		"lastUpdated": "Last updated: {{date}}"
 	},
-
 	"landing": {
 		"loginLink": "Log in",
 		"illustrationAlt": "TaskBoard illustration",
@@ -82,11 +79,34 @@
 		},
 		"cta": "Get started for free"
 	},
-
 	"footer": {
 		"privacy": "Privacy",
 		"terms": "Terms",
 		"status": "Status",
 		"copyright": "© {{year}} TaskBoard"
+	},
+	"status": {
+		"title": "Service status",
+		"errors": {
+			"unreachable": "Unable to reach the status API"
+		},
+		"overall": {
+			"ok": "All services are operational",
+			"degraded": "Some services are experiencing issues",
+			"down": "All services are unavailable",
+			"unknown": "Unknown status"
+		},
+		"lastChecked": "Last checked: {{date}}",
+		"updated": "Updated",
+		"services": {
+			"identity": "Identity service",
+			"chat": "Chat service",
+			"workspace": "Workspace service"
+		},
+		"database": "Database: {{status}}",
+		"noData": "No data",
+		"autoRefresh": "Auto-refreshing every 15s",
+		"refresh": "Refresh",
+		"refreshing": "Refreshing…"
 	}
 }

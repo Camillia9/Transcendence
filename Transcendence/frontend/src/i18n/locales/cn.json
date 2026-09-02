@@ -38,7 +38,6 @@
 			"invalidCode": "验证码无效"
 		}
 	},
-
 	"signup": {
 		"title": "注册",
 		"subtitle": "创建你的账户",
@@ -64,11 +63,9 @@
 			"generic": "无法创建账户"
 		}
 	},
-
 	"legal": {
 		"lastUpdated": "最后更新：{{date}}"
 	},
-
 	"landing": {
 		"loginLink": "登录",
 		"illustrationAlt": "TaskBoard 插图",
@@ -82,11 +79,34 @@
 		},
 		"cta": "免费开始使用"
 	},
-
 	"footer": {
 		"privacy": "隐私",
 		"terms": "条款",
 		"status": "状态",
 		"copyright": "© {{year}} TaskBoard"
+	},
+	"status": {
+		"title": "服务状态",
+		"errors": {
+			"unreachable": "无法连接状态 API"
+		},
+		"overall": {
+			"ok": "所有服务运行正常",
+			"degraded": "部分服务出现故障",
+			"down": "所有服务均不可用",
+			"unknown": "状态未知"
+		},
+		"lastChecked": "最后检查时间：{{date}}",
+		"updated": "已更新",
+		"services": {
+			"identity": "身份认证服务",
+			"chat": "聊天服务",
+			"workspace": "工作区服务"
+		},
+		"database": "数据库：{{status}}",
+		"noData": "暂无数据",
+		"autoRefresh": "每 15 秒自动刷新",
+		"refresh": "刷新",
+		"refreshing": "正在刷新…"
 	}
 }

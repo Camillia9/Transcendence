@@ -38,7 +38,6 @@
       "invalidCode": "Code invalide"
     }
   },
-
   "signup": {
     "title": "Inscription",
     "subtitle": "Crée ton compte",
@@ -64,11 +63,9 @@
       "generic": "Impossible de créer le compte"
     }
   },
-
   "legal": {
     "lastUpdated": "Dernière mise à jour : {{date}}"
   },
-
   "landing": {
     "loginLink": "Se connecter",
     "illustrationAlt": "Illustration TaskBoard",
@@ -82,11 +79,35 @@
     },
     "cta": "Commencer gratuitement"
   },
-
   "footer": {
     "privacy": "Confidentialité",
     "terms": "Conditions d'utilisation",
     "status": "Statut",
     "copyright": "© {{year}} TaskBoard"
+  },
+
+  "status": {
+    "title": "Statut des services",
+    "errors": {
+      "unreachable": "Impossible de joindre l'API de statut"
+    },
+    "overall": {
+      "ok": "Tous les services sont opérationnels",
+      "degraded": "Certains services sont en panne",
+      "down": "Tous les services sont indisponibles",
+      "unknown": "Statut inconnu"
+    },
+    "lastChecked": "Dernière vérification : {{date}}",
+    "updated": "Mis à jour",
+    "services": {
+      "identity": "Service d'authentification",
+      "chat": "Service de chat",
+      "workspace": "Service d'espace de travail"
+    },
+    "database": "Base de données : {{status}}",
+    "noData": "Aucune donnée",
+    "autoRefresh": "Rafraîchissement auto toutes les 15 s",
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation…"
   }
 }
