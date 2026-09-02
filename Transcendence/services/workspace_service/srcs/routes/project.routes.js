@@ -12,6 +12,8 @@ router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, c
             const { title, description, deadline } = req.body;
             if (!title)
                 return res.status(400).json({ error: 'Project title required' });
+            if (title.length > 20)
+                return res.status(400).json({ error: 'Project title must be at most 20 characters' });
 
             // transaction: cree un projet et ajouter le createur comme manager
             const { project } = await prisma.$transaction(async (tx) => {
@@ -153,6 +155,9 @@ router.patch('/projects/:projectId', authenticate, loadProject, checkPermissionP
 
             if (title !== undefined && (!title || !title.trim())) {
                 return res.status(400).json({ error: 'Project title required'});
+            }
+            if (title !== undefined && title.trim().length > 20) {
+                return res.status(400).json({ error: 'Project title must be at most 20 characters'});
             }
 
             // ... = ajoute cette propriete

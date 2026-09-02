@@ -51,10 +51,12 @@
 		"errors": {
 			"usernameRequired": "用户名为必填项",
 			"usernameTooShort": "至少3个字符",
+			"usernameTooLong": "最少20个字符",
 			"emailRequired": "邮箱为必填项",
 			"emailInvalid": "邮箱格式无效",
 			"passwordRequired": "密码为必填项",
 			"passwordTooShort": "至少6个字符",
+			"passwordTooLong": "最多30个字符",
 			"confirmPasswordRequired": "请确认你的密码",
 			"passwordMismatch": "两次密码不一致",
 			"usernameTaken": "该用户名已被使用",

@@ -12,6 +12,8 @@ router.post('/projects/:projectId/tasks', authenticate, loadProject, checkPermis
             const { title, description, priority, deadline } = req.body;
             if (!title)
                 return res.status(400).json({ error: 'Title required' });
+            if (title.length > 20)
+                return res.status(400).json({ error: 'Title must be at most 20 characters' });
 
             const lastTask = await prisma.task.findFirst({
                 where: { projectId: req.project.id, status: 'ToDo' },
@@ -161,6 +163,13 @@ router.patch('/projects/:projectId/tasks/:taskId', authenticate, loadProject, lo
     async (req, res) => {
         try {
             const { title, description, priority, deadline } = req.body;
+
+            if (title !== undefined && (!title || !title.trim())) {
+                return res.status(400).json({ error: 'Title required' });
+            }
+            if (title !== undefined && title.trim().length > 20) {
+                return res.status(400).json({ error: 'Title must be at most 20 characters' });
+            }
 
             let validPriority;
             if (priority && ['Low', 'Normal', 'Urgent'].includes(priority)) {

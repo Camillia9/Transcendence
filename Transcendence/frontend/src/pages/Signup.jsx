@@ -27,6 +27,8 @@ function Signup() {
       newErrors.username = t('signup.errors.usernameRequired')
     else if (username.length < 3)
       newErrors.username = t('signup.errors.usernameTooShort')
+    else if (username.length > 20)
+      newErrors.username = t('signup.errors.usernameTooLong')
 
     if (!email.trim())
       newErrors.email = t('signup.errors.emailRequired')
@@ -37,6 +39,8 @@ function Signup() {
       newErrors.password = t('signup.errors.passwordRequired')
     else if (password.length < 6)
       newErrors.password = t('signup.errors.passwordTooShort')
+    else if (password.length > 30)
+      newErrors.password = t('signup.errors.passwordTooLong')
 
     if (!confirmPassword)
       newErrors.confirmPassword = t('signup.errors.confirmPasswordRequired')
