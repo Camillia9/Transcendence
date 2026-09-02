@@ -196,7 +196,7 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
 router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPermissionOrga('delete_orga'),
     async (req, res) => {
         try {
-            const projectIds = await prisma.$transaction(async (tx) => {
+            const { projectIds, memberIds } = await prisma.$transaction(async (tx) => {
                 await notifyOrgaMembers(
                     tx,
                     req.orgId,
@@ -209,6 +209,11 @@ router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPer
                     select: { id: true },
                 });
 
+                const members = await tx.member.findMany({
+                    where: { orgId: req.orgId },
+                    select: { userId: true },
+                });
+
                 // prisma gere la suppression en cascade grace aux onDelete: Cascade du schema
                 await tx.organisation.delete({
                     where: {
@@ -216,13 +221,18 @@ router.delete('/organisations/:orgId', authenticate, loadOrgMembership, checkPer
                     }
                 });
 
-                return projects.map(p => p.id);
+                return {
+                    projectIds: projects.map(p => p.id),
+                    memberIds: members.map(m => m.userId),
+                };
             });
 
             const io = req.app.get('io');
             if (io) {
-                for (const projectId of projectIds) {
-                    io.to(`project:${projectId}`).emit('project:deleted', { projectId });
+                for (const userId of memberIds) {
+                    for (const projectId of projectIds) {
+                        io.to(`user:${userId}`).emit('project:deleted', { projectId });
+                    }
                 }
             }
 
@@ -366,6 +376,7 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
                 return res.status(400).json({ error: 'Invalid user id' });
 
             let remainingMembers = [];
+            let affectedProjectIds = [];
             await prisma.$transaction(async (tx) => {
                 const membre = await tx.member.findUnique({
                     where: { userId_orgId: {
@@ -389,6 +400,32 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
 
                     if (nbAdmins === 1)
                         throw new Error('LAST_ADMIN');
+                }
+
+                const projectMemberships = await tx.projectMember.findMany({
+                    where: {
+                        userId: cible,
+                        project: { orgId: req.orgId },
+                    },
+                    select: { projectId: true },
+                });
+                affectedProjectIds = projectMemberships.map((pm) => pm.projectId);
+
+                if (affectedProjectIds.length > 0) {
+                    await tx.task.updateMany({
+                        where: {
+                            projectId: { in: affectedProjectIds },
+                            assignedToId: cible,
+                        },
+                        data: { assignedToId: null },
+                    });
+
+                    await tx.projectMember.deleteMany({
+                        where: {
+                            userId: cible,
+                            projectId: { in: affectedProjectIds },
+                        },
+                    });
                 }
 
                 await notifyUser(
@@ -430,6 +467,9 @@ router.delete('/organisations/:orgId/membres/:userId', authenticate, loadOrgMemb
             for (const m of remainingMembers) {
                 io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
             }
+            for (const projectId of affectedProjectIds) {
+                io.to(`user:${cible}`).emit('project:member-removed', { projectId });
+            }
 
             return res.json({ message: 'Member deleted' });
 
@@ -455,6 +495,7 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
             const membre = req.orgMembership;
 
             let remainingMembers = [];
+            let affectedProjectIds = [];
             // verifie qu'il y a tjs au moins 1 admin dans l'orga
             await prisma.$transaction(async (tx) => {
                 if (membre.role === 'Admin') {
@@ -467,6 +508,32 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
 
                     if (nbAdmins === 1)
                         throw new Error('LAST_ADMIN');
+                }
+
+                const projectMemberships = await tx.projectMember.findMany({
+                    where: {
+                        userId: req.user.userId,
+                        project: { orgId: req.orgId },
+                    },
+                    select: { projectId: true },
+                });
+                affectedProjectIds = projectMemberships.map((pm) => pm.projectId);
+
+                if (affectedProjectIds.length > 0) {
+                    await tx.task.updateMany({
+                        where: {
+                            projectId: { in: affectedProjectIds },
+                            assignedToId: req.user.userId,
+                        },
+                        data: { assignedToId: null },
+                    });
+
+                    await tx.projectMember.deleteMany({
+                        where: {
+                            userId: req.user.userId,
+                            projectId: { in: affectedProjectIds },
+                        },
+                    });
                 }
 
                 await notifyOrgaMembers(
@@ -496,6 +563,9 @@ router.delete('/organisations/:orgId/me', authenticate, loadOrgMembership,
             io.to(`user:${req.user.userId}`).emit('organisation:member-removed', payload);
             for (const m of remainingMembers) {
                 io.to(`user:${m.userId}`).emit('organisation:member-removed', payload);
+            }
+            for (const projectId of affectedProjectIds) {
+                io.to(`user:${req.user.userId}`).emit('project:member-removed', { projectId });
             }
 
             return res.json({ message: 'You left the organisation' });
