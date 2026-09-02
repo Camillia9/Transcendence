@@ -7,7 +7,7 @@ import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
-import formatStatus from '../utils/status'
+import {  formatStatus } from '../utils/status'
 
 export default function FriendsPage() {
 	const [query, setQuery] = useState('')

@@ -8,7 +8,7 @@ import Input from '../components/ui/Input'
 import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
 import { useNavigate } from 'react-router-dom'
 import { setup2FA, verify2FA, disable2FA } from '../api/auth'
-import formatStatus, { STATUS_VALUES } from '../utils/status'
+import { formatStatus, STATUS_VALUES } from '../utils/status'
 import { BASE_URL } from '../api/client'
 
 function Profil() {
