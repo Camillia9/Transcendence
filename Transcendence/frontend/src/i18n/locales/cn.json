@@ -136,5 +136,29 @@
 			"editFailed": "无法编辑项目",
 			"createFailed": "无法创建项目"
 		}
+	},
+	"chat": {
+		"newConversation": "新建对话",
+		"unknownUser": "未知用户",
+		"me": "我",
+		"noMessages": "暂无消息",
+		"groupConversation": "群组对话",
+		"privateConversation": "私聊",
+		"emptyConversation": {
+			"title": "暂时还没有消息",
+			"subtitle": "发送第一条消息吧！"
+		},
+		"messagePlaceholder": "输入消息...",
+		"send": "发送",
+		"selectConversation": "选择一个对话",
+		"searchUserPlaceholder": "搜索用户...",
+		"noUsersFound": "未找到用户",
+		"groupNameLabel": "群组名称",
+		"groupNamePlaceholder": "例如：前端团队",
+		"createGroup": "创建群组",
+		"startConversation": "开始对话",
+		"errors": {
+			"messageTooLong": "消息长度不能超过500个字符"
+		}
 	}
 }

@@ -136,5 +136,29 @@
 			"editFailed": "Unable to edit the project",
 			"createFailed": "Unable to create the project"
 		}
+	},
+	"chat": {
+		"newConversation": "New conversation",
+		"unknownUser": "Unknown",
+		"me": "Me",
+		"noMessages": "No messages",
+		"groupConversation": "Group conversation",
+		"privateConversation": "Private conversation",
+		"emptyConversation": {
+			"title": "No messages yet",
+			"subtitle": "Send the first message!"
+		},
+		"messagePlaceholder": "Type a message...",
+		"send": "Send",
+		"selectConversation": "Select a conversation",
+		"searchUserPlaceholder": "Search for a user...",
+		"noUsersFound": "No users found",
+		"groupNameLabel": "Group name",
+		"groupNamePlaceholder": "E.g. Frontend Team",
+		"createGroup": "Create group",
+		"startConversation": "Start conversation",
+		"errors": {
+			"messageTooLong": "The message must not exceed 500 characters"
+		}
 	}
 }

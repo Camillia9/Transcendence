@@ -136,5 +136,29 @@
       "editFailed": "Impossible de modifier le projet",
       "createFailed": "Impossible de créer le projet"
     }
+  },
+  "chat": {
+    "newConversation": "Nouvelle conversation",
+    "unknownUser": "Inconnu",
+    "me": "Moi",
+    "noMessages": "Aucun message",
+    "groupConversation": "Conversation de groupe",
+    "privateConversation": "Conversation privée",
+    "emptyConversation": {
+      "title": "Aucun message pour l'instant",
+      "subtitle": "Envoie le premier message !"
+    },
+    "messagePlaceholder": "Écris un message...",
+    "send": "Envoyer",
+    "selectConversation": "Sélectionne une conversation",
+    "searchUserPlaceholder": "Rechercher un utilisateur...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "groupNameLabel": "Nom du groupe",
+    "groupNamePlaceholder": "Ex: Équipe Frontend",
+    "createGroup": "Créer le groupe",
+    "startConversation": "Démarrer la conversation",
+    "errors": {
+      "messageTooLong": "Le message ne doit pas dépasser 500 caractères"
+    }
   }
 }
