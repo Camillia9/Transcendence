@@ -1,5 +1,5 @@
 #  télécharge un système Linux minimal qui contient déjà Node 20.
-FROM node:20-alpine
+FROM node:22-alpine
 
 # crée un dossier /app et se place dedans.Le dossier de travai.
 WORKDIR /app
