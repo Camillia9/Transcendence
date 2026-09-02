@@ -422,6 +422,99 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
         }
     });
 
+router.patch('/projects/:projectId/members/:userId', authenticate, loadProject, checkPermissionProject('edit_project'),
+    async (req, res) => {
+        try {
+            const userId = Number(req.params.userId);
+            const { role } = req.body;
+
+            if (!Number.isInteger(userId) || userId <= 0)
+            return res.status(400).json({ error: 'Invalid userId' });
+
+            if (!['User', 'Manager'].includes(role))
+                return res.status(400).json({ error: 'Invalid role' });
+
+            // verifier que le membre existe dans le projet
+            const member = await prisma.projectMember.findUnique({
+                where: {
+                    userId_projectId: {
+                        projectId: req.project.id,
+                        userId
+                    }
+                },
+                select: {
+                    role: true
+                }
+            });
+
+            if (!member) {
+                return res.status(404).json({ error: 'User is not a member of this project' });
+            }
+
+            // si le role n'a pas changer
+            if (member.role === role)
+                return res.json(member);
+            
+            // verifier que ce n'est pas le dernier manager du projet
+            if (member.role === 'Manager' && role === 'User') {
+                const nbManager = await prisma.projectMember.count({
+                    where: {
+                        projectId: req.project.id,
+                        role: 'Manager'
+                    }
+                });
+
+                if (nbManager <= 1) {
+                    return res.status(400).json({ error: 'Cannot remove the last manager of the project' });
+                }
+            }
+
+            const updatedMember = await prisma.$transaction(async (tx) => {
+                const updated = await tx.projectMember.update({
+                    where: {
+                        userId_projectId: {
+                            projectId: req.project.id,
+                            userId
+                        }
+                    },
+                    data: {
+                        role
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                pseudo: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                });
+                // notifier a la personne
+                await notifyUser(
+                    tx,
+                    userId,
+                    req.user.userId,
+                    'ProjectRoleUpdated',
+                    req.app.get('io'),
+                    {
+                        projectId: req.project.id,
+                        role
+                    }
+                );
+                return updated;
+            });
+
+            req.app.get('io').to(`user:${userId}`).emit('project:member-role-updated', { projectId: req.project.id, member: updatedMember });
+
+            return res.json({ message: 'Member role updated', member: updatedMember });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+    });
+
 // lister les membres de l'orga qui ne sont pas dans le projet
 router.get('/projects/:projectId/available-members', authenticate, loadProject, checkPermissionProject('edit_project'),
     async (req, res) => {

@@ -248,6 +248,7 @@ enum TypeNotification {
   ProjectUpdated
   ProjectDeleted
   RemovedFromProject
+  ProjectRoleUpdated
   DeplacementTache
 }
 
