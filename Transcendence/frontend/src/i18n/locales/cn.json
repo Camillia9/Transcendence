@@ -241,5 +241,69 @@
 			"titleTooLong": "标题不能超过20个字符",
 			"createFailed": "无法创建任务"
 		}
+	},
+	"organisation": {
+		"title": "我的组织",
+		"newOrganisation": "新建组织",
+		"myInvitations": "我的邀请",
+		"invitationText": "<b>{{inviter}}</b> 邀请你加入 <b>{{orgName}}</b>",
+		"accept": "接受",
+		"decline": "拒绝",
+		"emptyState": "你还没有任何组织。",
+		"nameLabel": "组织名称",
+		"createSubmit": "创建组织",
+		"pseudoLabel": "用户名",
+		"invitePlaceholder": "要添加的成员",
+		"inviteSubmit": "邀请",
+		"deleteModal": {
+			"title": "删除该组织？",
+			"confirm": "{{name}} 将被永久删除"
+		},
+		"editModal": {
+			"title": "编辑组织"
+		},
+		"removeMemberModal": {
+			"title": "移除该成员？",
+			"confirm": "{{pseudo}} 将被永久移出该组织",
+			"confirmButton": "移除"
+		},
+		"editRoleModal": {
+			"title": "编辑角色"
+		},
+		"cancelInvitationModal": {
+			"title": "取消该邀请？",
+			"confirm": "该邀请将被取消。"
+		},
+		"inviteModal": {
+			"title": "邀请成员"
+		},
+		"roles": {
+			"admin": "Admin",
+			"member": "Member"
+		},
+		"confirmLeave": "退出该组织？",
+		"alerts": {
+			"lastAdminRole": "无法更改最后一位管理员的角色。组织必须始终至少保留一名管理员。",
+			"needAtLeastOneAdmin": "组织必须始终至少保留一名管理员。",
+			"lastAdminCannotLeave": "你是最后一位管理员，无法退出该组织。",
+			"leaveFailed": "无法退出该组织。"
+		},
+		"errors": {
+			"nameRequired": "组织名称为必填项",
+			"nameTooLong": "组织名称不能超过20个字符",
+			"editFailed": "无法编辑组织",
+			"createFailed": "无法创建组织",
+			"roleUpdateFailed": "无法更新角色",
+			"alreadyMember": "该用户已是组织成员",
+			"alreadyInvited": "该用户已有待处理的邀请",
+			"userNotFound": "未找到该用户名对应的用户",
+			"inviteFailed": "无法发送邀请"
+		},
+		"leave": "退出",
+		"pendingInviteLabel": "已邀请",
+		"memberCount_one": "{{count}} 名成员",
+		"memberCount_other": "{{count}} 名成员",
+		"pendingInviteCount_one": "{{count}} 个邀请",
+		"pendingInviteCount_other": "{{count}} 个邀请"
 	}
 }

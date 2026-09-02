@@ -241,5 +241,69 @@
 			"titleTooLong": "The title must not exceed 20 characters",
 			"createFailed": "Unable to create the task"
 		}
+	},
+	"organisation": {
+		"title": "My organisations",
+		"newOrganisation": "New organisation",
+		"myInvitations": "My invitations",
+		"invitationText": "<b>{{inviter}}</b> invited you to join <b>{{orgName}}</b>",
+		"accept": "Accept",
+		"decline": "Decline",
+		"emptyState": "You don't have any organisations yet.",
+		"nameLabel": "Organisation name",
+		"createSubmit": "Create organisation",
+		"pseudoLabel": "Username",
+		"invitePlaceholder": "Member to add",
+		"inviteSubmit": "Invite",
+		"deleteModal": {
+			"title": "Delete this organisation?",
+			"confirm": "{{name}} will be permanently deleted"
+		},
+		"editModal": {
+			"title": "Edit organisation"
+		},
+		"removeMemberModal": {
+			"title": "Remove this member?",
+			"confirm": "{{pseudo}} will be permanently removed from this organisation",
+			"confirmButton": "Remove"
+		},
+		"editRoleModal": {
+			"title": "Edit role"
+		},
+		"cancelInvitationModal": {
+			"title": "Cancel this invitation?",
+			"confirm": "The invitation will be cancelled."
+		},
+		"inviteModal": {
+			"title": "Invite a member"
+		},
+		"roles": {
+			"admin": "Admin",
+			"member": "Member"
+		},
+		"confirmLeave": "Leave this organisation?",
+		"alerts": {
+			"lastAdminRole": "Cannot change the role of the last administrator. An organisation must always have at least one administrator.",
+			"needAtLeastOneAdmin": "An organisation must always have at least one administrator.",
+			"lastAdminCannotLeave": "You are the last admin, you cannot leave the organisation.",
+			"leaveFailed": "Unable to leave the organisation."
+		},
+		"errors": {
+			"nameRequired": "The organisation name is required",
+			"nameTooLong": "The organisation name must not exceed 20 characters",
+			"editFailed": "Unable to edit the organisation",
+			"createFailed": "Unable to create the organisation",
+			"roleUpdateFailed": "Unable to update the role",
+			"alreadyMember": "This user is already a member of the organisation",
+			"alreadyInvited": "An invitation is already pending for this user",
+			"userNotFound": "No user found with this username",
+			"inviteFailed": "Unable to send the invitation"
+		},
+		"leave": "Leave",
+		"pendingInviteLabel": "Invited",
+		"memberCount_one": "{{count}} member",
+		"memberCount_other": "{{count}} members",
+		"pendingInviteCount_one": "{{count}} invite",
+		"pendingInviteCount_other": "{{count}} invites"
 	}
 }

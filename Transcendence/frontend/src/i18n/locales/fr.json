@@ -241,5 +241,69 @@
       "titleTooLong": "Le titre ne doit pas dépasser 20 caractères",
       "createFailed": "Impossible de creer la tache"
     }
+  },
+  "organisation": {
+    "title": "Mes organisations",
+    "newOrganisation": "Nouvelle organisation",
+    "myInvitations": "Mes invitations",
+    "invitationText": "<b>{{inviter}}</b> t'invite à rejoindre <b>{{orgName}}</b>",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "emptyState": "Tu n'as pas encore d'organisations.",
+    "nameLabel": "Nom de l'organisation",
+    "createSubmit": "Créer l'organisation",
+    "pseudoLabel": "Pseudo",
+    "invitePlaceholder": "Membre a ajouter",
+    "inviteSubmit": "Inviter",
+    "deleteModal": {
+      "title": "Supprimer cette organisation ?",
+      "confirm": "{{name}} sera supprimé définitivement"
+    },
+    "editModal": {
+      "title": "Modifier l'organisation"
+    },
+    "removeMemberModal": {
+      "title": "Retirer ce membre ?",
+      "confirm": "{{pseudo}} sera retiré définitivement de cette organisation",
+      "confirmButton": "Retirer"
+    },
+    "editRoleModal": {
+      "title": "Modifier le role"
+    },
+    "cancelInvitationModal": {
+      "title": "Annuler cette invitation ?",
+      "confirm": "L'invitation sera annulée."
+    },
+    "inviteModal": {
+      "title": "Inviter un membre"
+    },
+    "roles": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "confirmLeave": "Quitter cette organisation ?",
+    "alerts": {
+      "lastAdminRole": "Impossible de modifier le role du dernier administrateur. Il faut toujours au moins un administrateur dans l'organisation.",
+      "needAtLeastOneAdmin": "Une organisation doit toujours avoir au moins un administrateur.",
+      "lastAdminCannotLeave": "Vous êtes le dernier admin, vous ne pouvez pas quitter l'organisation.",
+      "leaveFailed": "Impossible de quitter l'organisation."
+    },
+    "errors": {
+      "nameRequired": "Le nom de l'organisation est obligatoire",
+      "nameTooLong": "Le nom de l'organisation ne doit pas dépasser 20 caractères",
+      "editFailed": "Impossible de modifier l'organisation",
+      "createFailed": "Impossible de créer l'organisation",
+      "roleUpdateFailed": "Impossible de modifier le role",
+      "alreadyMember": "Cet utilisateur est déjà membre de l'organisation",
+      "alreadyInvited": "Une invitation est déjà en attente pour cet utilisateur",
+      "userNotFound": "Aucun utilisateur avec ce pseudo",
+      "inviteFailed": "Impossible d'envoyer l'invitation"
+    },
+    "leave": "Quitter",
+    "pendingInviteLabel": "Invite",
+    "memberCount_one": "{{count}} membre",
+    "memberCount_other": "{{count}} membres",
+    "pendingInviteCount_one": "{{count}} invite",
+    "pendingInviteCount_other": "{{count}} invites"
   }
 }
