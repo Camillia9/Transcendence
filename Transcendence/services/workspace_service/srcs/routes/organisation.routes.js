@@ -13,6 +13,8 @@ router.post('/organisations', authenticate,
             const { orgName } = req.body;
             if (!orgName)
                 return res.status(400).json({ error: 'Organisation name required' });
+            if (orgName.length > 20)
+                return res.status(400).json({ error: 'Organisation name must be at most 20 characters' });
 
             const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name: orgName }});
             if (orgaAlreadyExist)
@@ -149,6 +151,8 @@ router.patch('/organisations/:orgId', authenticate, loadOrgMembership, checkPerm
             const { orgName } = req.body;
             if (!orgName)
                 return res.status(400).json({ error: 'Organisation name required' });
+            if (orgName.length > 20)
+                return res.status(400).json({ error: 'Organisation name must be at most 20 characters' });
 
             // verifie qu'une autre organisation ne possede pas deja ce nom
             const orgaAlreadyExist = await prisma.organisation.findUnique({ where: { name: orgName, }, });

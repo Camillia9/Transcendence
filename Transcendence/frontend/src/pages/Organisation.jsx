@@ -116,8 +116,10 @@ function Organisations() {
     const errors = {}
 
     // Si le nameOrga ne contient rien ou que des espaces on stock l'erreur dans errors
-    if (!newName.trim()) 
+    if (!newName.trim())
       errors.name = "Le nom de l'organisation est obligatoire"
+    else if (newName.trim().length > 20)
+      errors.name = "Le nom de l'organisation ne doit pas dépasser 20 caractères"
 
     // return l'objet complet
     return errors

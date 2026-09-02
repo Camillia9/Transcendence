@@ -51,10 +51,12 @@
 		"errors": {
 			"usernameRequired": "Username is required",
 			"usernameTooShort": "Minimum 3 characters",
+			"usernameTooLong": "Maximum 20 characters",
 			"emailRequired": "Email is required",
 			"emailInvalid": "Invalid email format",
 			"passwordRequired": "Password is required",
 			"passwordTooShort": "Minimum 6 characters",
+			"passwordTooLong": "Maximum 30 characters",
 			"confirmPasswordRequired": "Confirm your password",
 			"passwordMismatch": "Passwords do not match",
 			"usernameTaken": "This username is already taken",

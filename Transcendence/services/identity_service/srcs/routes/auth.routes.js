@@ -42,8 +42,14 @@ router.post('/auth/register', async (req, res) => {
     if (pseudo.length < 3)
         return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
+    if (pseudo.length > 20)
+        return res.status(400).json({ error: 'Username must be at most 20 characters' });
+
     if (password.length < 6)
         return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    if (password.length > 30)
+        return res.status(400).json({ error: 'Password must be at most 30 characters' });
 
     const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
         prisma.user.findUnique({ where: { email }}),

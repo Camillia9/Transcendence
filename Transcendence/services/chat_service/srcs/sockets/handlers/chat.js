@@ -28,6 +28,10 @@ export function registerChatHandlers(io, socket) {
 
     socket.on('message:send', async ({ conversationId, content }) => {
         if (!content || !content.trim()) return
+        if (content.trim().length > 500) {
+            socket.emit('error', { message: 'Message must be at most 500 characters' })
+            return
+        }
 
         try {
             const message = await prisma.message.create({
