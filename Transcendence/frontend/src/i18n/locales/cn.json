@@ -67,5 +67,26 @@
 
 	"legal": {
 		"lastUpdated": "最后更新：{{date}}"
+	},
+
+	"landing": {
+		"loginLink": "登录",
+		"illustrationAlt": "TaskBoard 插图",
+		"heroTitleLine1": "管理你的项目，",
+		"heroTitleLine2": "一起完成。",
+		"description": "与团队一起组织任务，实时跟踪进度，无需离开工具即可沟通。",
+		"badges": {
+			"kanban": "实时看板",
+			"chat": "内置聊天",
+			"roles": "角色管理"
+		},
+		"cta": "免费开始使用"
+	},
+
+	"footer": {
+		"privacy": "隐私",
+		"terms": "条款",
+		"status": "状态",
+		"copyright": "© {{year}} TaskBoard"
 	}
 }

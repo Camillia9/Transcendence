@@ -67,5 +67,26 @@
 
   "legal": {
     "lastUpdated": "Dernière mise à jour : {{date}}"
+  },
+
+  "landing": {
+    "loginLink": "Se connecter",
+    "illustrationAlt": "Illustration TaskBoard",
+    "heroTitleLine1": "Gérez vos projets,",
+    "heroTitleLine2": "ensemble.",
+    "description": "Organisez vos tâches en équipe, suivez l'avancement en direct et communiquez sans quitter l'outil.",
+    "badges": {
+      "kanban": "Kanban temps réel",
+      "chat": "Chat intégré",
+      "roles": "Gestion des rôles"
+    },
+    "cta": "Commencer gratuitement"
+  },
+
+  "footer": {
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "status": "Statut",
+    "copyright": "© {{year}} TaskBoard"
   }
 }
