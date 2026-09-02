@@ -261,6 +261,10 @@ function KanbanPage() {
       setNewTaskError('Le titre est obligatoire')
       return
     }
+    if (newTaskTitle.trim().length > 20) {
+      setNewTaskError('Le titre ne doit pas dépasser 20 caractères')
+      return
+    }
     //const nextPosition = getNextPosition(projectId, newTaskColumn)
     try {
       // On envoie uniquement ce que la route accepte

@@ -71,8 +71,10 @@ function Home() {
     const errors = {}
 
     // Si le nameProject ne contient rien ou que des espaces on stock l'erreur dans errors
-    if (!newName.trim()) 
+    if (!newName.trim())
       errors.title = "Le nom du projet est obligatoire"
+    else if (newName.trim().length > 20)
+      errors.title = "Le nom du projet ne doit pas dépasser 20 caractères"
 
     if (!projectToEdit && !selectedOrgId)
       errors.org = "Choisis une organisation"
@@ -295,7 +297,7 @@ function Home() {
                 placeholder="Nom du projet"
                 light
               />
-              {newErrors.name && (
+              {newErrors.title && (
                 <p className="text-red-400 text-sm mt-1">{newErrors.title}</p>
               )}
             </div>

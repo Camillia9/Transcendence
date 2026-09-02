@@ -57,6 +57,9 @@ router.patch('/profile', authenticate, async (req, res) => {
         if (pseudo !== undefined && pseudo.trim().length < 3)
             return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
+        if (pseudo !== undefined && pseudo.trim().length > 20)
+            return res.status(400).json({ error: 'Username must be at most 20 characters' });
+
         const allowedStatus = ['Available', 'Busy', 'Away'];
         const allowedLanguages = ['fr', 'en', 'cn'];
 

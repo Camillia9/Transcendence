@@ -51,15 +51,21 @@
     "errors": {
       "usernameRequired": "Le nom d'utilisateur est requis",
       "usernameTooShort": "Minimum 3 caractères",
+      "usernameTooLong": "Maximum 20 caractères",
       "emailRequired": "L'email est requis",
       "emailInvalid": "Format d'email invalide",
       "passwordRequired": "Le mot de passe est requis",
       "passwordTooShort": "Minimum 6 caractères",
+      "passwordTooLong": "Maximum 30 caractères",
       "confirmPasswordRequired": "Confirme ton mot de passe",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
       "usernameTaken": "Ce pseudo est déjà utilisé",
       "emailTaken": "Cet email est déjà utilisé",
       "generic": "Impossible de créer le compte"
     }
+  },
+
+  "legal": {
+    "lastUpdated": "Dernière mise à jour : {{date}}"
   }
 }

@@ -37,6 +37,7 @@ function Chat() {
   const [conversations, setConversations] = useState([]) // Liste complete des conversations
   const [activeId, setActiveId] = useState(null)   // conversation ouverte
   const [draft, setDraft] = useState('')           // message en cours de saisie
+  const [draftError, setDraftError] = useState('')
   const [otherUsers, setOtherUsers] = useState([]) // tous les users sauf moi
 
   // State de la modale "nouvelle conversation"
@@ -72,6 +73,11 @@ function Chat() {
   const handleSend = () => {
     if (!draft.trim()) return
     const text = draft.trim()
+    if (text.length > 500) {
+      setDraftError('Le message ne doit pas dépasser 500 caractères')
+      return
+    }
+    setDraftError('')
 
     if (socket) {
       // Le message reviendra via l'event 'message:new' (source de vérité)
@@ -332,23 +338,31 @@ function Chat() {
             </div>
 
             {/* Champ d'envoi */}
-            <div className="flex gap-2 pt-3 border-t border-gray-100">
-              <input
-                type="text"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Écris un message..."
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary-600 transition-colors"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!draft.trim()}
-                className="flex items-center gap-1.5 bg-primary-600 text-white rounded-xl px-4 text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <IconSend size={16} />
-                Envoyer
-              </button>
+            <div className="pt-3 border-t border-gray-100">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    setDraftError('')
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Écris un message..."
+                  className="flex-1 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary-600 transition-colors"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!draft.trim()}
+                  className="flex items-center gap-1.5 bg-primary-600 text-white rounded-xl px-4 text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <IconSend size={16} />
+                  Envoyer
+                </button>
+              </div>
+              {draftError && (
+                <p className="text-red-400 text-sm mt-1">{draftError}</p>
+              )}
             </div>
           </>
         ) : (
