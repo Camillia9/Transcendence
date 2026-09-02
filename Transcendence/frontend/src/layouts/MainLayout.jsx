@@ -155,6 +155,10 @@ function MainLayout() {
         return notif.organisation?.name
           ? `${notif.actor?.pseudo} a quitté l'organisation « ${notif.organisation.name} »`
           : `${notif.actor?.pseudo} a quitté une organisation`
+      case 'ProjectRoleUpdated':
+        return notif.project?.name
+          ? `${notif.actor?.pseudo} a modifié votre rôle dans « ${notif.project.title} »`
+          : `${notif.actor?.pseudo} a modifié votre rôle`
       default:
         return 'Nouvelle notification'
     }
@@ -181,6 +185,7 @@ function MainLayout() {
       case 'MemberLeftOrga':
       case 'MemberRemoved':
       case 'OrgaUpdated':
+      case 'ProjectRoleUpdated':
         return '/Organisation'
 
       default:
