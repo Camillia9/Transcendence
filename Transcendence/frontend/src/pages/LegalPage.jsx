@@ -1,32 +1,34 @@
-import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Logo from '../components/ui/Logo'
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLegalContent } from '../data/useLegalContent'
 
-function LegalPage({ content }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+function LegalPage({ type }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { t } = useTranslation()
+  const { privacyPolicy, termsOfService } = useLegalContent()
+  const content = type === 'privacy' ? privacyPolicy : termsOfService
 
   const handleBack = () => {
     if (location.key !== "default") {
-      navigate(-1);          // on revient là où on était
+      navigate(-1)
     } else {
-      navigate("/");         // arrivée directe → fallback
+      navigate("/")
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* En-tête simple avec retour à l'accueil */}
       <header className="bg-white border-b border-gray-100 px-6 py-4">
         <button onClick={handleBack} className="cursor-pointer">
           <Logo />
         </button>
       </header>
 
-      {/* Contenu centré, largeur de lecture confortable */}
-      <main className="max-w-3xl mx-auto px-6 py-12"> 
+      <main className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold text-gray-800 mb-1">{content.title}</h1>
-        <p className="text-sm text-gray-400 mb-10">Dernière mise à jour : {content.lastUpdated}</p>
+        <p className="text-sm text-gray-400 mb-10">{t('legal.lastUpdated', { date: content.lastUpdated })}</p>
 
         {content.sections.map((section, i) => (
           <section key={i} className="mb-8">
@@ -51,7 +53,7 @@ function LegalPage({ content }) {
                   </ul>
                 )
               }
-              return null  // type inconnu : on n'affiche rien plutôt que de planter
+              return null
             })}
           </section>
         ))}
