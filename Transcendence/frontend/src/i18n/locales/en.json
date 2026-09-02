@@ -67,5 +67,26 @@
 
 	"legal": {
 		"lastUpdated": "Last updated: {{date}}"
+	},
+
+	"landing": {
+		"loginLink": "Log in",
+		"illustrationAlt": "TaskBoard illustration",
+		"heroTitleLine1": "Manage your projects,",
+		"heroTitleLine2": "together.",
+		"description": "Organize your team's tasks, track progress live, and communicate without leaving the tool.",
+		"badges": {
+			"kanban": "Real-time Kanban",
+			"chat": "Built-in chat",
+			"roles": "Role management"
+		},
+		"cta": "Get started for free"
+	},
+
+	"footer": {
+		"privacy": "Privacy",
+		"terms": "Terms",
+		"status": "Status",
+		"copyright": "© {{year}} TaskBoard"
 	}
 }
