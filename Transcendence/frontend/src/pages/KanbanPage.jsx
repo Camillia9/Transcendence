@@ -14,8 +14,8 @@ import Avatar from "../components/ui/Avatar"
 
 import { useWorkspaceSocket } from "../context/SocketContext"
 import { getTasks, updateTask, deleteTask, assignTask, moveTask, createTask, addComment, deleteComment } from "../api/tasks";
-import { addProjectMember, getAvailableMembers, getProjectById, removeProjectMember } from "../api/projects";
-import { IconPlug, IconPlus, IconTrash } from "@tabler/icons-react";
+import { addProjectMember, getAvailableMembers, getProjectById, removeProjectMember, updateProjectMemberRole } from "../api/projects";
+import { IconPlug, IconPlus, IconTrash, IconPencil } from "@tabler/icons-react";
 
 const COLUMNS = [
   { id: "ToDo", label: "À faire" },
@@ -44,6 +44,9 @@ function KanbanPage() {
 
   const [showMembers, setShowMembers] = useState(false) // modal ouverte ?
   const [availableMembers, setAvailableMembers] = useState([]) // gens de l'orga ajoutable
+
+  const [memberToEdit, setMemberToEdit] = useState(null)
+  const [newRole, setNewRole] = useState('')
 
   const projectRef = useRef(null)
   useEffect(() => {
@@ -361,6 +364,17 @@ function KanbanPage() {
     }
   }
 
+  async function saveRole() {
+    try {
+      await updateProjectMemberRole(projectId, memberToEdit.userId, newRole)
+      await loadProject()
+      setMemberToEdit(null)
+      setNewRole('')
+    } catch (error) {
+      console.error('Impossible de modifier le role du membre', error)
+    }
+  }
+
   // Comme les projets s'affichent avec une fonction asynchrone, useState est null au depart. Alors y'a un temps avant de s'affichier.
   // Si on ne met pas cela, ca plante. 
   if (!project) return <p>Chargement…</p>
@@ -498,19 +512,39 @@ function KanbanPage() {
         {/*Membres actuels*/}
         <div className="flex flex-col gap-2 mb-6">
           <h3 className="text-sm font-medium text-gray-700">Membres actuels</h3>
-          {members.map(m => (
-            <div key={m.id} className="flex items-center justify-between">
+          {memberships.map(m => (
+            <div key={m.user.id} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Avatar src={m.avatar} username={m.pseudo} size="sm" />
-                <span className="text-sm text-gray-700">{m.pseudo}</span>
+                <Avatar src={m.user.avatar} username={m.user.pseudo} size="sm" />
+                <span className="text-sm text-gray-700">{m.user.pseudo}</span>
               </div>
-              <button
-                onClick={() => handleRemoveMember(m.id)}
-                className="text-gray-300 hover:text-red-400 transition-colors"
-                title="Retirer"
-              >
-                <IconTrash size={16} />
-              </button>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500">{m.role}</span>
+
+                <button
+                  onClick={() => {
+                    setMemberToEdit({
+                      userId: m.user.id,
+                      pseudo: m.user.pseudo,
+                      role: m.role
+                    })
+                    setNewRole(m.role)
+                  }}
+                  className="text-gray-300 hover:text-primary-600 transition-colors"
+                  title="Modifier le role"
+                >
+                  <IconPencil size={16} />
+                </button>
+
+                <button
+                  onClick={() => handleRemoveMember(m.user.id)}
+                  className="text-gray-300 hover:text-red-400 transition-colors"
+                  title="Retirer"
+                >
+                  <IconTrash size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -542,6 +576,56 @@ function KanbanPage() {
         
             
       </Modal>
+
+      {memberToEdit && (
+        <Modal
+          isOpen={!!memberToEdit}
+          onClose={() => {
+            setMemberToEdit(null)
+            setNewRole('')
+          }}
+          title="Modifier le role"
+          >
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-sm text-gray-500">Membre</label>
+              <p className="text-sm text-gray-700">
+                {memberToEdit.pseudo}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-sm text-gray-500">Role</label>
+
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="User">User</option>
+                <option value="Manager">Manager</option>
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMemberToEdit(null)
+                  setNewRole('')
+                }}
+              >
+                Annuler
+              </Button>
+
+              <Button
+                variant="primary"
+                onClick={saveRole}
+              >
+                Enregistrer
+              </Button>
+            </div>
+          </Modal>
+      )}
 
     </div>
   )
