@@ -212,16 +212,20 @@ function Home() {
         </Button>
       </div>
         {/*Grille responsive*/}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map(project => (
-            <ProjectCard
-            project={project}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            key={project.id}
-            />
-          ))}
-        </div>
+        {projects.length === 0 ? (
+          <p className="text-sm text-gray-400">Tu n'as pas encore de projets.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.map(project => (
+              <ProjectCard
+              project={project}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              key={project.id}
+              />
+            ))}
+          </div>
+        )}
         {/*Modal supprimer un projet */}
           {projectToDelete && (
             <Modal
