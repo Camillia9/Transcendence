@@ -89,7 +89,7 @@ function Login() {
       <div className="flex flex-col gap-3 w-full">
         {twoFactorUserId ? (
           /* MODE 2FA : saisie du code */
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 w-full">
             <p className="text-sm text-gray-500">{t('login.twoFactor.instructions')}</p>
             <Input
               type="text"
@@ -101,7 +101,7 @@ function Login() {
             <Button onClick={handleVerify2FALogin} disabled={loading}>{t('login.twoFactor.submit')}</Button>
           </div>
         ) : (
-          <div>
+          <div className="flex flex-col gap-3 w-full">
             {/* Identifiant */}
             <div>
               <Input

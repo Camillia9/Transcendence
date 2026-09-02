@@ -421,21 +421,26 @@ function Organisations() {
       )}
       
       {/*Grille responsive*/}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {organisations.map(organisation => (
-          <OrgaCard
-          orga={organisation}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onEditMember={handleEditMember}
-          onDeleteMember={handleDeleteMember}
-          onInvite={handleInvite}
-          onDeleteInvitation={handleDeleteInvitation}
-          onLeave={handleLeaveOrga}
-          key={organisation.id}
-          />
-        ))}
-      </div>
+      {organisations.length === 0 ? (
+        <p className="text-sm text-gray-400">Tu n'as pas encore d'organisations.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {organisations.map(organisation => (
+            <OrgaCard
+            orga={organisation}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onEditMember={handleEditMember}
+            onDeleteMember={handleDeleteMember}
+            onInvite={handleInvite}
+            onDeleteInvitation={handleDeleteInvitation}
+            onLeave={handleLeaveOrga}
+            key={organisation.id}
+            />
+          ))}
+        </div>
+
+      )}
       {/*Modal supprimer une orga */}
       {organisationToDelete && (
         <Modal

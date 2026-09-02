@@ -8,7 +8,6 @@ import Input from '../components/ui/Input'
 import { changePassword, deleteAccount, getProfile, updateProfile } from '../api/users'
 import { useNavigate } from 'react-router-dom'
 import { setup2FA, verify2FA, disable2FA } from '../api/auth'
-import formatStatus, { STATUS_VALUES } from '../utils/status'
 import { BASE_URL } from '../api/client'
 
 function Profil() {
@@ -19,7 +18,6 @@ function Profil() {
 
   // Les etats des champs du profil
   const [pseudo, setPseudo] = useState('')
-  const [statut, setStatut] = useState('')
   const [language, setLanguage] = useState('')
   const [avatar, setAvatar] = useState('')
   // Save les erreurs des champs du profile et l'avatar
@@ -47,7 +45,7 @@ function Profil() {
   async function handleSave () {
     try {
       setError('') // vide le precendent message d'erreur
-      const data = await updateProfile({pseudo, statut, langue: language, avatar})
+      const data = await updateProfile({pseudo, langue: language, avatar})
       login(data) // accessible via useAuth()
       setProfile(data) // met a jour instantannement apres les chnagement la carte profile
     } catch (err) {
@@ -76,7 +74,6 @@ function Profil() {
     // On recup donnes du back. On save les nouvelles valeurs mais on ne les echange pas direct. 
     // Au cas ou on annule il faut se rapler des anciennes valeurs
     setPseudo(profile.pseudo)
-    setStatut(profile.statut)
     setLanguage(profile.langue)
     setAvatar(profile.avatar ?? '') // un Avatar peut etre null
    }
@@ -84,7 +81,6 @@ function Profil() {
 
   function handleCancel() {
     setPseudo(profile.pseudo)
-    setStatut(profile.statut)
     setLanguage(profile.langue)
     setAvatar(profile.avatar ?? '')
     setError('')
@@ -281,20 +277,6 @@ function Profil() {
               placeholder="Nouveau pseudo"
               className="w-48"
           />
-        </div>
-
-        {/*Statut */}
-        <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>Statut</label>
-            <select
-              value={statut}
-              onChange={(e) => setStatut(e.target.value)} // e.target.value contient la value de l'option selectionne
-              className='text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1'
-            >
-              {STATUS_VALUES.map(value => (
-                <option key={value} value={value}>{formatStatus(value)}</option>
-              ))}
-            </select>
         </div>
 
          {/*Langue */}
