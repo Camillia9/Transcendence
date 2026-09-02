@@ -160,5 +160,23 @@
 		"errors": {
 			"messageTooLong": "The message must not exceed 500 characters"
 		}
+	},
+	"friends": {
+		"title": "Friends",
+		"searchPlaceholder": "Search for a username...",
+		"searchMinChars": "Type at least 2 characters",
+		"noResults": "No results",
+		"emptyState": "You don't have any friends yet.",
+		"contactModal": {
+			"title": "Contact"
+		},
+		"removeContact": "Remove from contacts",
+		"addContact": "Add to contacts"
+	},
+	"presence": {
+		"available": "Available",
+		"busy": "Busy",
+		"away": "Away",
+		"offline": "Offline"
 	}
 }

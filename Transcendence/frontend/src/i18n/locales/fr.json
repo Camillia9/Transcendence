@@ -160,5 +160,23 @@
     "errors": {
       "messageTooLong": "Le message ne doit pas dépasser 500 caractères"
     }
+  },
+  "friends": {
+    "title": "Amis",
+    "searchPlaceholder": "Rechercher un pseudo...",
+    "searchMinChars": "Tape au moins 2 caractères",
+    "noResults": "Aucun résultat",
+    "emptyState": "Tu n'as pas encore d'amis.",
+    "contactModal": {
+      "title": "Contact"
+    },
+    "removeContact": "Supprimer des contacts",
+    "addContact": "Ajouter aux contacts"
+  },
+  "presence": {
+    "available": "Disponible",
+    "busy": "Occupé",
+    "away": "Absent",
+    "offline": "Hors ligne"
   }
 }

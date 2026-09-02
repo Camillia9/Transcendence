@@ -160,5 +160,23 @@
 		"errors": {
 			"messageTooLong": "消息长度不能超过500个字符"
 		}
+	},
+	"friends": {
+		"title": "好友",
+		"searchPlaceholder": "搜索用户名...",
+		"searchMinChars": "请输入至少2个字符",
+		"noResults": "没有找到结果",
+		"emptyState": "你还没有任何好友。",
+		"contactModal": {
+			"title": "联系人"
+		},
+		"removeContact": "从联系人中删除",
+		"addContact": "添加到联系人"
+	},
+	"presence": {
+		"available": "在线",
+		"busy": "忙碌",
+		"away": "离开",
+		"offline": "离线"
 	}
 }

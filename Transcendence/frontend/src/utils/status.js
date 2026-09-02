@@ -1,15 +1,14 @@
-// Le back envoie en anglasi le statut, nous on le veux en FR pour pouvoir faire la traduction
-
+// Le back envoie en anglais le statut ; côté frontend on traduit à l'affichage selon la langue active
 export const STATUS_VALUES = ['Available', 'Busy', 'Away']
 
-export function formatStatus(statut) {
+export function formatStatus(statut, t) {
   switch (statut) {
     case 'Available':
-      return 'Disponible'
+      return t('presence.available')
     case 'Busy':
-      return 'Occupé'
+      return t('presence.busy')
     case 'Away':
-      return 'Absent'
+      return t('presence.away')
     default:
       return statut   // valeur inconnue : on affiche le brut plutôt que rien
   }
@@ -22,14 +21,14 @@ export const STATUS_DOT = {
   Away: 'bg-gray-400',
 }
 
-export function getDisplayStatus(friend) {
+export function getDisplayStatus(friend, t) {
   // hors ligne : la pastille et le texte disent la même chose, peu importe le statut stocké
   if (!friend?.isOnline) {
-    return { label: 'Hors ligne', dotClass: 'bg-red-400' }
+    return { label: t('presence.offline'), dotClass: 'bg-red-400' }
   }
   // en ligne : on montre le vrai statut choisi
   return {
-    label: formatStatus(friend.statut),
+    label: formatStatus(friend.statut, t),
     dotClass: STATUS_DOT[friend.statut] ?? 'bg-red-400',
   }
 }

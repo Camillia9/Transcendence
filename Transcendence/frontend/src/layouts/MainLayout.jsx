@@ -15,9 +15,11 @@ import { getUnreadCount } from '../api/conversations'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 import { updateProfile } from '../api/users'
 import { STATUS_DOT, STATUS_VALUES, formatStatus } from '../utils/status'
+import { useTranslation } from 'react-i18next'
 
 function MainLayout() {
   const { user, logout } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -397,7 +399,7 @@ function MainLayout() {
                   className='w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 text-sm'
                 >
                   <span className={`w-4 h-4 rounded-full shrink-0 ${STATUS_DOT[statut] ?? 'bg-gray-300'}`} />
-                  {sidebarOpen && <span>{formatStatus(statut)}</span>}
+                  {sidebarOpen && <span>{formatStatus(statut, t)}</span>}
                 </button>
 
                 {statusMenuOpen && (
@@ -409,7 +411,7 @@ function MainLayout() {
                         className='flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
                       >
                         <span className={`w-3 h-3 rounded-full shrink-0 ${STATUS_DOT[value]}`} />
-                        {sidebarOpen && formatStatus(value)}
+                        {sidebarOpen && formatStatus(value, t)}
                       </button>
                     ))}
                   </div>
