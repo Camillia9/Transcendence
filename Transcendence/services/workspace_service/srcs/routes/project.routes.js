@@ -338,6 +338,7 @@ router.post('/projects/:projectId/members', authenticate, loadProject, checkPerm
                 }
             });
             req.app.get('io').to(`user:${targetUserId}`).emit('project:member-added', project);
+            req.app.get('io').to(`project:${req.project.id}`).emit('project:member-added', { projectId: req.project.id, member });
 
             return res.status(201).json(member);
         } catch (error) {
@@ -384,8 +385,16 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
                 }
             }
 
-            await prisma.$transaction(async (tx) => {
+            const unassignedTasks = await prisma.$transaction(async (tx) => {
                 // desassigner ttes les taches de ce membre
+                const affectedTasks = await tx.task.findMany({
+                    where: {
+                        projectId: req.project.id,
+                        assignedToId: userId,
+                    },
+                    select: { id: true },
+                });
+
                 await tx.task.updateMany({
                     where: {
                         projectId: req.project.id,
@@ -415,9 +424,37 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
                         projectId: req.project.id
                     }
                 );
+
+                if (affectedTasks.length === 0) return [];
+
+                return tx.task.findMany({
+                    where: { id: { in: affectedTasks.map(t => t.id) } },
+                    include: {
+                        assignedTo: {
+                            select: { id: true, pseudo: true, avatar: true }
+                        },
+                        createdBy: {
+                            select: { id: true, pseudo: true }
+                        },
+                        comments: {
+                            orderBy: { createdAt: 'asc' },
+                            include: {
+                                user: {
+                                    select: { id: true, pseudo: true, avatar: true }
+                                }
+                            }
+                        }
+                    }
+                });
             });
 
-            req.app.get('io').to(`user:${userId}`).emit('project:member-removed', { projectId: req.project.id });
+            const io = req.app.get('io');
+            io.to(`user:${userId}`)
+                .to(`project:${req.project.id}`)
+                .emit('project:member-removed', { projectId: req.project.id, userId });
+            for (const task of unassignedTasks) {
+                io.to(`project:${req.project.id}`).emit('task:updated', task);
+            }
 
             return res.json({ message: 'Member removed from project' });
 

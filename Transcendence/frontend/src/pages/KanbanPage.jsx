@@ -117,11 +117,37 @@ function KanbanPage() {
       } : prev)
     })
 
-    socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
+    socket.on('project:member-added', ({ projectId: addedProjectId, member }) => {
+      if (addedProjectId !== projectId) return
+      setProject(prev => prev ? {
+        ...prev,
+        projectMembers: (prev.projectMembers ?? []).some(m => m.user.id === member.userId)
+          ? prev.projectMembers
+          : [...prev.projectMembers, member],
+      } : prev)
+      setAvailableMembers(prev => prev.filter(u => u.id !== member.userId))
+    })
+
+    socket.on('project:member-removed', ({ projectId: removedProjectId, userId: removedUserId }) => {
       if (removedProjectId !== projectId) return
-      socket.emit('project:leave', { projectId })
-      alert(t('kanban.alerts.removedFromProject'))
-      navigate('/home')
+
+      if (removedUserId === user?.id) {
+        socket.emit('project:leave', { projectId })
+        alert(t('kanban.alerts.removedFromProject'))
+        navigate('/home')
+        return
+      }
+
+      const removedMembership = projectRef.current?.projectMembers?.find(m => m.user.id === removedUserId)
+
+      setProject(prev => prev ? {
+        ...prev,
+        projectMembers: (prev.projectMembers ?? []).filter(m => m.user.id !== removedUserId),
+      } : prev)
+
+      if (removedMembership) {
+        setAvailableMembers(prev => prev.some(u => u.id === removedUserId) ? prev : [...prev, removedMembership.user])
+      }
     })
 
     socket.on('project:deleted', ({ projectId: deletedProjectId }) => {
@@ -147,6 +173,7 @@ function KanbanPage() {
       socket.off('task:comment-updated')
       socket.off('task:comment-deleted')
       socket.off('project:member-role-updated')
+      socket.off('project:member-added')
       socket.off('project:member-removed')
       socket.off('project:deleted')
       socket.off('organisation:member-removed')
