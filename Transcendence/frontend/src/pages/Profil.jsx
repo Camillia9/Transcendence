@@ -81,8 +81,18 @@ function Profil() {
   }
 
     async function handleChangePassword () {
+    setPasswordError('')
+
+    if (newPassword.length < 6) {
+      setPasswordError(t('signup.errors.passwordTooShort'))
+      return
+    }
+    if (newPassword.length > 30) {
+      setPasswordError(t('signup.errors.passwordTooLong'))
+      return
+    }
+
     try {
-      setPasswordError('')
       await changePassword(oldPassword, newPassword)
       setOldPassword('')
       setNewPassword('')
