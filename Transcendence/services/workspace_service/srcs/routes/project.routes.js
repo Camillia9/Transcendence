@@ -510,7 +510,10 @@ router.patch('/projects/:projectId/members/:userId', authenticate, loadProject, 
                 return updated;
             });
 
-            req.app.get('io').to(`user:${userId}`).emit('project:member-role-updated', { projectId: req.project.id, member: updatedMember });
+            req.app.get('io')
+                .to(`user:${userId}`)
+                .to(`project:${req.project.id}`)
+                .emit('project:member-role-updated', { projectId: req.project.id, member: updatedMember });
 
             return res.json({ message: 'Member role updated', member: updatedMember });
 

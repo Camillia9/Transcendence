@@ -18,7 +18,9 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
   
   const assignee = task.assignedTo
 
-  const canDelete = userRole === 'Manager' || task.createdById === currentUser
+  const canEdit = userRole === 'Manager' || task.assignedToId === currentUser
+
+  const canDelete = userRole === 'Manager' || task.assignedToId === currentUser
 
   const canAssign = userRole === 'Manager'
 
@@ -55,7 +57,8 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
                 type="date"
                 value={task.deadline ? task.deadline.slice(0, 10) : ''}
                 onChange={(e) => onUpdate({ ...task, deadline: e.target.value || null })}
-                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700 outline-none"
+                disabled={!canEdit}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -87,10 +90,11 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
               {PRIORITIES.map(p => (
                 <button
                   key={p.value}
-                  onClick={() => onUpdate({...task, priority: p.value})}
+                  onClick={() => canEdit && onUpdate({...task, priority: p.value})}
+                  disabled={!canEdit}
                   className={`text-xs px-3 py-1.5 rounded-full font-medium transition-opacity ${p.bg} ${p.text} ${
                   task.priority === p.value ? 'opacity-100' : 'opacity-40'
-                  }`}
+                  } ${!canEdit ? 'cursor-not-allowed' : ''}`}
                 >
                   {p.label}
                 </button>
@@ -101,9 +105,10 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
             <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.descriptionLabel')}</label>
             <textarea
               defaultValue={task.description ?? ''}
-              onBlur={(e) => onUpdate({...task, description: e.target.value })}
+              onBlur={(e) => canEdit && onUpdate({...task, description: e.target.value })}
               placeholder={t('kanban.task.descriptionPlaceholder')}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none resize-none h-24 placeholder-gray-300"
+              disabled={!canEdit}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none resize-none h-24 placeholder-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
           { canDelete && (

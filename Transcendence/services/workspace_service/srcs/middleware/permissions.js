@@ -199,7 +199,7 @@ export function canManageTask(req, res, next) {
 	if (req.projectMembership.role === 'Manager')
 		return next();
 
-	if (req.task.createdById !== req.user.userId && req.task.assignedToId !== req.user.userId)
+	if (req.task.assignedToId !== req.user.userId)
 		return res.status(403).json({ error: 'Not allowed' });
 
 	next();

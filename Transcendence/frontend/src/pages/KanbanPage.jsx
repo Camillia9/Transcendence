@@ -107,6 +107,16 @@ function KanbanPage() {
       setSelectedTask(prev => prev ? removeComment(prev) : prev)
     })
 
+    socket.on('project:member-role-updated', ({ projectId: updatedProjectId, member }) => {
+      if (updatedProjectId !== projectId) return
+      setProject(prev => prev ? {
+        ...prev,
+        projectMembers: (prev.projectMembers ?? []).map(m =>
+          m.user.id === member.userId ? { ...m, role: member.role } : m
+        ),
+      } : prev)
+    })
+
     socket.on('project:member-removed', ({ projectId: removedProjectId }) => {
       if (removedProjectId !== projectId) return
       socket.emit('project:leave', { projectId })
@@ -136,6 +146,7 @@ function KanbanPage() {
       socket.off('task:comment-added')
       socket.off('task:comment-updated')
       socket.off('task:comment-deleted')
+      socket.off('project:member-role-updated')
       socket.off('project:member-removed')
       socket.off('project:deleted')
       socket.off('organisation:member-removed')
