@@ -27,7 +27,6 @@ cleanbackups:
 
 fclean:
 	@$(COMPOSE_CMD) down -v --rmi all --remove-orphans
-	@docker system prune -af --volumes
 
 stop:
 	@$(COMPOSE_CMD) stop

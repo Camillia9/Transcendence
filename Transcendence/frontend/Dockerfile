@@ -7,10 +7,11 @@ WORKDIR /app
 # copie les fichiers package.json depuis la machine vers ce /app.
 # Astuce : tant que package.json ne change pas, Podman réutilise
 # le cache de l'étape suivante et ne réinstalle pas tout à chaque build.
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-# exécute npm install, ce qui crée un node_modules à l'intérieur de l'image.
-RUN npm install
+# npm ci installe exactement les versions du lockfile.
+# Le cache npm évite de tout retélécharger si les deps changent.
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # Puis on copie le reste du code source.
 COPY . .
