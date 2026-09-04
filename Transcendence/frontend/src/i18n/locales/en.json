@@ -38,7 +38,6 @@
 			"invalidCode": "Invalid code"
 		}
 	},
-
 	"signup": {
 		"title": "Sign up",
 		"subtitle": "Create your account",
@@ -64,8 +63,333 @@
 			"generic": "Unable to create the account"
 		}
 	},
-
 	"legal": {
 		"lastUpdated": "Last updated: {{date}}"
+	},
+	"landing": {
+		"loginLink": "Log in",
+		"illustrationAlt": "TaskBoard illustration",
+		"heroTitleLine1": "Manage your projects,",
+		"heroTitleLine2": "together.",
+		"description": "Organize your team's tasks, track progress live, and communicate without leaving the tool.",
+		"badges": {
+			"kanban": "Real-time Kanban",
+			"chat": "Built-in chat",
+			"roles": "Role management"
+		},
+		"cta": "Get started for free"
+	},
+	"footer": {
+		"privacy": "Privacy",
+		"terms": "Terms",
+		"status": "Status",
+		"copyright": "© {{year}} TaskBoard"
+	},
+	"status": {
+		"title": "Service status",
+		"errors": {
+			"unreachable": "Unable to reach the status API"
+		},
+		"overall": {
+			"ok": "All services are operational",
+			"degraded": "Some services are experiencing issues",
+			"down": "All services are unavailable",
+			"unknown": "Unknown status"
+		},
+		"lastChecked": "Last checked: {{date}}",
+		"updated": "Updated",
+		"services": {
+			"identity": "Identity service",
+			"chat": "Chat service",
+			"workspace": "Workspace service"
+		},
+		"database": "Database: {{status}}",
+		"noData": "No data",
+		"autoRefresh": "Auto-refreshing every 15s",
+		"refresh": "Refresh",
+		"refreshing": "Refreshing…"
+	},
+	"home": {
+		"backendStatus": "Backend status:",
+		"backendUnreachable": "unreachable",
+		"title": "My projects",
+		"newProject": "New Project",
+		"emptyState": "You don't have any projects yet.",
+		"organisationLabel": "Organisation",
+		"noAdminOrg": "You must be an admin of an organisation to create a project.",
+		"selectOrgPlaceholder": "Choose an organisation",
+		"projectNameLabel": "Project name",
+		"deadlineLabel": "Deadline",
+		"submitCreate": "Create project",
+		"deleteModal": {
+			"title": "Delete this project?",
+			"confirm": "{{title}} will be permanently deleted"
+		},
+		"editModal": {
+			"title": "Edit project"
+		},
+		"errors": {
+			"nameRequired": "The project name is required",
+			"nameTooLong": "The project name must not exceed 20 characters",
+			"orgRequired": "Choose an organisation",
+			"deadlinePast": "The deadline cannot be earlier than today",
+			"editFailed": "Unable to edit the project",
+			"createFailed": "Unable to create the project"
+		}
+	},
+	"chat": {
+		"newConversation": "New conversation",
+		"unknownUser": "Unknown",
+		"me": "Me",
+		"noMessages": "No messages",
+		"groupConversation": "Group conversation",
+		"privateConversation": "Private conversation",
+		"emptyConversation": {
+			"title": "No messages yet",
+			"subtitle": "Send the first message!"
+		},
+		"messagePlaceholder": "Type a message...",
+		"send": "Send",
+		"selectConversation": "Select a conversation",
+		"searchUserPlaceholder": "Search for a user...",
+		"noUsersFound": "No users found",
+		"groupNameLabel": "Group name",
+		"groupNamePlaceholder": "E.g. Frontend Team",
+		"createGroup": "Create group",
+		"startConversation": "Start conversation",
+		"errors": {
+			"messageTooLong": "The message must not exceed 500 characters"
+		}
+	},
+	"friends": {
+		"title": "Friends",
+		"searchPlaceholder": "Search for a username...",
+		"searchMinChars": "Type at least 2 characters",
+		"noResults": "No results",
+		"emptyState": "You don't have any friends yet.",
+		"contactModal": {
+			"title": "Contact"
+		},
+		"removeContact": "Remove from contacts",
+		"addContact": "Add to contacts"
+	},
+	"presence": {
+		"available": "Available",
+		"busy": "Busy",
+		"away": "Away",
+		"offline": "Offline"
+	},
+	"kanban": {
+		"columns": {
+			"todo": "To do",
+			"doing": "In progress",
+			"done": "Done",
+			"blocked": "Blocked"
+		},
+		"membersButton": "Members",
+		"newTask": "New task",
+		"newTaskModal": {
+			"title": "New task"
+		},
+		"taskTitleLabel": "Title",
+		"taskTitlePlaceholder": "E.g. Build the login page",
+		"createTaskSubmit": "Create task",
+		"membersModal": {
+			"title": "Project members"
+		},
+		"currentMembers": "Current members",
+		"addFromOrg": "Add from organisation",
+		"allMembersAdded": "All members of the organisation are already in the project.",
+		"editRoleModal": {
+			"title": "Edit role"
+		},
+		"removeMemberTooltip": "Remove",
+		"memberLabel": "Member",
+		"roleLabel": "Role",
+		"roles": {
+			"user": "User",
+			"manager": "Manager"
+		},
+		"priority": {
+			"urgent": "Urgent",
+			"normal": "Normal",
+			"low": "Low"
+		},
+		"task": {
+			"deadlineLabel": "Deadline",
+			"assigneeLabel": "Assignee",
+			"unassigned": "Unassigned",
+			"priorityLabel": "Priority",
+			"descriptionLabel": "Description",
+			"descriptionPlaceholder": "Add a description...",
+			"deleteTask": "Delete task",
+			"commentPlaceholder": "Add a comment...",
+			"sendComment": "Send",
+			"commentsLabel": "Comments",
+			"noComments": "No comments yet.",
+			"createdByLabel": "Created by",
+			"unknownCreator": "Unknown"
+		},
+		"alerts": {
+			"removedFromProject": "You are no longer part of this project",
+			"projectDeleted": "This project no longer exists, it has been deleted",
+			"removedFromOrg": "You have been removed from this organisation",
+			"projectNoLongerExists": "This project no longer exists"
+		},
+		"errors": {
+			"titleRequired": "The title is required",
+			"titleTooLong": "The title must not exceed 20 characters",
+			"createFailed": "Unable to create the task"
+		}
+	},
+	"organisation": {
+		"title": "My organisations",
+		"newOrganisation": "New organisation",
+		"myInvitations": "My invitations",
+		"invitationText": "<b>{{inviter}}</b> invited you to join <b>{{orgName}}</b>",
+		"accept": "Accept",
+		"decline": "Decline",
+		"emptyState": "You don't have any organisations yet.",
+		"nameLabel": "Organisation name",
+		"createSubmit": "Create organisation",
+		"pseudoLabel": "Username",
+		"invitePlaceholder": "Member to add",
+		"inviteSubmit": "Invite",
+		"deleteModal": {
+			"title": "Delete this organisation?",
+			"confirm": "{{name}} will be permanently deleted"
+		},
+		"editModal": {
+			"title": "Edit organisation"
+		},
+		"removeMemberModal": {
+			"title": "Remove this member?",
+			"confirm": "{{pseudo}} will be permanently removed from this organisation",
+			"confirmButton": "Remove"
+		},
+		"editRoleModal": {
+			"title": "Edit role"
+		},
+		"cancelInvitationModal": {
+			"title": "Cancel this invitation?",
+			"confirm": "The invitation will be cancelled."
+		},
+		"inviteModal": {
+			"title": "Invite a member"
+		},
+		"roles": {
+			"admin": "Admin",
+			"member": "Member"
+		},
+		"confirmLeave": "Leave this organisation?",
+		"alerts": {
+			"lastAdminRole": "Cannot change the role of the last administrator. An organisation must always have at least one administrator.",
+			"needAtLeastOneAdmin": "An organisation must always have at least one administrator.",
+			"lastAdminCannotLeave": "You are the last admin, you cannot leave the organisation.",
+			"leaveFailed": "Unable to leave the organisation."
+		},
+		"errors": {
+			"nameRequired": "The organisation name is required",
+			"nameTooLong": "The organisation name must not exceed 20 characters",
+			"editFailed": "Unable to edit the organisation",
+			"createFailed": "Unable to create the organisation",
+			"roleUpdateFailed": "Unable to update the role",
+			"alreadyMember": "This user is already a member of the organisation",
+			"alreadyInvited": "An invitation is already pending for this user",
+			"userNotFound": "No user found with this username",
+			"inviteFailed": "Unable to send the invitation"
+		},
+		"leave": "Leave",
+		"pendingInviteLabel": "Invited",
+		"memberCount_one": "{{count}} member",
+		"memberCount_other": "{{count}} members",
+		"pendingInviteCount_one": "{{count}} invite",
+		"pendingInviteCount_other": "{{count}} invites"
+	},
+	"profile": {
+		"editPhoto": "Edit",
+		"removePhoto": "Remove photo",
+		"pseudoLabel": "Username",
+		"newPseudoPlaceholder": "New username",
+		"languageLabel": "Language",
+		"reset": "Reset",
+		"changePasswordTitle": "Change password",
+		"currentPasswordLabel": "Current password",
+		"newPasswordLabel": "New password",
+		"changePasswordSubmit": "Change",
+		"passwordChanged": "Password changed",
+		"passwordPlaceholder": "Password",
+		"twoFactor": {
+			"title": "Two-factor authentication (2FA)",
+			"enabled": "2FA is enabled on your account.",
+			"disable": "Disable 2FA",
+			"enterPasswordToDisable": "Enter your password to disable it.",
+			"scanQrCode": "Scan this QR code with your authenticator app, then enter the generated code.",
+			"qrCodeAlt": "2FA QR code",
+			"codePlaceholder": "6-digit code",
+			"addSecurityLayer": "Add a layer of security to your account.",
+			"enable": "Enable 2FA",
+			"errors": {
+				"setupFailed": "Unable to start the setup",
+				"invalidCode": "Invalid code"
+			}
+		},
+		"myData": {
+			"title": "My data",
+			"description": "Download a copy of all your personal data in JSON format.",
+			"download": "Download my data"
+		},
+		"deleteAccount": {
+			"title": "Account deletion",
+			"button": "Delete my account",
+			"irreversible": "This action is irreversible.",
+			"confirmOAuth": "Confirm the permanent deletion of your account.",
+			"enterPassword": "Enter your password to delete your account",
+			"confirmButton": "Confirm deletion"
+		},
+		"errors": {
+			"avatarNotImage": "The file must be an image"
+		}
+	},
+	"mainLayout": {
+		"notificationsTitle": "Notifications",
+		"markAllRead": "Mark all as read",
+		"noNotifications": "No notifications",
+		"editProfile": "Edit profile",
+		"logout": "Log out",
+		"sidebar": {
+			"home": "Home",
+			"organisations": "Organisations",
+			"friends": "Friends",
+			"chat": "Chat",
+			"designSystem": "Design System"
+		},
+		"notifications": {
+			"assignment": "{{actor}} assigned you a task",
+			"assignmentWithTask": "{{actor}} assigned you the task \"{{title}}\"",
+			"invitationSent": "{{actor}} invited you to join an organisation",
+			"invitationAccepted": "{{actor}} accepted your invitation",
+			"invitationDeclined": "{{actor}} declined your invitation",
+			"projectDeleted": "{{actor}} deleted a project",
+			"removedFromOrga": "{{actor}} removed you from the organisation",
+			"removedFromProject": "{{actor}} removed you from a project",
+			"removedFromProjectWithTitle": "{{actor}} removed you from the project \"{{title}}\"",
+			"orgaUpdated": "{{actor}} updated an organisation",
+			"memberRemoved": "{{actor}} removed a member from the organisation",
+			"projectUpdated": "{{actor}} updated a project",
+			"projectUpdatedWithTitle": "{{actor}} updated the project \"{{title}}\"",
+			"orgaDeleted": "{{actor}} deleted an organisation",
+			"roleChanged": "{{actor}} changed your role",
+			"roleChangedWithOrg": "{{actor}} changed your role in \"{{orgName}}\"",
+			"invitationCancelled": "{{actor}} cancelled your invitation",
+			"invitationCancelledWithOrg": "{{actor}} cancelled your invitation to \"{{orgName}}\"",
+			"taskMoved": "{{actor}} moved a task",
+			"taskMovedWithTitle": "{{actor}} moved the task \"{{title}}\"",
+			"memberLeftOrga": "{{actor}} left an organisation",
+			"memberLeftOrgaWithOrg": "{{actor}} left the organisation \"{{orgName}}\"",
+			"projectRoleUpdated": "{{actor}} changed your role",
+			"projectRoleUpdatedWithTitle": "{{actor}} changed your role in \"{{title}}\"",
+			"default": "New notification"
+		}
 	}
 }

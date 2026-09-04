@@ -1,19 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Logo from '../components/ui/Logo'
 import { getSystemStatus } from '../api/health'
-
-const SERVICE_LABELS = {
-  identity: 'Identity service',
-  chat: 'Chat service',
-  workspace: 'Workspace service',
-}
-
-const OVERALL_LABELS = {
-  ok: 'Tous les services sont opérationnels',
-  degraded: 'Certains services sont en panne',
-  down: 'Tous les services sont indisponibles',
-}
 
 function statusTone(status) {
   if (status === 'ok') return 'ok'
@@ -40,6 +29,7 @@ function RefreshIcon({ spinning }) {
 }
 
 function StatusPage() {
+  const { t } = useTranslation()
   const [payload, setPayload] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -59,13 +49,13 @@ function StatusPage() {
         setShowUpdated(true)
       }
     } catch (err) {
-      setError(err.message || 'Impossible de joindre l’API de statut')
+      setError(err.message || t('status.errors.unreachable'))
       setPayload(null)
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (!showUpdated) return undefined
@@ -89,6 +79,7 @@ function StatusPage() {
   const overall = payload?.status || (error ? 'down' : null)
   const tone = overall ? statusTone(overall) : null
   const isBusy = loading || refreshing
+  const overallLabel = overall ? t(`status.overall.${overall}`) : t('status.overall.unknown')
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
@@ -100,7 +91,7 @@ function StatusPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-12"> 
-        <h1 className="text-3xl font-bold text-gray-800 mb-1">Statut des services</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-1">{t('status.title')}</h1>
 
         <div
           className={[
@@ -112,17 +103,17 @@ function StatusPage() {
           ].filter(Boolean).join(' ')}
         >
           {loading && !payload ? (
-            <p className="text-sm">Chargement…</p>
+            <p className="text-sm">{t('common.loading')}</p>
           ) : error && !payload ? (
             <p className="text-sm font-medium">{error}</p>
           ) : (
             <>
               <p className="text-base font-semibold">
-                {OVERALL_LABELS[overall] || 'Statut inconnu'}
+                {overallLabel}
               </p>
               {payload?.checkedAt && (
                 <p className="mt-1 text-xs opacity-70">
-                  Dernière vérification : {new Date(payload.checkedAt).toLocaleString()}
+                  {t('status.lastChecked', { date: new Date(payload.checkedAt).toLocaleString() })}
                   {showUpdated && (
                     <span
                       className={[
@@ -130,7 +121,7 @@ function StatusPage() {
                         updatedFading ? 'opacity-0' : 'opacity-100',
                       ].join(' ')}
                     >
-                      · Mis à jour
+                      · {t('status.updated')}
                     </span>
                   )}
                 </p>
@@ -156,14 +147,14 @@ function StatusPage() {
               >
                 <div>
                   <p className="font-medium text-primary-900">
-                    {SERVICE_LABELS[key]}
+                    {t(`status.services.${key}`)}
                   </p>
                   <p className="mt-0.5 text-xs text-primary-600/80">
                     {svc
-                      ? `Base de données : ${svc.db ? 'ok' : 'ko'}`
+                      ? t('status.database', { status: svc.db ? 'ok' : 'ko' })
                       : loading
                         ? '…'
-                        : 'Aucune donnée'}
+                        : t('status.noData')}
                   </p>
                   {svc?.error && (
                     <p className="mt-1 text-xs text-rose-600">{svc.error}</p>
@@ -187,7 +178,7 @@ function StatusPage() {
         </ul>
 
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-primary-600/70">
-          <span>Rafraîchissement auto toutes les 15 s</span>
+          <span>{t('status.autoRefresh')}</span>
           <button
             type="button"
             onClick={() => refresh({ manual: true })}
@@ -201,7 +192,7 @@ function StatusPage() {
             ].join(' ')}
           >
             <RefreshIcon spinning={refreshing} />
-            {refreshing ? 'Actualisation…' : 'Actualiser'}
+            {refreshing ? t('status.refreshing') : t('status.refresh')}
           </button>
         </div>
       </main>

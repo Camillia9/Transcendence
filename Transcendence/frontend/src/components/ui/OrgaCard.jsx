@@ -1,50 +1,31 @@
 import { IconPencil, IconTrash, IconUserPlus } from "@tabler/icons-react"
 import { useState } from "react"
+import { useTranslation } from 'react-i18next'
 import { useAuth } from "../../context/AuthContext"
 import { getProgressColor } from "../../utils/progressColor"
-// useState permet de creer une variable qui peut changer pendant que le composant est afficher (par ex savoir si la souris est au dessus de la carte)
-// useAuth permet de recuperer l'utilisateur connecter
-
 
 export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation, onLeave }) {
-  // DEBUG
-  //console.log("ORGA =", orga);
-  //console.log("MEMBERS =", JSON.stringify(orga.members, null, 2));
-  //console.log("INVIT =", JSON.stringify(orga.pendingInvitations, null, 2));
-  //{console.log("CARD INVITATIONS", orga.pendingInvitations)}
+  const { t } = useTranslation()
   const { user } = useAuth()
-  const [hovered, setHovered] = useState(false) // Gere le survol
+  const [hovered, setHovered] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
-  // const orgaMembres = orga.members ?? []
-  // const total = orgaMembres.length
-  // const total = orga.memberCount;
-
-  // const accent = "#3b82f6";
-  // const tint = "#ffffff";
-  // const soft = "#e5e7eb";
-  // const text = "#1f2937";
   const total = 0;
   const done  = 0;
   const { accent, tint, soft, text } = getProgressColor(done, total)
   const pct = total === 0 ? 0 : Math.round(done / total * 100)
 
-  // Les membres: ils ont comme entree : { role, user: { id, pseudo, avatar }}
-  // const memberships = project.projectMembers ?? []
   const members = orga.members ?? []
 
-  // Mon role 
   const myRole = orga.myRole;
 
   return (
     <div
       className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
-      style={{ backgroundColor: tint, borderLeftColor: accent }}   /* l'accent latéral = couleur d'avancement */
+      style={{ backgroundColor: tint, borderLeftColor: accent }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/*Icones au survol pour le manager*/}
-      {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
       {hovered && myRole === 'Admin' && (
         <div className="absolute top-3 right-3 flex gap-1">
           <button
@@ -61,7 +42,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
       )}
         
 
-      {/*En-tete: Nom de l'orga */}
       <div className="flex items-start justify-between pr-1">
         <h3
         onClick={() => setExpanded(!expanded)}
@@ -70,7 +50,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
         >
           {expanded ? "▼" : "▶"} {orga.name}
         </h3>
-        {/* Transition au survol*/}
         <span
           className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && myRole === 'Admin' ? 'mr-12' : ''}`}
           style={{ backgroundColor: soft, color: text }}
@@ -79,7 +58,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
         </span>
       </div>
 
-      {/* nombre de membres */}
       <div className="flex items-center justify-between mt-auto">
         <div className="flex -space-x-2">
           {members.length > 0 && (
@@ -87,7 +65,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               className="px-3 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
               style={{ backgroundColor: soft, color: text }}
             >
-              {members.length} {members.length > 1 ? "membres" : "membre"}
+              {t('organisation.memberCount', { count: members.length })}
             </div>
           )}
 
@@ -96,7 +74,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               className="px-3 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs"
               style={{ backgroundColor: soft, color: text }}
             >
-              {orga.pendingInvitationsCount} invite{orga.pendingInvitationsCount > 1 ? "s" : ""}
+              {t('organisation.pendingInviteCount', { count: orga.pendingInvitationsCount })}
             </div>
           )}
 
@@ -110,17 +88,15 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
           )}
         </div>
 
-        {/* Bouton quitter — visible pour tout membre */}
         <button
           onClick={(e) => { e.stopPropagation(); onLeave(orga.id) }}
           className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-auto"
         >
-          Quitter
+          {t('organisation.leave')}
         </button>
       </div>
 
 
-      {/* Membres visibles seulement quand la carte est ouverte */}
       {expanded && (
         <div className="flex flex-col gap-2 mt-3">
           {members.map((member) => (
@@ -128,7 +104,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             key={member.pseudo}
             className="flex items-center justify-between group"
             >
-              {/* Avatar + pseudo */}
               <div className="flex items-center gap-2">
                 <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border"
@@ -150,7 +125,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
                 </span>
               </div>
 
-              {/* Role */}
               <span
               className="text-[10px] rounded-full px-2 py-0.5"
               style={{
@@ -185,7 +159,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             <div key={inv.id}
               className="flex items-center justify-between group"
             >
-              {/* Avatar + pseudo */}
               <div className="flex items-center gap-2">
                 <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border"
@@ -205,7 +178,6 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
                   {inv.pseudo}
                 </span>
               </div>
-            {/* Role */}
             <span
             className="text-[10px] rounded-full px-2 py-0.5"
             style={{
@@ -213,7 +185,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               color: text
             }}
             >
-              Invite
+              {t('organisation.pendingInviteLabel')}
             </span>
 
             {myRole === "Admin" && (

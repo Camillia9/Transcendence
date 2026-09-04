@@ -1,18 +1,21 @@
 import { IconMessageCircle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
 import { useRef } from "react";
-import { PRIORITIES } from "../../data/priorities";
+import { useTranslation } from 'react-i18next'
+import { getPriorities } from "../../data/priorities";
+
+const LOCALE_MAP = { fr: 'fr-FR', en: 'en-US', cn: 'zh-CN' }
 
 function TaskCard({ task, onClick }) {
+  const { t, i18n } = useTranslation()
+  const locale = LOCALE_MAP[i18n.language] || 'fr-FR'
+  const PRIORITIES = getPriorities(t)
   const priority = PRIORITIES.find(p => p.value === task.priority)
 
   const isDeadlinePast = task.deadline ? new Date(task.deadline) < new Date() : false
-  //false: pas de retard, true retard
 
-  // Carte qui bouge
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id })
 
-  // Recupere l'assignee du back
   const assignee = task.assignedTo
   
   return (
@@ -25,27 +28,22 @@ function TaskCard({ task, onClick }) {
         isDragging ? 'opacity-50 shadow-xl' : 'hover:shadow-md'
       }`}
     >
-      {/*Badge de priorite */}
       <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${priority.bg} ${priority.text}`}>
         {priority.label}
       </span>
 
-      {/*Titre */}
       <p className="text-sm text-gray-700 leading-snug">{task.title}</p>
 
-      {/*Pied de la carte (Gauche)*/}
       <div className="flex items-center justify-between mt-auto">
         {task.deadline ? (
           <span className={`text-xs ${isDeadlinePast ? 'text-red-400' : 'text-gray-400'}`}>
-            📅 {new Date(task.deadline).toLocaleDateString('fr-FR')}
+            📅 {new Date(task.deadline).toLocaleDateString(locale)}
           </span>
         ) : (
           <span/>
         )}
 
-        {/*Droite*/}
         <div className="flex items-center gap-2">
-          {/*Icone commentaire */}
           {task.status === 'Blocked' && (
             <span className="flex items-center gap-1 text-xs text-gray-400">
               <IconMessageCircle size={14} />
@@ -53,7 +51,6 @@ function TaskCard({ task, onClick }) {
             </span>
           )}
 
-          {/*Avatar */}
           {assignee && (
             <div
               title={assignee.pseudo}

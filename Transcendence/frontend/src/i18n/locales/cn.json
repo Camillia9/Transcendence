@@ -38,7 +38,6 @@
 			"invalidCode": "验证码无效"
 		}
 	},
-
 	"signup": {
 		"title": "注册",
 		"subtitle": "创建你的账户",
@@ -64,8 +63,334 @@
 			"generic": "无法创建账户"
 		}
 	},
-
 	"legal": {
 		"lastUpdated": "最后更新：{{date}}"
+	},
+	"landing": {
+		"loginLink": "登录",
+		"illustrationAlt": "TaskBoard 插图",
+		"heroTitleLine1": "管理你的项目，",
+		"heroTitleLine2": "一起完成。",
+		"description": "与团队一起组织任务，实时跟踪进度，无需离开工具即可沟通。",
+		"badges": {
+			"kanban": "实时看板",
+			"chat": "内置聊天",
+			"roles": "角色管理"
+		},
+		"cta": "免费开始使用"
+	},
+	"footer": {
+		"privacy": "隐私",
+		"terms": "条款",
+		"status": "状态",
+		"copyright": "© {{year}} TaskBoard"
+	},
+	"status": {
+		"title": "服务状态",
+		"errors": {
+			"unreachable": "无法连接状态 API"
+		},
+		"overall": {
+			"ok": "所有服务运行正常",
+			"degraded": "部分服务出现故障",
+			"down": "所有服务均不可用",
+			"unknown": "状态未知"
+		},
+		"lastChecked": "最后检查时间：{{date}}",
+		"updated": "已更新",
+		"services": {
+			"identity": "身份认证服务",
+			"chat": "聊天服务",
+			"workspace": "工作区服务"
+		},
+		"database": "数据库：{{status}}",
+		"noData": "暂无数据",
+		"autoRefresh": "每 15 秒自动刷新",
+		"refresh": "刷新",
+		"refreshing": "正在刷新…"
+	},
+	"home": {
+		"backendStatus": "后端状态：",
+		"backendUnreachable": "无法连接",
+		"title": "我的项目",
+		"newProject": "新建项目",
+		"emptyState": "你还没有任何项目。",
+		"organisationLabel": "组织",
+		"noAdminOrg": "你必须是某个组织的管理员才能创建项目。",
+		"selectOrgPlaceholder": "选择一个组织",
+		"projectNameLabel": "项目名称",
+		"deadlineLabel": "截止日期",
+		"submitCreate": "创建项目",
+		"deleteModal": {
+			"title": "删除该项目？",
+			"confirm": "{{title}} 将被永久删除"
+		},
+		"editModal": {
+			"title": "编辑项目"
+		},
+		"errors": {
+			"nameRequired": "项目名称为必填项",
+			"nameTooLong": "项目名称不能超过20个字符",
+			"orgRequired": "请选择一个组织",
+			"deadlinePast": "截止日期不能早于今天",
+			"editFailed": "无法编辑项目",
+			"createFailed": "无法创建项目"
+		}
+	},
+	"chat": {
+		"newConversation": "新建对话",
+		"unknownUser": "未知用户",
+		"me": "我",
+		"noMessages": "暂无消息",
+		"groupConversation": "群组对话",
+		"privateConversation": "私聊",
+		"emptyConversation": {
+			"title": "暂时还没有消息",
+			"subtitle": "发送第一条消息吧！"
+		},
+		"messagePlaceholder": "输入消息...",
+		"send": "发送",
+		"selectConversation": "选择一个对话",
+		"searchUserPlaceholder": "搜索用户...",
+		"noUsersFound": "未找到用户",
+		"groupNameLabel": "群组名称",
+		"groupNamePlaceholder": "例如：前端团队",
+		"createGroup": "创建群组",
+		"startConversation": "开始对话",
+		"errors": {
+			"messageTooLong": "消息长度不能超过500个字符"
+		}
+	},
+	"friends": {
+		"title": "好友",
+		"searchPlaceholder": "搜索用户名...",
+		"searchMinChars": "请输入至少2个字符",
+		"noResults": "没有找到结果",
+		"emptyState": "你还没有任何好友。",
+		"contactModal": {
+			"title": "联系人"
+		},
+		"removeContact": "从联系人中删除",
+		"addContact": "添加到联系人"
+	},
+	"presence": {
+		"available": "在线",
+		"busy": "忙碌",
+		"away": "离开",
+		"offline": "离线"
+	},
+	"kanban": {
+		"columns": {
+			"todo": "待办",
+			"doing": "进行中",
+			"done": "已完成",
+			"blocked": "已阻塞"
+		},
+		"membersButton": "成员",
+		"newTask": "新建任务",
+		"newTaskModal": {
+			"title": "新建任务"
+		},
+		"taskTitleLabel": "标题",
+		"taskTitlePlaceholder": "例如：搭建登录页面",
+		"createTaskSubmit": "创建任务",
+		"membersModal": {
+			"title": "项目成员"
+		},
+		"currentMembers": "当前成员",
+		"addFromOrg": "从组织中添加",
+		"allMembersAdded": "该组织的所有成员都已在项目中。",
+		"editRoleModal": {
+			"title": "编辑角色"
+		},
+		"removeMemberTooltip": "移除",
+		"memberLabel": "成员",
+		"roleLabel": "角色",
+		"roles": {
+			"user": "User",
+			"manager": "Manager"
+		},
+		"priority": {
+			"urgent": "紧急",
+			"normal": "普通",
+			"low": "低"
+		},
+		"task": {
+			"deadlineLabel": "截止日期",
+			"assigneeLabel": "负责人",
+			"unassigned": "未分配",
+			"priorityLabel": "优先级",
+			"descriptionLabel": "描述",
+			"descriptionPlaceholder": "添加描述...",
+			"deleteTask": "删除任务",
+			"commentPlaceholder": "添加评论...",
+			"sendComment": "发送",
+			"commentsLabel": "评论",
+			"noComments": "暂无评论。",
+			"createdByLabel": "创建者",
+			"unknownCreator": "未知"
+		},
+		"alerts": {
+			"removedFromProject": "你已不再属于该项目",
+			"projectDeleted": "该项目已不存在，已被删除",
+			"removedFromOrg": "你已被移出该组织",
+			"projectNoLongerExists": "该项目已不存在"
+		},
+		"errors": {
+			"titleRequired": "标题为必填项",
+			"titleTooLong": "标题不能超过20个字符",
+			"createFailed": "无法创建任务"
+		}
+	},
+	"organisation": {
+		"title": "我的组织",
+		"newOrganisation": "新建组织",
+		"myInvitations": "我的邀请",
+		"invitationText": "<b>{{inviter}}</b> 邀请你加入 <b>{{orgName}}</b>",
+		"accept": "接受",
+		"decline": "拒绝",
+		"emptyState": "你还没有任何组织。",
+		"nameLabel": "组织名称",
+		"createSubmit": "创建组织",
+		"pseudoLabel": "用户名",
+		"invitePlaceholder": "要添加的成员",
+		"inviteSubmit": "邀请",
+		"deleteModal": {
+			"title": "删除该组织？",
+			"confirm": "{{name}} 将被永久删除"
+		},
+		"editModal": {
+			"title": "编辑组织"
+		},
+		"removeMemberModal": {
+			"title": "移除该成员？",
+			"confirm": "{{pseudo}} 将被永久移出该组织",
+			"confirmButton": "移除"
+		},
+		"editRoleModal": {
+			"title": "编辑角色"
+		},
+		"cancelInvitationModal": {
+			"title": "取消该邀请？",
+			"confirm": "该邀请将被取消。"
+		},
+		"inviteModal": {
+			"title": "邀请成员"
+		},
+		"roles": {
+			"admin": "Admin",
+			"member": "Member"
+		},
+		"confirmLeave": "退出该组织？",
+		"alerts": {
+			"lastAdminRole": "无法更改最后一位管理员的角色。组织必须始终至少保留一名管理员。",
+			"needAtLeastOneAdmin": "组织必须始终至少保留一名管理员。",
+			"lastAdminCannotLeave": "你是最后一位管理员，无法退出该组织。",
+			"leaveFailed": "无法退出该组织。"
+		},
+		"errors": {
+			"nameRequired": "组织名称为必填项",
+			"nameTooLong": "组织名称不能超过20个字符",
+			"editFailed": "无法编辑组织",
+			"createFailed": "无法创建组织",
+			"roleUpdateFailed": "无法更新角色",
+			"alreadyMember": "该用户已是组织成员",
+			"alreadyInvited": "该用户已有待处理的邀请",
+			"userNotFound": "未找到该用户名对应的用户",
+			"inviteFailed": "无法发送邀请"
+		},
+		"leave": "退出",
+		"pendingInviteLabel": "已邀请",
+		"memberCount_one": "{{count}} 名成员",
+		"memberCount_other": "{{count}} 名成员",
+		"pendingInviteCount_one": "{{count}} 个邀请",
+		"pendingInviteCount_other": "{{count}} 个邀请"
+	},
+	"profile": {
+		"editPhoto": "编辑",
+		"removePhoto": "删除头像",
+		"pseudoLabel": "用户名",
+		"newPseudoPlaceholder": "新用户名",
+		"languageLabel": "语言",
+		"reset": "重置",
+		"changePasswordTitle": "修改密码",
+		"currentPasswordLabel": "当前密码",
+		"newPasswordLabel": "新密码",
+		"changePasswordSubmit": "修改",
+		"passwordChanged": "密码已修改",
+		"passwordPlaceholder": "密码",
+		"twoFactor": {
+			"title": "双重验证（2FA）",
+			"enabled": "你的账户已启用双重验证。",
+			"disable": "关闭双重验证",
+			"enterPasswordToDisable": "输入密码以关闭双重验证。",
+			"scanQrCode": "使用你的身份验证器应用扫描此二维码，然后输入生成的验证码。",
+			"qrCodeAlt": "双重验证二维码",
+			"codePlaceholder": "6位数字代码",
+			"addSecurityLayer": "为你的账户增加一层安全保护。",
+			"enable": "启用双重验证",
+			"errors": {
+				"setupFailed": "无法启动配置",
+				"invalidCode": "验证码无效"
+			}
+		},
+		"myData": {
+			"title": "我的数据",
+			"description": "以 JSON 格式下载你所有个人数据的副本。",
+			"download": "下载我的数据"
+		},
+		"deleteAccount": {
+			"title": "删除账户",
+			"button": "删除我的账户",
+			"irreversible": "此操作不可撤销。",
+			"confirmOAuth": "确认永久删除你的账户。",
+			"enterPassword": "输入密码以删除你的账户",
+			"confirmButton": "确认删除"
+		},
+		"errors": {
+			"avatarNotImage": "文件必须是图片"
+		}
+	},
+	"mainLayout": {
+		"notificationsTitle": "通知",
+		"markAllRead": "全部标记为已读",
+		"noNotifications": "暂无通知",
+		"editProfile": "编辑资料",
+		"logout": "退出登录",
+		"sidebar": {
+			"home": "首页",
+			"organisations": "组织",
+			"friends": "好友",
+			"chat": "聊天",
+			"designSystem": "设计系统"
+		},
+		"notifications": {
+			"assignment": "{{actor}} 给你分配了一个任务",
+			"assignmentWithTask": "{{actor}} 给你分配了任务「{{title}}」",
+			"invitationSent": "{{actor}} 邀请你加入一个组织",
+			"invitationAccepted": "{{actor}} 接受了你的邀请",
+			"invitationDeclined": "{{actor}} 拒绝了你的邀请",
+			"projectDeleted": "{{actor}} 删除了一个项目",
+			"removedFromOrga": "{{actor}} 将你移出了该组织",
+			"removedFromProject": "{{actor}} 将你移出了一个项目",
+			"removedFromProjectWithTitle": "{{actor}} 将你移出了项目「{{title}}」",
+			"orgaUpdated": "{{actor}} 更新了一个组织",
+			"memberRemoved": "{{actor}} 将一名成员移出了该组织",
+			"projectUpdated": "{{actor}} 更新了一个项目",
+			"projectUpdatedWithTitle": "{{actor}} 更新了项目「{{title}}」",
+			"orgaDeleted": "{{actor}} 删除了一个组织",
+			"roleChanged": "{{actor}} 更改了你的角色",
+			"roleChangedWithOrg": "{{actor}} 更改了你在「{{orgName}}」中的角色",
+			"invitationCancelled": "{{actor}} 取消了你的邀请",
+			"invitationCancelledWithOrg": "{{actor}} 取消了你加入「{{orgName}}」的邀请",
+			"taskMoved": "{{actor}} 移动了一个任务",
+			"taskMovedWithTitle": "{{actor}} 移动了任务「{{title}}」",
+			"memberLeftOrga": "{{actor}} 退出了一个组织",
+			"memberLeftOrgaWithOrg": "{{actor}} 退出了组织「{{orgName}}」",
+			"projectRoleUpdated": "{{actor}} 更改了你的角色",
+			"projectRoleUpdatedWithTitle": "{{actor}} 更改了你在「{{title}}」中的角色",
+			"default": "新通知"
+		}
 	}
+	
 }

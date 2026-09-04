@@ -166,6 +166,9 @@ router.patch('/profile/password', authenticate, async (req, res) => {
         if (newPassword.length < 6)
             return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
+        if (newPassword.length > 30)
+            return res.status(400).json({ error: 'Password must be at most 30 characters' });
+
         const user = await prisma.user.findUnique({
             where: {
                 id: req.user.userId,

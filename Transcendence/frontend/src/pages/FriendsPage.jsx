@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IconSearch } from '@tabler/icons-react'
-import { mockFriends } from '../data/mockFriends'
 import { getFriends, searchUsers, addFriend, removeFriend } from '../api/friends'
 import { useSocket } from '../context/SocketContext'
 import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
-import {  formatStatus } from '../utils/status'
+import { formatStatus } from '../utils/status'
 
 export default function FriendsPage() {
+	const { t } = useTranslation()
 	const [query, setQuery] = useState('')
 	const [searchOpen, setSearchOpen] = useState(false)
-	const [friends, setFriends] = useState([]) // demarre vide
-	const [results, setResults] = useState([]) // resultats stockes
-	const [selectedUser, setSelectedUser] = useState(null) // Un pour savoir si modal ouverte, un pour retenir quel utilisateur on a cliqué
+	const [friends, setFriends] = useState([])
+	const [results, setResults] = useState([])
+	const [selectedUser, setSelectedUser] = useState(null)
 	const socket = useSocket()
 
-	// charge mes amis au montage
 	useEffect(() => {
 		loadFriends()
 	}, [])
@@ -42,7 +42,6 @@ export default function FriendsPage() {
 		}
 	}
 
-	// Lance la recherche quand query change (des 2 caracteres)
 	useEffect(() => {
 		if (query.length < 2) {
 			setResults([])
@@ -52,7 +51,7 @@ export default function FriendsPage() {
 		async function run() {
 			try {
 				const data = await searchUsers(query)
-				if (!annule) setResults(data) // ignore reponse tardive si query a deja change
+				if (!annule) setResults(data)
 			} catch (error) {
 				console.error('Recherche echouee', error)
 			}
@@ -61,19 +60,16 @@ export default function FriendsPage() {
 		return () => { annule = true }
 	}, [query])
 
-	// close le menu deroulant search 
 	function closeSearch() {
 		setSearchOpen(false)
 		setQuery('')
 	}
 
-	// Ouvre la modal depuis nimporte quelle entree
 	function openUser(user) {
 		setSelectedUser(user)
-		closeSearch() // si on venait de la barre de recherche on la ferme
+		closeSearch()
 	}
 
-	// Add un user. refresh direct apres
 	async function handleAdd(user) {
 		try {
 			await addFriend(user.id)
@@ -96,9 +92,8 @@ export default function FriendsPage() {
 
 	return (
 		<div className="relative h-full isolate">
-			{/*En-tete : titre + recherche */}
 			<div className="flex items-center justify-between mb-6 relative z-50">
-				<h1 className="text-2xl font-semibold text-gray-800">Amis</h1>
+				<h1 className="text-2xl font-semibold text-gray-800">{t('friends.title')}</h1>
 				
 				<div className="relative w-72">
 					<IconSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -107,22 +102,21 @@ export default function FriendsPage() {
 						value={query}
 						onFocus={() => setSearchOpen(true)}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder='Rechercher un pseudo...'
+						placeholder={t('friends.searchPlaceholder')}
 						className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-300"
 					/>
 
-					{/*Menu deroulant*/}
 					{searchOpen && (
 						<div className="absolute right-0 top-full mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-md max-h-96 overflow-y-auto z-50">
 							{query.length < 2 ? (
-								<p className="px-4 py-3 text-sm text-gray-400 text-center">Tape au moins 2 caractères</p>
+								<p className="px-4 py-3 text-sm text-gray-400 text-center">{t('friends.searchMinChars')}</p>
 							) : results.length === 0 ? (
-								<p className="px-4 py-3 text-sm text-gray-400 text-center">Aucun résultat</p>
+								<p className="px-4 py-3 text-sm text-gray-400 text-center">{t('friends.noResults')}</p>
 							) : (
 								results.map((u) => (
 									<button
 										key={u.id}
-										onClick={() => openUser(u)} // Ouvre la modal. A brancher. 
+										onClick={() => openUser(u)}
 										className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left transition-colors"
 									>
 										<Avatar src={u.avatar} username={u.pseudo} size='sm'/>
@@ -135,27 +129,24 @@ export default function FriendsPage() {
 				</div>
 			</div>
 				
-			{/*Grille d'amis */}
 			{friends.length === 0 ? (
-				<p className="text-sm text-gray-400">Tu n'as pas encore d'amis.</p>
+				<p className="text-sm text-gray-400">{t('friends.emptyState')}</p>
 			) : (
 				<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
 					{friends.map((item) => (
 						<FriendCard
 							key={item.id}
 							friend={item.friend}
-							onClick={() => openUser(item.friend)} //Ouvre la modal.  A brancher 
+							onClick={() => openUser(item.friend)}
 						/>
 					))}
 				</div>
 			)}
 
-			{/*Voile gris */}
 			{searchOpen && (
 				<div onClick={closeSearch} className='absolute -inset-6 bg-black/10 z-40'/>
 			)}
 
-			{/*Modal (ouverte si selectedUser !== null)*/}
 			<FriendModal
 				user={selectedUser}
 				friends={friends}
@@ -167,29 +158,29 @@ export default function FriendsPage() {
 	)
 }
 
-// La modale, dans le même fichier pour l'instant 
 function FriendModal({ user, friends, onClose, onAdd, onRemove }) {
+  const { t } = useTranslation()
   const isFriend = user
     ? friends.some(item => item.friend.id === user.id)
     : false
 
   return (
-    <Modal isOpen={!!user} onClose={onClose} title="Contact">
+    <Modal isOpen={!!user} onClose={onClose} title={t('friends.contactModal.title')}>
       {user && (
         <div className="flex flex-col items-center gap-4">
           <Avatar src={user.avatar} username={user.pseudo} size="lg" />
           <div className="text-center">
             <p className="text-lg font-medium text-gray-800">{user.pseudo}</p>
-            <p className="text-sm text-gray-400">{formatStatus(user.statut)}</p>
+            <p className="text-sm text-gray-400">{formatStatus(user.statut, t)}</p>
           </div>
 
           {isFriend ? (
             <Button variant="danger" onClick={() => onRemove(user)}>
-              Supprimer des contacts
+              {t('friends.removeContact')}
             </Button>
           ) : (
             <Button onClick={() => onAdd(user)}>
-              Ajouter aux contacts
+              {t('friends.addContact')}
             </Button>
           )}
         </div>
