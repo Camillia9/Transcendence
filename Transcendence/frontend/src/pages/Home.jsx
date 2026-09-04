@@ -208,13 +208,7 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-primary-700">
-        {t('home.backendStatus')}{' '}
-        <Link to="/status" className="font-medium text-primary-800 underline-offset-2 hover:underline">
-          {health}
-        </Link>
-      </p>
-        {/*Header */}
+      {/*Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium text-primary-900"> {t('home.title')} </h1>
         <Button onClick={() => setShowNewProject(true)}>

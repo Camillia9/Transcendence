@@ -110,7 +110,6 @@
 		"refreshing": "Refreshing…"
 	},
 	"home": {
-		"backendStatus": "Backend status:",
 		"backendUnreachable": "unreachable",
 		"title": "My projects",
 		"newProject": "New Project",

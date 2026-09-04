@@ -110,7 +110,6 @@
     "refreshing": "Actualisation…"
   },
   "home": {
-    "backendStatus": "État du backend :",
     "backendUnreachable": "injoignable",
     "title": "Mes projets",
     "newProject": "Nouveau Projet",
