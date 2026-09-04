@@ -1,8 +1,8 @@
 FROM node:22-alpine
 WORKDIR /app
 
-COPY identity_service/package.json ./package.json
-RUN npm install
+COPY identity_service/package.json identity_service/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY shared/ ./shared/
 COPY prisma/ ./prisma/
