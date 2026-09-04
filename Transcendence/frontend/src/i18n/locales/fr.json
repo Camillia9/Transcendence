@@ -111,6 +111,7 @@
     "refreshing": "Actualisation…"
   },
   "home": {
+    "backendStatus": "État du backend :",
     "backendUnreachable": "injoignable",
     "title": "Mes projets",
     "newProject": "Nouveau Projet",
@@ -391,5 +392,62 @@
       "projectRoleUpdatedWithTitle": "{{actor}} a modifié votre rôle dans « {{title}} »",
       "default": "Nouvelle notification"
     }
+  },
+  "designSystem": {
+    "title": "Design System",
+    "description": "Fondations visuelles de TaskBoard — couleurs, typographie, icônes et composants.",
+    "sections": {
+      "brandColor": "Couleur de marque — {{token}}",
+      "surfaceColor": "Couleur de surface",
+      "grayColor": "Gris (texte & surfaces)",
+      "statusColors": "Couleurs des status",
+      "progressStates": "États d'avancement (cartes projet)",
+      "typography": "Typographie",
+      "icons": "Icônes",
+      "components": "Quelques composants"
+    },
+    "colorNames": {
+      "red": "Rouge",
+      "green": "Vert",
+      "orange": "Orange",
+      "gray": "Gris"
+    },
+    "tokenNames": { "primary": "primary", "surface": "surface" },
+    "progressLabels": {
+      "gray": "gris",
+      "amber": "ambre",
+      "orange": "orange",
+      "green": "vert",
+      "deepGreen": "vert profond"
+    },
+    "typographyRoles": {
+      "display": "Display",
+      "pageTitle": "Titre de page",
+      "sectionTitle": "Titre de section",
+      "cardTitle": "Titre de carte",
+      "body": "Corps",
+      "metadata": "Métadonnée"
+    },
+    "typographySamples": {
+      "pageTitle": "Mes projets",
+      "sectionTitle": "Paramètres du compte",
+      "cardTitle": "Refonte site web",
+      "body": "Texte courant, labels et boutons.",
+      "metadata": "Mis à jour il y a 2 h"
+    },
+    "iconRoles": {
+      "logo": "Logo",
+      "notifications": "Notifications",
+      "mainMenu": "Menu principal",
+      "organisations": "Organisations",
+      "action": "Action"
+    },
+    "iconsLibraryPrefix": "Librairie unique :",
+    "iconsColorNote": "Couleur héritée du texte parent.",
+    "badgeMembersExample": "Membres",
+    "inputPlaceholder": "Exemple de champ…",
+    "componentNames": { "button": "Button", "badge": "Badge", "avatar": "Avatar", "input": "Input" },
+    "variantNames": { "primary": "Primary", "outline": "Outline", "ghost": "Ghost", "danger": "Danger" },
+    "roleNames": { "admin": "Admin", "manager": "Manager", "user": "User" }
   }
 }

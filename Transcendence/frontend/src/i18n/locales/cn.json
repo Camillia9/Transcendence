@@ -53,7 +53,6 @@
 			"usernameTooLong": "最少20个字符",
 			"emailRequired": "邮箱为必填项",
 			"emailInvalid": "邮箱格式无效",
-			"emailTooLong": "最多254个字符",
 			"passwordRequired": "密码为必填项",
 			"passwordTooShort": "至少6个字符",
 			"passwordTooLong": "最多30个字符",
@@ -111,6 +110,7 @@
 		"refreshing": "正在刷新…"
 	},
 	"home": {
+		"backendStatus": "后端状态：",
 		"backendUnreachable": "无法连接",
 		"title": "我的项目",
 		"newProject": "新建项目",
@@ -312,7 +312,7 @@
 		"pseudoLabel": "用户名",
 		"newPseudoPlaceholder": "新用户名",
 		"languageLabel": "语言",
-		"saved": "您的个人资料已成功保存。",
+		"reset": "重置",
 		"changePasswordTitle": "修改密码",
 		"currentPasswordLabel": "当前密码",
 		"newPasswordLabel": "新密码",
@@ -391,6 +391,51 @@
 			"projectRoleUpdatedWithTitle": "{{actor}} 更改了你在「{{title}}」中的角色",
 			"default": "新通知"
 		}
+	},
+	"designSystem": {
+		"title": "设计系统",
+		"description": "TaskBoard 的视觉基础 — 颜色、排版、图标和组件。",
+		"sections": {
+			"brandColor": "品牌色 — {{token}}",
+			"surfaceColor": "表面色",
+			"grayColor": "灰色（文本与表面）",
+			"statusColors": "状态颜色",
+			"progressStates": "进度状态（项目卡片）",
+			"typography": "排版",
+			"icons": "图标",
+			"components": "部分组件"
+		},
+		"colorNames": { "red": "红色", "green": "绿色", "orange": "橙色", "gray": "灰色" },
+		"tokenNames": { "primary": "主色", "surface": "表面" },
+		"progressLabels": { "gray": "灰色", "amber": "琥珀色", "orange": "橙色", "green": "绿色", "deepGreen": "深绿色" },
+		"typographyRoles": {
+			"display": "特大标题",
+			"pageTitle": "页面标题",
+			"sectionTitle": "区块标题",
+			"cardTitle": "卡片标题",
+			"body": "正文",
+			"metadata": "元信息"
+		},
+		"typographySamples": {
+			"pageTitle": "我的项目",
+			"sectionTitle": "账户设置",
+			"cardTitle": "网站改版",
+			"body": "正文内容、标签和按钮。",
+			"metadata": "2小时前更新"
+		},
+		"iconRoles": {
+			"logo": "标志",
+			"notifications": "通知",
+			"mainMenu": "主菜单",
+			"organisations": "组织",
+			"action": "操作"
+		},
+		"iconsLibraryPrefix": "唯一图标库：",
+		"iconsColorNote": "颜色继承自父级文本。",
+		"badgeMembersExample": "成员",
+		"inputPlaceholder": "输入示例…",
+		"componentNames": { "button": "按钮", "badge": "徽章", "avatar": "头像", "input": "输入框" },
+		"variantNames": { "primary": "主要按钮", "outline": "描边按钮", "ghost": "幽灵按钮", "danger": "危险按钮" },
+		"roleNames": { "admin": "管理员", "manager": "经理", "user": "用户" }
 	}
-	
 }
