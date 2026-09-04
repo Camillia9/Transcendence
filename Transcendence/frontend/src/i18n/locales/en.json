@@ -53,7 +53,6 @@
 			"usernameTooLong": "Maximum 20 characters",
 			"emailRequired": "Email is required",
 			"emailInvalid": "Invalid email format",
-			"emailTooLong": "Maximum 254 characters",
 			"passwordRequired": "Password is required",
 			"passwordTooShort": "Minimum 6 characters",
 			"passwordTooLong": "Maximum 30 characters",
@@ -111,6 +110,7 @@
 		"refreshing": "Refreshing…"
 	},
 	"home": {
+		"backendStatus": "Backend status:",
 		"backendUnreachable": "unreachable",
 		"title": "My projects",
 		"newProject": "New Project",
@@ -315,7 +315,7 @@
 		"pseudoLabel": "Username",
 		"newPseudoPlaceholder": "New username",
 		"languageLabel": "Language",
-		"saved": "Your profile has been successfully saved.",
+		"reset": "Reset",
 		"changePasswordTitle": "Change password",
 		"currentPasswordLabel": "Current password",
 		"newPasswordLabel": "New password",
@@ -394,5 +394,51 @@
 			"projectRoleUpdatedWithTitle": "{{actor}} changed your role in \"{{title}}\"",
 			"default": "New notification"
 		}
+	},
+	"designSystem": {
+		"title": "Design System",
+		"description": "Visual foundations of TaskBoard — colors, typography, icons and components.",
+		"sections": {
+			"brandColor": "Brand color — {{token}}",
+			"surfaceColor": "Surface color",
+			"grayColor": "Gray (text & surfaces)",
+			"statusColors": "Status colors",
+			"progressStates": "Progress states (project cards)",
+			"typography": "Typography",
+			"icons": "Icons",
+			"components": "A few components"
+		},
+		"colorNames": { "red": "Red", "green": "Green", "orange": "Orange", "gray": "Gray" },
+		"tokenNames": { "primary": "primary", "surface": "surface" },
+		"progressLabels": { "gray": "gray", "amber": "amber", "orange": "orange", "green": "green", "deepGreen": "deep green" },
+		"typographyRoles": {
+			"display": "Display",
+			"pageTitle": "Page title",
+			"sectionTitle": "Section title",
+			"cardTitle": "Card title",
+			"body": "Body",
+			"metadata": "Metadata"
+		},
+		"typographySamples": {
+			"pageTitle": "My projects",
+			"sectionTitle": "Account settings",
+			"cardTitle": "Website redesign",
+			"body": "Body text, labels and buttons.",
+			"metadata": "Updated 2h ago"
+		},
+		"iconRoles": {
+			"logo": "Logo",
+			"notifications": "Notifications",
+			"mainMenu": "Main menu",
+			"organisations": "Organisations",
+			"action": "Action"
+		},
+		"iconsLibraryPrefix": "Single library:",
+		"iconsColorNote": "Color inherited from the parent text.",
+		"badgeMembersExample": "Members",
+		"inputPlaceholder": "Example field…",
+		"componentNames": { "button": "Button", "badge": "Badge", "avatar": "Avatar", "input": "Input" },
+		"variantNames": { "primary": "Primary", "outline": "Outline", "ghost": "Ghost", "danger": "Danger" },
+		"roleNames": { "admin": "Admin", "manager": "Manager", "user": "User" }
 	}
 }
