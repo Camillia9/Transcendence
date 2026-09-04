@@ -28,9 +28,11 @@ const GRAY_SHADES = [
   { name: '800', className: 'bg-gray-800' },
 ]
 
-const SEMANTIC_COLORS = [
-  { name: 'Rouge', className: 'bg-red-400',   usage: 'suppression, déconnexion' },
-  { name: 'Vert', className: 'bg-green-400', usage: 'succès, en ligne' },
+const STATUS_COLORS = [
+  { name: 'Rouge', className: 'bg-red-400',   usage: 'Hors ligne' },
+  { name: 'Vert', className: 'bg-green-400', usage: 'Disponible' },
+  { name: 'Orange', className: 'bg-orange-400', usage: 'Occupé' },
+  { name: 'Gris', className: 'bg-gray-400', usage: 'Absent' },
 ]
 
 // Reprend les familles de getProgressColor (avancement projet)
@@ -53,8 +55,8 @@ const TYPOGRAPHY = [
 
 const ICON_SIZES = [
   { size: 28, role: 'Logo',           Icon: IconLayoutKanban },
-  { size: 20, role: 'Navigation',     Icon: IconBell },
-  { size: 18, role: 'Par défaut',     Icon: IconHome },
+  { size: 20, role: 'Notifications',     Icon: IconBell },
+  { size: 18, role: 'Menu principal',     Icon: IconHome },
   { size: 18, role: 'Organisations',  Icon: IconUsers },
   { size: 14, role: 'Action',         Icon: IconPencil },
   { size: 14, role: 'Action',         Icon: IconTrash },
@@ -105,9 +107,9 @@ export default function DesignSystem() {
         
 	    {/* sémantiques */}
 	    <section className="mb-12">
-	      <h2 className="text-lg font-semibold text-gray-800 mb-4">Couleurs sémantiques</h2>
+	      <h2 className="text-lg font-semibold text-gray-800 mb-4">Couleurs des status</h2>
 	      <div className="flex flex-wrap gap-6">
-	        {SEMANTIC_COLORS.map(color => (
+	        {STATUS_COLORS.map(color => (
 	          <div key={color.name} className="flex items-center gap-3">
 	            <div className={`w-12 h-12 rounded-lg border border-gray-100 ${color.className}`} />
 	            <div className="flex flex-col">

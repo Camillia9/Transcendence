@@ -12,7 +12,7 @@ function Avatar({ src, username, size = "md", className = "" }) {
     ? username.slice(0, 2).toUpperCase()
     : "?"
 
-  const base = "rounded-full flex items-center justify-center font-semibold overflow-hidden bg-indigo-500 text-white"
+  const base = "rounded-full flex items-center justify-center font-semibold overflow-hidden bg-primary-500 text-white"
 
   return (
     <div className={twMerge(base, sizes[size], className)}>
