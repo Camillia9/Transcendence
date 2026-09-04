@@ -375,6 +375,12 @@ function KanbanPage() {
   async function handleRemoveMember(userId) {
     try {
       await removeProjectMember(projectId, userId)
+      // Si je me retire moi-meme on ne reload pas la page, juste on sort
+      if (userId === user.id) {
+        navigate('/home')
+        return // Important
+      }
+      // Si je retire quelqu'un d'autres : reload page 
       await loadProject()
       await loadTasks()
       const data = await getAvailableMembers(projectId)
