@@ -239,7 +239,9 @@
 		"errors": {
 			"titleRequired": "标题为必填项",
 			"titleTooLong": "标题不能超过20个字符",
-			"createFailed": "无法创建任务"
+			"createFailed": "无法创建任务",
+			"lastManager": "無法退出項目。您是最後一位經理。",
+      		"removeMemberFailed": "無法移除此成員。"
 		}
 	},
 	"organisation": {

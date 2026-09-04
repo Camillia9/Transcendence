@@ -239,7 +239,9 @@
     "errors": {
       "titleRequired": "Le titre est obligatoire",
       "titleTooLong": "Le titre ne doit pas dépasser 20 caractères",
-      "createFailed": "Impossible de creer la tache"
+      "createFailed": "Impossible de creer la tache",
+      "lastManager": "Impossible de quitter le projet. Vous êtes le dernier Manager.",
+      "removeMemberFailed": "Impossible de retirer ce membre."
     }
   },
   "organisation": {

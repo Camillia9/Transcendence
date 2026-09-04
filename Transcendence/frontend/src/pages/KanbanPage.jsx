@@ -53,6 +53,7 @@ function KanbanPage() {
 
   const [memberToEdit, setMemberToEdit] = useState(null)
   const [newRole, setNewRole] = useState('')
+  const [memberError, setMemberError] = useState('') // Msg erreur pour dernier manager qui veut partir
 
   const projectRef = useRef(null)
   useEffect(() => {
@@ -372,8 +373,15 @@ function KanbanPage() {
     }
   }
 
+  function getRemoveMemberErrorMessage(error, t) {
+    if (error.message === 'Cannot remove the last manager of the project')
+      return t('kanban.errors.lastManager')
+    return t('kanban.errors.removeMemberFailed')
+  }
+  
   async function handleRemoveMember(userId) {
     try {
+      setMemberError('') // nettoie le msg precedent
       await removeProjectMember(projectId, userId)
       // Si je me retire moi-meme on ne reload pas la page, juste on sort
       if (userId === user.id) {
@@ -386,7 +394,7 @@ function KanbanPage() {
       const data = await getAvailableMembers(projectId)
       setAvailableMembers(data)
     } catch (error) {
-      console.error('Impossible de retirer le membre', error)
+      setMemberError(getRemoveMemberErrorMessage(error, t))
     }
   }
 
@@ -529,12 +537,15 @@ function KanbanPage() {
       {/*Modal de la gestions des membres*/}
       <Modal
         isOpen={showMembers}
-        onClose={() => setShowMembers(false)}
+        onClose={() => { setShowMembers(false); setMemberError('') }}
         title={t('kanban.membersModal.title')}
       >
         {/*Membres actuels*/}
         <div className="flex flex-col gap-2 mb-6">
           <h3 className="text-sm font-medium text-gray-700">{t('kanban.currentMembers')}</h3>
+          {memberError && (
+            <p className="text-sm text-red-400">{memberError}</p>
+          )}
           {memberships.map(m => (
             <div key={m.user.id} className="flex items-center justify-between">
               <div className="flex items-center gap-2">

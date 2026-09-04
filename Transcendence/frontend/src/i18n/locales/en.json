@@ -239,7 +239,9 @@
 		"errors": {
 			"titleRequired": "The title is required",
 			"titleTooLong": "The title must not exceed 20 characters",
-			"createFailed": "Unable to create the task"
+			"createFailed": "Unable to create the task",
+			"lastManager": "Unable to leave the project. You are the last Manager.",
+      		"removeMemberFailed": "Unable to remove this member."
 		}
 	},
 	"organisation": {
