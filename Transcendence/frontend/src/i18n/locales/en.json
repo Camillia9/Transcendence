@@ -312,7 +312,7 @@
 		"pseudoLabel": "Username",
 		"newPseudoPlaceholder": "New username",
 		"languageLabel": "Language",
-		"reset": "Reset",
+		"saved": "Your profile has been successfully saved.",
 		"changePasswordTitle": "Change password",
 		"currentPasswordLabel": "Current password",
 		"newPasswordLabel": "New password",

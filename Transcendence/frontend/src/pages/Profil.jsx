@@ -22,6 +22,7 @@ function Profil() {
   const [language, setLanguage] = useState('')
   const [avatar, setAvatar] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [avatarError, setErrorAvatar] = useState('')
 
   const [oldPassword, setOldPassword] = useState('')
@@ -42,9 +43,12 @@ function Profil() {
   async function handleSave () {
     try {
       setError('')
+      setSuccess('')
       const data = await updateProfile({pseudo, langue: language, avatar})
       login(data)
       setProfile(data)
+      setSuccess(t('profile.saved'))
+      setTimeout(() => setSuccess(''), 3000) // msg success disparait apres 3s
     } catch (err) {
       setError(err.message)
     }
@@ -71,14 +75,6 @@ function Profil() {
     setAvatar(profile.avatar ?? '')
    }
   }, [profile])
-
-  function handleCancel() {
-    setPseudo(profile.pseudo)
-    setLanguage(profile.langue)
-    setAvatar(profile.avatar ?? '')
-    setError('')
-    setErrorAvatar('')
-  }
 
     async function handleChangePassword () {
     setPasswordError('')
@@ -281,9 +277,9 @@ function Profil() {
         </div>
 
         {error && <p className='text-sm text-red-400'>{error}</p>}
+        {success && <p className='text-sm text-green-400'>{success}</p>}
         
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={handleCancel}>{t('profile.reset')}</Button>
           <Button onClick={handleSave}>{t('common.save')}</Button>
         </div>
       </Card>
