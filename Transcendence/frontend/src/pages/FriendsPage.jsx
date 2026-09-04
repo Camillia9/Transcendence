@@ -7,7 +7,7 @@ import FriendCard from '../components/ui/FriendCard'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
-import { formatStatus } from '../utils/status'
+import { getDisplayStatus } from '../utils/status'
 
 export default function FriendsPage() {
 	const { t } = useTranslation()
@@ -159,7 +159,8 @@ export default function FriendsPage() {
 }
 
 function FriendModal({ user, friends, onClose, onAdd, onRemove }) {
-  const { t } = useTranslation()
+	const { t } = useTranslation()
+	const display = getDisplayStatus(user, t)
   const isFriend = user
     ? friends.some(item => item.friend.id === user.id)
     : false
@@ -171,7 +172,7 @@ function FriendModal({ user, friends, onClose, onAdd, onRemove }) {
           <Avatar src={user.avatar} username={user.pseudo} size="lg" />
           <div className="text-center">
             <p className="text-lg font-medium text-gray-800">{user.pseudo}</p>
-            <p className="text-sm text-gray-400">{formatStatus(user.statut, t)}</p>
+            <p className="text-sm text-gray-400">{display.label}</p>
           </div>
 
           {isFriend ? (

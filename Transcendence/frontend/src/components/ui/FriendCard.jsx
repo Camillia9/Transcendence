@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { formatStatus, getDisplayStatus } from "../../utils/status"
+import { getDisplayStatus } from "../../utils/status"
 import Avatar from "./Avatar"
 export default function FriendCard({ friend, onClick }) {
 	const { t } = useTranslation()
