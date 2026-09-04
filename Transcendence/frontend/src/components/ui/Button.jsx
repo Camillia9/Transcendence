@@ -1,4 +1,4 @@
-function Button({ children, onClick, variant = 'primary', loading = false }) {
+function Button({ children, onClick, variant = 'primary', loading = false, disabled = false }) {
 
   const styles = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700',
@@ -7,11 +7,13 @@ function Button({ children, onClick, variant = 'primary', loading = false }) {
     outline: 'bg-white text-primary-700 border border-gray-200 hover:bg-gray-50',
   }
 
+  const isDisabled = loading || disabled
+
   return (
     <button
       onClick={onClick}
-      disabled={loading}
-      className={`px-8 py-3 rounded-lg font-semibold transition-opacity ${styles[variant]} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      disabled={isDisabled}
+      className={`px-8 py-3 rounded-lg font-semibold transition-opacity ${styles[variant]} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {loading ? 'Chargement...' : children}
     </button>

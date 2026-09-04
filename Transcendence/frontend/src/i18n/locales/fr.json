@@ -158,7 +158,8 @@
     "createGroup": "Créer le groupe",
     "startConversation": "Démarrer la conversation",
     "errors": {
-      "messageTooLong": "Le message ne doit pas dépasser 500 caractères"
+      "messageTooLong": "Le message ne doit pas dépasser 500 caractères",
+      "createConversationFailed": "Impossible de créer la conversation."
     }
   },
   "friends": {

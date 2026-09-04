@@ -158,7 +158,8 @@
 		"createGroup": "创建群组",
 		"startConversation": "开始对话",
 		"errors": {
-			"messageTooLong": "消息长度不能超过500个字符"
+			"messageTooLong": "消息长度不能超过500个字符",
+			"createConversationFailed": "無法創建對話。"
 		}
 	},
 	"friends": {

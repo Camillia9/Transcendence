@@ -46,6 +46,7 @@ function Chat() {
   const [draft, setDraft] = useState('')           // message en cours de saisie
   const [draftError, setDraftError] = useState('')
   const [otherUsers, setOtherUsers] = useState([]) // tous les users sauf moi
+  const [newConvError, setNewConvError] = useState('') // pour utilisateurs inexistant
 
   // State de la modale "nouvelle conversation"
   const [showNewConv, setShowNewConv] = useState(false)
@@ -114,10 +115,13 @@ function Chat() {
     setSelectedIds([])
     setUserSearch('')
     setGroupName('')
+    setNewConvError('')
   }
 
   const handleCreateConversation = async () => {
+    if (selectedIds.length === 0) return
     try {
+      setNewConvError('')
       const convo = await createConversation(selectedIds, convType, groupName)
       const normalized = normalizeConversation(convo, user?.id, { fallbackType: convType, unknownLabel: t('chat.unknownUser'), locale })
       setConversations(prev =>
@@ -126,7 +130,7 @@ function Chat() {
       setActiveId(normalized.id)
       handleCloseNewConv()
     } catch (e) {
-      console.error('Impossible de créer la conversation', e)
+      setNewConvError(t('chat.errors.createConversationFailed'))   // message visible
     }
   }
 
@@ -436,6 +440,8 @@ function Chat() {
             />
           </div>
         )}
+        {newConvError && <p className="text-sm text-red-400">{newConvError}</p>}
+
         {/* Boutons */}
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleCloseNewConv}>{t('common.cancel')}</Button>
