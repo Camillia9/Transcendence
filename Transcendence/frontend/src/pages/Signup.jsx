@@ -34,6 +34,8 @@ function Signup() {
       newErrors.email = t('signup.errors.emailRequired')
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = t('signup.errors.emailInvalid')
+    else if (email.length > 254)
+        newErrors.email = t('signup.errors.emailTooLong')
 
     if (!password)
       newErrors.password = t('signup.errors.passwordRequired')

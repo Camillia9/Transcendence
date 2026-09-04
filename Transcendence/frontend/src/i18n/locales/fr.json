@@ -53,6 +53,7 @@
       "usernameTooLong": "Maximum 20 caractères",
       "emailRequired": "L'email est requis",
       "emailInvalid": "Format d'email invalide",
+      "emailTooLong": "Maximum 254 caractères",
       "passwordRequired": "Le mot de passe est requis",
       "passwordTooShort": "Minimum 6 caractères",
       "passwordTooLong": "Maximum 30 caractères",
