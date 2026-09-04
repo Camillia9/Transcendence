@@ -35,6 +35,8 @@ function Home() {
   // Provisoire
   const navigate = useNavigate()
   
+  const adminOrgs = organisations.filter(org => org.myRole === 'Admin')
+
   // Lorsqu'on appuie sur le crayon. A modifier
   const handleEdit = (project) => {
     setProjectToEdit(project)
@@ -257,7 +259,7 @@ function Home() {
                   {t('home.organisationLabel')} *
                 </label>
                 
-                {organisations.filter(org => org.myRole === 'Admin').length === 0 ? (
+                {adminOrgs.length === 0 ? (
                   // Si l'utilisateur n'est admin dans auccune orga :
                   <p className="text-sm text-gray-400">
                     {t('home.noAdminOrg')}
@@ -269,7 +271,7 @@ function Home() {
                     className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
                   >
                     <option value="">{t('home.selectOrgPlaceholder')}</option>
-                    {organisations.map(org => (
+                    {adminOrgs.map(org => (
                       <option key={org.id} value={org.id}>{org.name}</option>
                     ))}
                   </select>
@@ -321,7 +323,7 @@ function Home() {
             {/*Boutons Annuler/Cree le projet */}
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleCloseNewProject}> {t('common.cancel')} </Button>
-              <Button variant="primary" onClick={handleSubmitProject}>
+              <Button variant="primary" onClick={handleSubmitProject} disabled={!projectToEdit && adminOrgs.length === 0}>
                 {projectToEdit ? t('common.save') : t('home.submitCreate')}
               </Button>
             </div>
