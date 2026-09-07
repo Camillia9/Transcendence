@@ -1,10 +1,6 @@
 import { apiRequest } from './client';
 
-const USE_MOCK = false;
-
 export async function getNotifs() {
-	if (USE_MOCK)
-		return mockNotifications
 	return await apiRequest(`/notifications`)
 }
 

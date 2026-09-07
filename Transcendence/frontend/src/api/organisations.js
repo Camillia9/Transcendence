@@ -1,14 +1,7 @@
-// import { mockProjects } from "../data/mockProjet"
 import { apiRequest } from "./client"
 
 
-// true : on utilise le mock / false : le vrai back (quand on aurra les routes)
-const USE_MOCK = false
-
 export async function createOrganisation(data) {
-	// if (USE_MOCK)
-	// 	return{ ...data, id: Date.now() }
-
 	const response = await apiRequest('/organisations', {
 		method: 'POST',
 		body: JSON.stringify(data),
@@ -17,16 +10,10 @@ export async function createOrganisation(data) {
 }
 
 export async function getMyOrganisations() {
-    // if (USE_MOCK)
-    //     return mockProjects // pou l'instant. A modifier
     return await apiRequest('/organisations')
 }
 
-// Plus tard, quand la route existera, il suffira de basculer USE_MOCK à false.
-
 export async function getOrganisationById(orgId) {
-    // if (USE_MOCK)
-    //     return mockProjects.find(p => p.id === projectId)
     return await apiRequest(`/organisations/${orgId}`)
 }
 
@@ -35,9 +22,6 @@ export async function getMembers(orgId) {
 }
 
 export async function updateOrganisation(orgId, data) {
-    // if (USE_MOCK)
-    //     return { ...USE_MOCK, data, id: projectId}
-
     const response = await apiRequest(`/organisations/${orgId}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -46,9 +30,6 @@ export async function updateOrganisation(orgId, data) {
 }
 
 export async function updateMemberRole(orgId, userId, role) {
-    // if (USE_MOCK)
-    //     return { ...USE_MOCK, data, id: projectId}
-
     const response = await apiRequest(`/organisations/${orgId}/membres/${userId}`, {
         method: 'PATCH',
         body: JSON.stringify({ role: role }),
@@ -57,9 +38,6 @@ export async function updateMemberRole(orgId, userId, role) {
 }
 
 export async function deleteOrganisation(orgId) {
-    // if (USE_MOCK)
-    //     return { message: 'Project deleted' }
-
     return await apiRequest(`/organisations/${orgId}`, {
         method: 'DELETE'
     })
@@ -79,9 +57,6 @@ export async function sendInvitation(orgId, userId) {
 }
 
 export async function deleteInvitation(orgId, id) {
-    // if (USE_MOCK)
-    //     return { message: 'Project deleted' }
-
     return await apiRequest(`/organisations/${orgId}/invitations/${id}`, {
         method: 'DELETE'
     })

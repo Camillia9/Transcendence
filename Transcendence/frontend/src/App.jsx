@@ -14,7 +14,6 @@ import FriendsPage from './pages/FriendsPage'
 import AuthLayout from './layouts/AuthLayout'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
-import Test from "./pages/test"
 import './App.css'
 import LegalPage from './pages/LegalPage'
 import DesignSystem from './pages/DesignSystem'

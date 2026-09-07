@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { getPriorities } from "../data/priorities";
 import { useParams, useNavigate } from "react-router-dom";
-import { CURRENT_USER } from "../data/currentUser";
 import { useAuth } from "../context/AuthContext";
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
