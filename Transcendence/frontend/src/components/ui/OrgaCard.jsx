@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useTranslation } from 'react-i18next'
 import { useAuth } from "../../context/AuthContext"
 import { getProgressColor } from "../../utils/progressColor"
+import Avatar from "../ui/Avatar"
 
 export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEditMember, onInvite, onDeleteInvitation, onLeave }) {
   const { t } = useTranslation()
@@ -105,21 +106,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             className="flex items-center justify-between group"
             >
               <div className="flex items-center gap-2">
-                <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border"
-                style={{ backgroundColor: soft, color: text }}
-                >
-                  {member.avatar ? (
-                    <img
-                    src={member.avatar}
-                    alt={member.pseudo}
-                    className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    member.pseudo[0].toUpperCase()
-                  )}
-                </div>
-
+                <Avatar src={member.avatar} username={member.pseudo} size="sm" />
                 <span className="text-xs" style={{ color: text }}>
                   {member.pseudo}
                 </span>
@@ -160,20 +147,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               className="flex items-center justify-between group"
             >
               <div className="flex items-center gap-2">
-                <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border"
-                style={{ backgroundColor: soft, color: text }}
-                >
-                  {inv.avatar ? (
-                    <img
-                    src={inv.avatar}
-                    alt={inv.pseudo}
-                    className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    inv.pseudo[0].toUpperCase()
-                  )}
-                </div>
+                <Avatar src={inv.avatar} username={inv.pseudo} size="sm" />
                 <span className="text-xs" style={{ color: text }}>
                   {inv.pseudo}
                 </span>
