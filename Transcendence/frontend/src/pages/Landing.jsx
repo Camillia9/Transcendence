@@ -3,6 +3,7 @@ import { IconLayoutKanban } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 import Footer from '../components/ui/Footer'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
+import illustration from '../assets/illustration.svg'
 
 export default function Landing() {
 const navigate = useNavigate()
@@ -39,7 +40,7 @@ className="text-sm text-primary-800 opacity-70 cursor-pointer hover:opacity-100 
 {/* Gauche — illustration */}
 <div className="flex-1 flex justify-center">
 <img
-src="/src/assets/illustration.svg"
+src={illustration}
 alt={t('landing.illustrationAlt')}
 className="w-170 h-170 object-contain"
 />
