@@ -12,4 +12,4 @@ COPY identity_service/ ./identity_service/
 RUN npx prisma generate --schema prisma/schema.prisma
 
 EXPOSE 3001
-CMD ["node", "identity_service/srcs/server.js"]
+CMD ["npm", "run", "start"]

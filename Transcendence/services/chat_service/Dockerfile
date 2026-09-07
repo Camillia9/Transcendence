@@ -12,4 +12,4 @@ COPY chat_service/ ./chat_service/
 RUN npx prisma generate --schema prisma/schema.prisma
 
 EXPOSE 3002
-CMD ["node", "chat_service/srcs/server.js"]
+CMD ["npm", "run", "start"]
