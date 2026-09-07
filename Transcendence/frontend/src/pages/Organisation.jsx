@@ -169,8 +169,9 @@ function Organisations() {
   }
 
   const handleSendInvitation = async () => {
+    const pseudo = invitePseudo.trim()
     const alreadyMember = memberToInvite.members.some(
-      member => member.pseudo.toLowerCase() === invitePseudo.toLowerCase()
+      member => member.pseudo.toLowerCase() === pseudo.toLowerCase()
     );
 
     if (alreadyMember){
@@ -179,7 +180,7 @@ function Organisations() {
     }
 
     const alreadyInvited = memberToInvite.pendingInvitations.some(
-      invitation => invitation.pseudo.toLowerCase() === invitePseudo.toLowerCase()
+      invitation => invitation.pseudo.toLowerCase() === pseudo.toLowerCase()
     );
 
     if (alreadyInvited) {
@@ -188,7 +189,7 @@ function Organisations() {
     }
       
     try {
-      const user = await searchUser(invitePseudo);
+      const user = await searchUser(pseudo);
 
       await sendInvitation(memberToInvite.id, user.id);
 
