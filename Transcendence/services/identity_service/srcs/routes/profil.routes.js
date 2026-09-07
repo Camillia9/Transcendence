@@ -54,10 +54,11 @@ router.patch('/profile', authenticate, async (req, res) => {
     try {
         const { pseudo, avatar, langue, statut } = req.body;
 
-        if (pseudo !== undefined && pseudo.trim().length < 3)
+        const pseudoTrimmed = pseudo?.trim()
+        if (pseudoTrimmed !== undefined && pseudoTrimmed.length < 3)
             return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
-        if (pseudo !== undefined && pseudo.trim().length > 20)
+        if (pseudoTrimmed !== undefined && pseudoTrimmed.length > 20)
             return res.status(400).json({ error: 'Username must be at most 20 characters' });
 
         const allowedStatus = ['Available', 'Busy', 'Away'];
@@ -69,10 +70,10 @@ router.patch('/profile', authenticate, async (req, res) => {
         if (statut && !allowedStatus.includes(statut))
             return res.status(400).json({ error: 'Invalid status' });
 
-        if (pseudo !== undefined) {
+        if (pseudoTrimmed !== undefined) {
             const pseudoAlreadyExist = await prisma.user.findUnique({
                 where: {
-                    pseudo,
+                    pseudo: pseudoTrimmed
                 },
             });
 
@@ -86,7 +87,7 @@ router.patch('/profile', authenticate, async (req, res) => {
                 id: req.user.userId,
             },
             data: {
-                ...(pseudo !== undefined && { pseudo }),
+                ...(pseudoTrimmed !== undefined && { pseudo: pseudoTrimmed }),
                 ...(avatar !== undefined && { avatar }),
                 ...(langue !== undefined && { langue }),
                 ...(statut !== undefined && { statut }),

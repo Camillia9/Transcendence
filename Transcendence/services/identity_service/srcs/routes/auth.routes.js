@@ -34,6 +34,8 @@ router.post('/auth/register', async (req, res) => {
     // ^ → début de la chaîne.
     // [^\s@]+ → un ou plusieurs caractères qui ne sont ni un espace (\s) ni @.
     // $ → fin de la chaîne.
+
+    const pseudoTrimmed = pseudo.trim()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
    if (!emailRegex.test(email))
@@ -42,10 +44,10 @@ router.post('/auth/register', async (req, res) => {
     if (email.length > 254)
         return res.status(400).json({ error: 'Email must be at most 254 characters' });
 
-    if (pseudo.length < 3)
+    if (pseudoTrimmed.length < 3)
         return res.status(400).json({ error: 'Username must be at least 3 characters' });
 
-    if (pseudo.length > 20)
+    if (pseudoTrimmed.length > 20)
         return res.status(400).json({ error: 'Username must be at most 20 characters' });
 
     if (password.length < 6)
@@ -56,7 +58,7 @@ router.post('/auth/register', async (req, res) => {
 
     const [emailAlreadyExist, pseudoAlreadyExist] = await Promise.all([
         prisma.user.findUnique({ where: { email }}),
-        prisma.user.findUnique({ where: { pseudo }}),
+        prisma.user.findUnique({ where: { pseudo: pseudoTrimmed }}),
     ]);
     // verfier que l'email et le pseudo n'existent pas deja car doit etre unique selon le schema prisma
     if (emailAlreadyExist)
@@ -70,7 +72,7 @@ router.post('/auth/register', async (req, res) => {
 
         const user = await prisma.user.create({
             data: {
-                pseudo,
+                pseudo: pseudoTrimmed,
                 email,
                 passwordHash,
             },
@@ -103,12 +105,14 @@ router.post('/auth/login', async (req, res) => {
         if (!identifier || !password)
             return res.status(400).json({ error: 'Identifier and password needed'});
 
+        const identifierTrimmed = identifier.trim()
+
         // chercher le user par email ou pseudo
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
-                    { email: identifier },
-                    { pseudo: identifier },
+                    { email: identifierTrimmed },
+                    { pseudo: identifierTrimmed },
                 ],
             }
         });
