@@ -1,0 +1,103 @@
+{
+  "uid": "transcendence-overview",
+  "title": "Transcendence — Overview",
+  "tags": ["transcendence"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Services",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "up{job=~\"identity|chat|workspace\"}", "legendFormat": "{{job}}", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Postgres",
+      "gridPos": { "h": 4, "w": 4, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "up{job=\"postgres\"}", "legendFormat": "postgres", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Alertes firing",
+      "gridPos": { "h": 4, "w": 6, "x": 10, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)", "legendFormat": "firing", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "HTTP requests / s",
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "rate(http_requests_total[5m])", "legendFormat": "{{service}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Alertes Prometheus",
+      "gridPos": { "h": 5, "w": 16, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "alertstate": true
+            },
+            "indexByName": {
+              "alertname": 0,
+              "severity": 1,
+              "job": 2,
+              "instance": 3
+            }
+          }
+        }
+      ],
+      "options": { "showHeader": true }
+    }
+  ]
+}

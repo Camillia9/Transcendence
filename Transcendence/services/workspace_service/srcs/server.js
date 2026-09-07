@@ -12,6 +12,7 @@ import commentRouter from './routes/comment.routes.js';
 import internalRouter from './routes/internal.routes.js';
 import { initSockets } from './sockets/index.js';
 import { healthHandler } from '../../shared/health.js';
+import { metricsMiddleware } from '../../shared/metrics.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -31,6 +32,7 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use(metricsMiddleware('workspace'));
 app.use(express.json());
 
 app.get('/health', healthHandler('workspace'));

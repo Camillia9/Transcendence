@@ -13,6 +13,7 @@ import profilRouter from './routes/profil.routes.js';
 import notificationRouter from './routes/notification.routes.js';
 import { healthHandler } from '../../shared/health.js';
 import { buildSystemStatus } from '../../shared/systemStatus.js';
+import { metricsMiddleware } from '../../shared/metrics.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use(metricsMiddleware('identity'));
 app.use(express.json({ limit: '5mb' }));
 
 passport.use(googleStrategy);
