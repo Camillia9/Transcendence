@@ -29,9 +29,6 @@ services:
     container_name: transcendence_frontend
     networks:
       - frontend-network
-    volumes:
-      - ./frontend:/app:z
-      - /app/node_modules
     restart: always
 
   # Identity = auth, users, friends, profile, notifications inbox
@@ -45,12 +42,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/identity_service:/app/identity_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3001
       - FRONTEND_URL=${FRONTEND_URL}
@@ -86,12 +77,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/chat_service:/app/chat_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3002
       - FRONTEND_URL=${FRONTEND_URL}
@@ -121,12 +106,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/workspace_service:/app/workspace_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3003
       - FRONTEND_URL=${FRONTEND_URL}
@@ -173,9 +152,6 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - FORCE_SEED=${FORCE_SEED:-0}
-    volumes:
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
     depends_on:
       db:
         condition: service_healthy
@@ -208,6 +184,53 @@ services:
     entrypoint: ["/bin/sh", "/scripts/backup-loop.sh"]
     restart: always
 
+  prometheus:
+    image: docker.io/prom/prometheus:v2.55.1
+    container_name: transcendence_prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - backend-network
+    restart: always
+
+  postgres-exporter:
+    image: docker.io/prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: transcendence_postgres_exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+    networks:
+      - backend-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  grafana:
+    image: docker.io/grafana/grafana:11.2.2
+    container_name: transcendence_grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://localhost:8443/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - backend-network
+    depends_on:
+      - prometheus
+    restart: always
+
 networks:
   frontend-network:
     driver: bridge
@@ -216,3 +239,5 @@ networks:
 
 volumes:
   pgdata:
+  prometheus_data:
+  grafana_data:

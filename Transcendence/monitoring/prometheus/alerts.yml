@@ -1,0 +1,18 @@
+groups:
+  - name: transcendence
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"identity|chat|workspace"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is down"
+
+      - alert: PostgresDown
+        expr: up{job="postgres"} == 0 or pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"

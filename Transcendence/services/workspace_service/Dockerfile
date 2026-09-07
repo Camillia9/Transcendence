@@ -12,4 +12,4 @@ COPY workspace_service/ ./workspace_service/
 RUN npx prisma generate --schema prisma/schema.prisma
 
 EXPOSE 3003
-CMD ["node", "workspace_service/srcs/server.js"]
+CMD ["npm", "run", "start"]
