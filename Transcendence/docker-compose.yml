@@ -29,9 +29,6 @@ services:
     container_name: transcendence_frontend
     networks:
       - frontend-network
-    volumes:
-      - ./frontend:/app:z
-      - /app/node_modules
     restart: always
 
   # Identity = auth, users, friends, profile, notifications inbox
@@ -45,12 +42,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/identity_service:/app/identity_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3001
       - FRONTEND_URL=${FRONTEND_URL}
@@ -86,12 +77,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/chat_service:/app/chat_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3002
       - FRONTEND_URL=${FRONTEND_URL}
@@ -121,12 +106,6 @@ services:
         condition: service_completed_successfully
     networks:
       - backend-network
-    volumes:
-      - ./services/workspace_service:/app/workspace_service:z
-      - ./services/shared:/app/shared:z
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
-      - /app/node_modules
     environment:
       - PORT=3003
       - FRONTEND_URL=${FRONTEND_URL}
@@ -173,9 +152,6 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - FORCE_SEED=${FORCE_SEED:-0}
-    volumes:
-      - ./services/prisma:/app/prisma:z
-      - ./services/prisma.config.ts:/app/prisma.config.ts:z
     depends_on:
       db:
         condition: service_healthy
