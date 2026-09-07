@@ -82,6 +82,7 @@ function KanbanPage() {
 
     socket.on('task:deleted', ({ taskId }) => {
       setTasks(prev => prev.filter(t => t.id !== taskId))
+      setSelectedTask(prev => prev && prev.id === taskId ? null : prev)
     })
 
     socket.on('task:comment-added', ({ taskId, comment }) => {
@@ -257,6 +258,12 @@ function KanbanPage() {
     })
   )
 
+  const handleTaskNotFound = (taskId) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId))
+    setSelectedTask(prev => prev && prev.id === taskId ? null : prev)
+    alert(t('kanban.alerts.taskNoLongerExists'))
+  }
+
   const handleUpdateTask = async (updatedTask) => {
     setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
     setSelectedTask(updatedTask)
@@ -269,7 +276,11 @@ function KanbanPage() {
         deadline: updatedTask.deadline,
       })
     } catch (error) {
-      console.error('Impossible de modifier la tache', error)
+      if (error.status === 404) {
+        handleTaskNotFound(updatedTask.id)
+      } else {
+        console.error('Impossible de modifier la tache', error)
+      }
     }
   }
 
@@ -309,7 +320,11 @@ function KanbanPage() {
       setTasks(tasks.filter(t => t.id !== taskId))
       setSelectedTask(null)
     } catch (error) {
-      console.error('Impossible de supprimer la tache', error)
+      if (error.status === 404) {
+        handleTaskNotFound(taskId)
+      } else {
+        console.error('Impossible de supprimer la tache', error)
+      }
     }
   }
 
@@ -321,7 +336,11 @@ function KanbanPage() {
       const fresh = data.find(t => t.id === taskId)
       if (fresh) setSelectedTask(fresh)
     } catch (error) {
-      console.error('Impossible d\'assigner la tache', error)
+      if (error.status === 404) {
+        handleTaskNotFound(taskId)
+      } else {
+        console.error('Impossible d\'assigner la tache', error)
+      }
     }
   }
 

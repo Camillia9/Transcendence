@@ -236,7 +236,8 @@
       "removedFromProject": "Vous ne faites plus partie de ce projet",
       "projectDeleted": "Ce projet n'existe plus, il a été supprimé",
       "removedFromOrg": "Vous avez été retiré de cette organisation",
-      "projectNoLongerExists": "Ce projet n'existe plus"
+      "projectNoLongerExists": "Ce projet n'existe plus",
+      "taskNoLongerExists": "Cette tâche n'existe plus, elle a été supprimée"
     },
     "errors": {
       "titleRequired": "Le titre est obligatoire",

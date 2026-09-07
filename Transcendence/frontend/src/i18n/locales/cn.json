@@ -235,7 +235,8 @@
 			"removedFromProject": "你已不再属于该项目",
 			"projectDeleted": "该项目已不存在，已被删除",
 			"removedFromOrg": "你已被移出该组织",
-			"projectNoLongerExists": "该项目已不存在"
+			"projectNoLongerExists": "该项目已不存在",
+			"taskNoLongerExists": "该任务已不存在，已被删除"
 		},
 		"errors": {
 			"titleRequired": "标题为必填项",
