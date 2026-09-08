@@ -5,7 +5,6 @@ import ProjectCard from "../components/ui/ProjectCard";
 import Button from "../components/ui/Button"
 import Modal from "../components/ui/Modal"
 import Input from "../components/ui/Input";
-import { getHealth } from "../api/health";
 import { getProjects, updateProject, deleteProject, createProject } from "../api/projects";
 import { getMyOrganisations } from "../api/organisations";
 import { useWorkspaceSocket } from "../context/SocketContext";
@@ -141,26 +140,6 @@ function Home() {
       }
     }
   }
-
-  // BRANCHEMENT BACK/FRONT:
-  // état local pour stocker ce que le back nous répond.
-  // TEST de depart. A supp des qu'on aurra remplace les mock par de vraie donnees
-  const [health, setHealth] = useState(t('common.loading'))
-
-  // useEffect avec [] : s'execute une fois au montage.
-  useEffect(() => {
-    // fction asynchrone : "Fonction qui contient des attentes"
-    async function checkBackend() {
-      try {
-        const data = await getHealth()
-        setHealth(data.status)
-      } catch (error) {
-        // Si le back ne repond pas on le note plutot que de planter 
-        setHealth(t('home.backendUnreachable'))
-      }
-    }
-    checkBackend()
-  }, [t])
 
   useEffect(() => {
     async function loadProjects() {

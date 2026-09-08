@@ -11,10 +11,10 @@ async function fetchHealthJson(path) {
 	return { ok: response.ok, statusCode: response.status, data }
 }
 
-export async function getHealth() {
-	const { data } = await fetchHealthJson('/health')
-	return data
-}
+// export async function getHealth() {
+// 	const { data } = await fetchHealthJson('/health')
+// 	return data
+// }
 
 export async function getSystemStatus() {
 	const { data } = await fetchHealthJson('/status')
