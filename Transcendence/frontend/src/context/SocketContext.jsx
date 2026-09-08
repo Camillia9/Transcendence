@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext'
 
 const SocketContext = createContext(null)
 
-const SOCKET_URL = 'https://localhost:8443'
+const SOCKET_URL = window.location.origin
 
 export function SocketProvider({ children }) {
   const { user } = useAuth()

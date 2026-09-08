@@ -10,11 +10,11 @@ function AuthCard({ title, subtitle, swapText, swapTo, children }) {
 	const { t } = useTranslation()
 
 	const handleGoogle = () => {
-		window.location.href = 'https://localhost:8443/api/auth/google'
+		window.location.href = '/api/auth/google'
 	}
 
 	const handleGithub = () => {
-		window.location.href = 'https://localhost:8443/api/auth/github'
+		window.location.href = '/api/auth/github'
 	}
 
 	return (

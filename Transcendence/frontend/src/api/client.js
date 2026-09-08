@@ -1,4 +1,5 @@
-export const BASE_URL = 'https://localhost:8443/api'
+//export const BASE_URL = 'https://localhost:8443/api'
+export const BASE_URL = '/api'
 
 // Le moteur unique : toute requête vers le back passe par ici.
 export async function apiRequest(path, options = {}) {

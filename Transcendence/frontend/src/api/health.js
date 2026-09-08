@@ -1,4 +1,4 @@
-const BASE_URL = 'https://localhost:8443/api'
+const BASE_URL = '/api'
 
 /**
  * Health / status can return 503 when degraded — still parse the body.

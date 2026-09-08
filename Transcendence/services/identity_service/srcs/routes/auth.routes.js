@@ -124,7 +124,7 @@ router.post('/auth/login', async (req, res) => {
 
         res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, statut: user.statut, hasPassword: !!user.passwordHash }
         });
     } catch (error) {
         console.error(error);
@@ -290,7 +290,7 @@ router.post('/auth/login/2fa', async(req, res) => {
 
         return res.json({
             token,
-            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash }
+            user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, statut: user.statut, hasPassword: !!user.passwordHash }
         });
     } catch (error) {
         console.error(error);
