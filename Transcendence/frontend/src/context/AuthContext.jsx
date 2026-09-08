@@ -26,11 +26,19 @@ export function AuthProvider({ children }) {
 	localStorage.removeItem('user') // on efface l'utilisateur
   }
 
+  function updateUser(patch) {
+    setUser(prev => {
+      const next = { ...prev, ...patch }
+      localStorage.setItem('user', JSON.stringify(next))
+      return next
+    })
+  }
+
 // Ceci fait: “tout ce qui est dans children peut accéder à ces données”
 // value={{...}}, c'est ce que tu partages globalement
 // Grace a ca, toute mon app peut acceder a user login logout sans passer de props
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

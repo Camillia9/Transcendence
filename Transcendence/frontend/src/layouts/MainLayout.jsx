@@ -17,7 +17,7 @@ import { STATUS_DOT, STATUS_VALUES, formatStatus } from '../utils/status'
 import { useTranslation } from 'react-i18next'
 
 function MainLayout() {
-  const { user, logout } = useAuth()
+  const { user, logout, updateUser } = useAuth()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -99,7 +99,8 @@ function MainLayout() {
     setStatut(value)
     setStatusMenuOpen(false)
     try {
-      await updateProfile({ statut: value })
+      const updated = await updateProfile({ statut: value })
+      updateUser({ statut: updated.statut })   // le contexte + localStorage suivent
     } catch (e) {
       console.error('Maj statut echouee', e)
       setStatut(statut)
