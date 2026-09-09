@@ -402,10 +402,12 @@ function Organisations() {
         title={OrganisationToEdit ? t('organisation.editModal.title') : t('organisation.newOrganisation')}
       >
         <div className="flex flex-col gap-1 mb-4">
-          <label className="text-sm text-gray-500"> 
+          <label htmlFor="organisation-name" className="text-sm text-gray-500">
             {t('organisation.nameLabel')} *
           </label>
           <Input
+            id="organisation-name"
+            name="name"
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
@@ -446,7 +448,12 @@ function Organisations() {
           onClose={() => setMemberToEdit(null)}
           title={t('organisation.editRoleModal.title')}
         >
+          <label htmlFor="organisation-member-role" className="sr-only">
+            {t('organisation.editRoleModal.title')}
+          </label>
           <select
+            id="organisation-member-role"
+            name="role"
             value={newRole}
             onChange={(e) => setNewRole(e.target.value)}
           >
@@ -478,10 +485,12 @@ function Organisations() {
         title={t('organisation.inviteModal.title')}
       >
         <div className="flex flex-col gap-1 mb-4">
-          <label className="text-sm text-gray-500">
+          <label htmlFor="organisation-invite-pseudo" className="text-sm text-gray-500">
             {t('organisation.pseudoLabel')}
           </label>
           <Input
+            id="organisation-invite-pseudo"
+            name="invitePseudo"
             type="text"
             value={invitePseudo}
             onChange={(e) => setInvitePseudo(e.target.value)}

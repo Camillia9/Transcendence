@@ -234,7 +234,7 @@ function Home() {
             {/* Choix de l'organisation (création uniquement) */}
             {!projectToEdit && (
               <div className="flex flex-col gap-1 mb-4">
-                <label className="text-sm text-gray-500">
+                <label className="text-sm text-gray-500" htmlFor="home-organisation">
                   {t('home.organisationLabel')} *
                 </label>
                 
@@ -245,6 +245,8 @@ function Home() {
                   </p>
                 ) : (
                   <select
+                    id="home-organisation"
+                    name="organisationId"
                     value={selectedOrgId}
                     onChange={(e) => setSelectedOrgId(e.target.value)}
                     className="text-sm border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none"
@@ -264,11 +266,13 @@ function Home() {
             {/*Entree du NameProject */}
             <div className="flex flex-col gap-1 mb-4">
               {/*Label = tire du champs*/}
-              <label className="text-sm text-gray-500"> 
+              <label htmlFor="home-project-name" className="text-sm text-gray-500"> 
                 {t('home.projectNameLabel')} *
               </label>
               {/*Input = zone saisie */}
               <Input
+                id="home-project-name"
+                name="projectName"
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -281,10 +285,12 @@ function Home() {
             </div>
             {/*Entree de la Deadline */}
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">
+              <label htmlFor="home-deadline" className="text-sm text-gray-500">
                 {t('home.deadlineLabel')}
               </label> 
               <Input
+                id="home-deadline"
+                name="deadline"
                 type="date"
                 value={newDeadline}
                 onChange={(e) => setNewDeadline(e.target.value)}

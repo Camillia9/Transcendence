@@ -97,7 +97,10 @@ export default function FriendsPage() {
 				
 				<div className="relative w-72">
 					<IconSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+					<label htmlFor="friends-search" className="sr-only">{t('friends.searchPlaceholder')}</label>
 					<input
+						id="friends-search"
+						name="search"
 						type='text'
 						value={query}
 						onFocus={() => setSearchOpen(true)}

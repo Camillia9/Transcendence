@@ -510,8 +510,10 @@ function KanbanPage() {
       >
         {/*Titre*/}
         <div className="flex flex-col gap-1 mb-4">
-          <label className="text-sm text-gray-500">{t('kanban.taskTitleLabel')} *</label>
+          <label htmlFor="kanban-task-title" className="text-sm text-gray-500">{t('kanban.taskTitleLabel')} *</label>
           <Input
+            id="kanban-task-title"
+            name="taskTitle"
             type="text"
             placeholder={t('kanban.taskTitlePlaceholder')}
             value={newTaskTitle}
@@ -527,7 +529,7 @@ function KanbanPage() {
         </div>
         {/*Priorite*/}
         <div className="flex flex-col gap-2 mb-6">
-          <label className="text-sm text-gray-500">{t('kanban.task.priorityLabel')}</label>
+          <p className="text-sm text-gray-500">{t('kanban.task.priorityLabel')}</p>
           <div className="flex gap-2">
             {PRIORITIES.map(p => (
               <button
@@ -639,16 +641,18 @@ function KanbanPage() {
           title={t('kanban.editRoleModal.title')}
           >
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">{t('kanban.memberLabel')}</label>
+              <p className="text-sm text-gray-500">{t('kanban.memberLabel')}</p>
               <p className="text-sm text-gray-700">
                 {memberToEdit.pseudo}
               </p>
             </div>
 
             <div className="flex flex-col gap-1 mb-4">
-              <label className="text-sm text-gray-500">{t('kanban.roleLabel')}</label>
+              <label htmlFor="kanban-member-role" className="text-sm text-gray-500">{t('kanban.roleLabel')}</label>
 
               <select
+                id="kanban-member-role"
+                name="role"
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm"

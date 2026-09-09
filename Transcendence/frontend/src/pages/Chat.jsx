@@ -355,7 +355,10 @@ function Chat() {
             {/* Champ d'envoi */}
             <div className="pt-3 border-t border-gray-100">
               <div className="flex gap-2">
+                <label htmlFor="chat-message" className="sr-only">{t('chat.messagePlaceholder')}</label>
                 <input
+                  id="chat-message"
+                  name="message"
                   type="text"
                   value={draft}
                   onChange={(e) => {
@@ -394,7 +397,10 @@ function Chat() {
         {/*Champs de recherche*/}
         <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 mb-3">
           <IconSearch size={16} className="text-gray-400 shrink-0" />
+          <label htmlFor="chat-user-search" className="sr-only">{t('chat.searchUserPlaceholder')}</label>
           <input
+            id="chat-user-search"
+            name="userSearch"
             type="text"
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
@@ -430,8 +436,10 @@ function Chat() {
         {/* Nom du groupe : seulement si 2+ personnes sélectionnées */}
         {convType === 'group' && (
           <div className="flex flex-col gap-1 mb-3">
-            <label className="text-sm text-gray-500">{t('chat.groupNameLabel')}</label>
+            <label htmlFor="chat-group-name" className="text-sm text-gray-500">{t('chat.groupNameLabel')}</label>
             <input
+              id="chat-group-name"
+              name="groupName"
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}

@@ -230,7 +230,10 @@ function Profil() {
           </div>
         </div>
 
+          <label htmlFor="profile-avatar" className="sr-only">{t('profile.editPhoto')}</label>
         <input
+          id="profile-avatar"
+          name="avatar"
           type='file'
           accept='image/*'
           onChange={handleAvatarChange}
@@ -252,8 +255,10 @@ function Profil() {
         )}
 
         <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>{t('profile.pseudoLabel')}</label>
+          <label htmlFor="profile-pseudo" className='text-sm text-gray-500'>{t('profile.pseudoLabel')}</label>
             <Input
+              id="profile-pseudo"
+              name="pseudo"
               type="text"
               value={pseudo}
               onChange={(e) => setPseudo(e.target.value)}
@@ -263,8 +268,10 @@ function Profil() {
         </div>
 
         <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>{t('profile.languageLabel')}</label>
+          <label htmlFor="profile-language" className='text-sm text-gray-500'>{t('profile.languageLabel')}</label>
             <select
+              id="profile-language"
+              name="language"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className='text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1'
@@ -287,8 +294,10 @@ function Profil() {
       <Card className='flex flex-col gap-4'>
         <h2 className='text-sm font-medium text-gray-700'>{t('profile.changePasswordTitle')}</h2>
         <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>{t('profile.currentPasswordLabel')}</label>
+          <label htmlFor="profile-current-password" className='text-sm text-gray-500'>{t('profile.currentPasswordLabel')}</label>
             <Input
+              id="profile-current-password"
+              name="currentPassword"
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -297,9 +306,11 @@ function Profil() {
           />
         </div>
         <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>{t('profile.newPasswordLabel')}</label>
+          <label htmlFor="profile-new-password" className='text-sm text-gray-500'>{t('profile.newPasswordLabel')}</label>
           <Input
-              type="password"
+            id="profile-new-password"
+            name="newPassword"
+            type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder={t('profile.newPasswordLabel')}

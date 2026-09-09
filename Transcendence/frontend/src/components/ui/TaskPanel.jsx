@@ -50,10 +50,12 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
         </div>
         <div className="flex flex-col gap-5 p-6 overflow-y-auto flex-1">
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.deadlineLabel')}</label>
+            <label htmlFor="task-deadline" className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.deadlineLabel')}</label>
             <div className="flex items-center gap-2 text-sm text-gray-700">
               <IconCalendar size={16} className="text-gray-400" />
               <input
+                id="task-deadline"
+                name="deadline"
                 type="date"
                 value={task.deadline ? task.deadline.slice(0, 10) : ''}
                 onChange={(e) => onUpdate({ ...task, deadline: e.target.value || null })}
@@ -63,13 +65,19 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.assigneeLabel')}</label>
+            {canAssign ? (
+              <label htmlFor="task-assignee" className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.assigneeLabel')}</label>
+            ) : (
+              <p className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.assigneeLabel')}</p>
+            )}
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
                 {assignee?.pseudo?.[0]} 
               </div>
               {canAssign ? (
                 <select
+                  id="task-assignee"
+                  name="assignee"
                   value={task.assignedToId ?? ''}
                   onChange={(e) => onAssign(task.id, e.target.value ? Number(e.target.value) : null)}
                   className="text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1"
@@ -85,7 +93,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.priorityLabel')}</label>
+            <p className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.priorityLabel')}</p>
             <div className="flex gap-2">
               {PRIORITIES.map(p => (
                 <button
@@ -102,8 +110,10 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.descriptionLabel')}</label>
+            <label htmlFor="task-description" className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.descriptionLabel')}</label>
             <textarea
+              id="task-description"
+              name="description"
               defaultValue={task.description ?? ''}
               onBlur={(e) => canEdit && onUpdate({...task, description: e.target.value })}
               placeholder={t('kanban.task.descriptionPlaceholder')}
@@ -119,7 +129,10 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
 
           {task.status === 'Blocked' && (
             <div className="flex flex-col gap-3">
+              <label htmlFor="task-comment" className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.commentPlaceholder')}</label>
               <textarea
+                id="task-comment"
+                name="comment"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={t('kanban.task.commentPlaceholder')}
@@ -128,7 +141,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
               <Button onClick={submitComment} className="self-end">
                 {t('kanban.task.sendComment')}
               </Button>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.commentsLabel')}</label>
+            <p className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.commentsLabel')}</p>
               {(task.comments ?? []).length === 0 && (
                 <p className="text-xs text-gray-300">{t('kanban.task.noComments')}</p>
               )}
@@ -161,7 +174,7 @@ function TaskPanel({task, userRole, currentUser, members, onClose, onUpdate, onA
           )}
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.createdByLabel')}</label>
+            <p className="text-xs text-gray-400 uppercase tracking-wide">{t('kanban.task.createdByLabel')}</p>
             <div className="flex items-center gap-2 text-sm text-gray-700">
               <div className="w-7 h-7 rounded-full bg-primary-900/20 flex items-center justify-center text-xs font-medium text-primary-900">
                 {creator?.pseudo?.[0] ?? '?'}
