@@ -195,108 +195,121 @@ function MainLayout() {
   return (
     <div className="h-screen bg-gray-50 text-gray-800 flex flex-col overflow-hidden">
       <nav className='bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between'>
-        <Logo />
+        <div className='flex items-center gap-3'>
+          <button
+            className='md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors'
+            onClick={() => setSidebarOpen(true)}
+            //onClick={() => {console.log('hamburger clique'); setSidebarOpen(true)}}
+          >
+            <IconLayoutSidebar size={20} className='text-gray-500' />
+          </button>
+          <Logo />
+        </div>
         
-          <div className='flex items-center gap-4'>
-
-            <div className="relative">
-              <button
-                onClick={(e) => { e.stopPropagation(); setNotifOpen(!notifOpen) }}
-                className='relative p-2 rounded-lg hover:bg-gray-100 transition-colors'
-              >
-                <IconBell size={20} className="text-gray-500"/>
-                {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {notifOpen && (
-                <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <span className='text-sm font-medium text-gray-700'>{t('mainLayout.notificationsTitle')}</span>
-                    {unreadCount > 0 && (
+        <div className='flex items-center gap-4'>
+          <div className="relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setNotifOpen(!notifOpen) }}
+              className='relative p-2 rounded-lg hover:bg-gray-100 transition-colors'
+            >
+              <IconBell size={20} className="text-gray-500"/>
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center bg-red-400 text-white text-[10px] font-semibold leading-none rounded-full">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {notifOpen && (
+              <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <span className='text-sm font-medium text-gray-700'>{t('mainLayout.notificationsTitle')}</span>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); markAllAsRead()}}
+                      className='text-xs text-primary-400 hover:text-primary-600 font-medium transition-colors'
+                    >
+                      {t('mainLayout.markAllRead')}
+                    </button>
+                  )}
+                </div>
+                <div className='max-h-96 overflow-y-auto flex flex-col'>
+                  {notifications.length === 0 ? (
+                    <p className='px-4 py-6 text-sm text-gray-400 text-center'>{t('mainLayout.noNotifications')}</p>
+                  ) : (
+                    notifications.map(notif => {
+                      const config = NOTIF_ICONS[notif.type]
+                      const Icon = config?.icon
+                      return(
                       <button
-                        onClick={(e) => { e.stopPropagation(); markAllAsRead()}}
-                        className='text-xs text-primary-400 hover:text-primary-600 font-medium transition-colors'
+                      key={notif.id}
+                      onClick={() => {
+                        markAsRead(notif.id)
+                        const link = getNotificationLink(notif)
+                        if (link) navigate(link)
+                        setNotifOpen(false)
+                      }}
+                      className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
                       >
-                        {t('mainLayout.markAllRead')}
+                        {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
+                        <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
+                        <div className='flex flex-col'>
+                          <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
+                            {formatNotification(notif)}
+                          </span>
+                          <span className='text-xs text-gray-400 mt-0.5'>
+                            {timeAgo(notif.createdAt)}
+                          </span>
+                        </div>
                       </button>
-                    )}
+                      )
+                    })
+                  )}
                   </div>
-
-                  <div className='max-h-96 overflow-y-auto flex flex-col'>
-                    {notifications.length === 0 ? (
-                      <p className='px-4 py-6 text-sm text-gray-400 text-center'>{t('mainLayout.noNotifications')}</p>
-                    ) : (
-                      notifications.map(notif => {
-                        const config = NOTIF_ICONS[notif.type]
-                        const Icon = config?.icon
-                        return(
-                        <button
-                        key={notif.id}
-                        onClick={() => {
-                          markAsRead(notif.id)
-                          const link = getNotificationLink(notif)
-                          if (link) navigate(link)
-                          setNotifOpen(false)
-                        }}
-                        className="px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-b-0"
-                        >
-                          {Icon && <Icon size={18} className={`mt-0.5 shrink-0 ${config.color}`} />}
-                          <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.isRead ? 'bg-transparent' : 'bg-primary-400'}`} />
-                          <div className='flex flex-col'>
-                            <span className={`text-sm ${notif.isRead ? 'text-gray-500' : 'text-gray-800 font-medium'}`}>
-                              {formatNotification(notif)}
-                            </span>
-                            <span className='text-xs text-gray-400 mt-0.5'>
-                              {timeAgo(notif.createdAt)}
-                            </span>
-
-                          </div>
-                        </button>
-                        )
-                      })
-                    )}
-                    </div>
-                </div>
-              )}
-            </div>
-            <LanguageSwitcher/>
-
-            <div className="relative">
-              <div 
-                onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
-                className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <Avatar src={user?.avatar} username={user?.pseudo} size="sm" />
-                <span className='text-sm text-gray-700'>{user?.pseudo}</span>
               </div>
-              {profileMenuOpen && (
-                <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-48 flex flex-col overflow-hidden z-50'>
-                  <button
-                    className='px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
-                    onClick={() => { navigate('/profil'); setProfileMenuOpen(false)}}
-                  >
-                    {t('mainLayout.editProfile')}
-                  </button>
-                  <button
-                    className='px-4 py-3 text-sm text-red-400 hover:bg-red-50 text-left transition-colors'
-                    onClick={() => { handleLogout(); setProfileMenuOpen(false)}}
-                  >
-                    {t('mainLayout.logout')}
-                  </button>
-                </div>
-              )}
-
-            </div>
-
+            )}
           </div>
+          <LanguageSwitcher/>
+          <div className="relative">
+            <div 
+              onClick={(e) => { e.stopPropagation(); setProfileMenuOpen(!profileMenuOpen)}}
+              className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Avatar src={user?.avatar} username={user?.pseudo} size="sm" />
+              <span className='text-sm text-gray-700'>{user?.pseudo}</span>
+            </div>
+            {profileMenuOpen && (
+              <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-48 flex flex-col overflow-hidden z-50'>
+                <button
+                  className='px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
+                  onClick={() => { navigate('/profil'); setProfileMenuOpen(false)}}
+                >
+                  {t('mainLayout.editProfile')}
+                </button>
+                <button
+                  className='px-4 py-3 text-sm text-red-400 hover:bg-red-50 text-left transition-colors'
+                  onClick={() => { handleLogout(); setProfileMenuOpen(false)}}
+                >
+                  {t('mainLayout.logout')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </nav>
 
       <div className='flex flex-1 min-h-0'>
-        <aside className={`bg-white border-r border-gray-100 flex flex-col overflow-y-auto transition-all duration-300 ${sidebarOpen ? 'w-56' : 'w-14'}`}>
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/30 z-30 md:hidden"
+          />
+        )}
+        <aside className={`
+          bg-white border-r border-gray-100 flex flex-col overflow-y-auto
+          transition-all duration-300 z-40
+          fixed inset-y-0 left-0 md:static
+          ${sidebarOpen ? 'w-56 translate-x-0' : 'w-56 -translate-x-full md:translate-x-0 md:w-14'}
+        `}>
           <button
             className='p-4 hover:bg-gray-100 transition-colors self-start'
             onClick={() => setSidebarOpen(!sidebarOpen)}
