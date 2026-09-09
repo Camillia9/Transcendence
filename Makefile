@@ -61,8 +61,7 @@ restore:
 	@chmod +x ./scripts/restore.sh
 	./scripts/restore.sh "$(FILE)"
 
-# Réinjecte les comptes démo (alice/bob/charlie) — ÉCRASE les données
 seed:
-	FORCE_SEED=1 $(COMPOSE_CMD) run --rm -e FORCE_SEED=1 migrate
+	@FORCE_SEED=1 $(COMPOSE_CMD) up --no-deps --force-recreate --abort-on-container-exit --exit-code-from migrate migrate
 
 .PHONY: all up down cleanbackups fclean stop start ps log logs re rebuild backup backups restore seed
