@@ -44,7 +44,7 @@ Users can work together inside organizations, create projects and tasks, manage 
 We worked as a team of five. Alongside development, we shared project responsibilities such as product management, project management and technical coordination.
 
 
-### Marylin
+### Mary-line
 
 **Role:** Developer
 
@@ -53,7 +53,7 @@ Responsible for:
 * backend et database
 
 
-### Cam
+### Camillia
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -65,14 +65,16 @@ Responsible for:
 * Dashboard and UI components
 * Internationalization
 
-### Manu
+### Emmanuel
 
 **Roles:** Technical Lead, Developer
 
 Responsible for:
 
 * Technical decisions and architecture
-* [Backend / DevOps responsibilities — TO COMPLETE]
+* Backend microservices
+* Docker, Nginx and Makefile
+* Monitoring, health checks and backups
 
 ### Nicolas
 
@@ -542,9 +544,9 @@ The backend is divided into several services with different responsibilities.
 
 **Why we chose it:** separating the application into services makes the different parts easier to isolate and maintain.
 
-**Implementation:** [LIST ACTUAL SERVICES]
+**Implementation:** three Node.js services behind Nginx, orchestrated with Docker Compose: **identity**, **chat** and **workspace**. They share PostgreSQL via Prisma. Inter-service calls use an internal API key and stay on the backend network.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Emmanuel
 
 ---
 
@@ -554,9 +556,9 @@ We use Prometheus and Grafana to monitor the application.
 
 Prometheus collects metrics while Grafana provides dashboards and visualizations.
 
-**Implementation:** [ALERTS / EXPORTERS / DASHBOARDS / SECURITY — TO COMPLETE]
+**Implementation:** Prometheus scrapes `/metrics` on the three services plus **postgres-exporter**. Grafana ships two dashboards: overview (uptime, HTTP traffic, firing alerts) and Postgres. Alert rules: **ServiceDown** and **PostgresDown**.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Emmanuel
 
 ---
 
@@ -566,7 +568,9 @@ The application provides health checks and a status page showing the state of th
 
 **Why we chose it:** it makes service failures easier to identify.
 
-**Contributors:** [TO COMPLETE]
+**Implementation:** each service has a `/health` endpoint. A status page shows whether identity, chat and workspace are up. Backups of the database run automatically.
+
+**Contributors:** Emmanuel
 
 ---
 
@@ -627,7 +631,7 @@ This section summarizes the concrete work done by each member.
 
 ---
 
-## Cam
+## Camillia
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -649,23 +653,26 @@ This section summarizes the concrete work done by each member.
 
 ---
 
-## Manu
+## Emmanuel
 
-**Role:** Technical Lead, Developer
+**Roles:** Technical Lead, Developer
 
 **Main contributions:**
 
-* [TO COMPLETE]
-* [TO COMPLETE]
-* [TO COMPLETE]
+* Technical architecture and backend split into microservices (identity, chat, workspace)
+* Docker Compose, Nginx reverse proxy and HTTPS
+* Makefile (Docker / Podman)
+* Internal service-to-service communication
+* Health checks, status page and automated database backups
+* Prometheus and Grafana monitoring
 
 **Main challenge:**
 
-[TO COMPLETE]
+Splitting a single backend into three services without breaking the frontend, while keeping Docker rebuilds usable.
 
 **How it was solved:**
 
-[TO COMPLETE]
+Services were isolated behind Nginx, with a shared database and an internal API key for calls between them. Dockerfiles and the Makefile were reworked so rebuilds became much faster.
 
 ---
 
@@ -689,7 +696,7 @@ This section summarizes the concrete work done by each member.
 
 ---
 
-## Marylin
+## Mary-line
 
 **Role:** Developer
 
@@ -775,14 +782,6 @@ Build and start the project:
 make
 ```
 
-If the project is started directly with Docker Compose:
-
-```bash
-docker compose up --build
-```
-
-> Use the command that corresponds to the final Makefile / project setup.
-
 ---
 
 ## Access
@@ -790,12 +789,10 @@ docker compose up --build
 Once the containers are running:
 
 ```text
-Application: https://[HOST]
-Status page: https://[HOST]/[PATH]
-Grafana:     https://[HOST]/[PATH]
+Application: https://localhost:8443
+Status page: https://localhost:8443/status
+Grafana:     https://localhost:8443/grafana
 ```
-
-> Replace these placeholders with the actual addresses used by the project.
 
 ---
 
