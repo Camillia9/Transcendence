@@ -50,7 +50,11 @@ We worked as a team of five. Alongside development, we shared project responsibi
 
 Responsible for:
 
-* backend et database
+* Backend development
+* API routing
+* Database management (Prisma schema, migrations, seed)
+* Authentification (JWT, login, Google OAuth, Github OAuth, 2FA)
+* Authorization and middleware (permissions, roles)
 
 
 ### Camillia
@@ -129,9 +133,22 @@ The frontend communicates with the backend through the API and WebSockets and al
 
 ## Backend
 
-**[EXACT BACKEND TECHNOLOGY — TO COMPLETE]**
+**Node.js**
 
-Used for the application logic, authentication, permissions, API endpoints, database access and communication between services.
+We chose Node.js as the JavaScript runtime used to run the backend services. It allows us to use JavaScript across both the frontend and backend, making development more consistent across the project. Node.js is particularly well-suited for applications that need to handle many simultaneous connections and asynchronous exchanges. It also provides a large ecosystem of libraries through npm and fits well with our multi-service backend architecture.
+
+**Express.js**
+
+We chose Express.js as the web framework used to build our REST API with Node.js and handle HTTP routing and middleware. Its lightweight and flexible architecture allows us to organize our different backend services and easily implement features such as authentication, authorization, and request processing.
+
+**Passport.js**
+
+We chose Passport.js to simplify the implementation of OAuth authentication with external providers such as Google and GitHub. Its middleware-based approach integrates naturally with Express.js and allows us to keep authentication logic separate from the rest of the application.
+
+**JWT (JSON Web Token)**
+
+We chose JWT token-based authentication for securing API requests because it provides a stateless and lightweight way to identify users when communicating with our backend services. The token is sent with authenticated requests, allowing each backend service to verify the user's identity without relying on a centralized server-side session. This makes authentication easier to share across our identity, workspace, and chat services.
+
 
 ---
 
@@ -147,9 +164,11 @@ A relational database fits this structure well and helps keep the data consisten
 
 ## Prisma
 
-**Prisma** is used as our ORM between the backend and PostgreSQL.
+**Prisma** is used as our ORM (Object-Relational Mapper) to simplify the interaction between our Node.js backend and PostgreSQL database.
 
 It allows us to define the database schema and access related data from the application in a structured way.
+
+Prisma also provides migration tools, making it easier to manage changes to our database schema throughout the development of the project.
 
 ---
 
@@ -223,27 +242,70 @@ The main relationships are based around users and collaborative workspaces:
 ```text
 User
  │
- ├──── Organization
- │          │
- │          └──── Project
- │                    │
- │                    └──── Task
+ ├──< Member >── Organisation
+ │                  │
+ │                  └──< Project
+ │                         │
+ │                         ├──< ProjectMember >── User
+ │                         │
+ │                         └──< Task
+ │                                │
+ │                                ├── assignedTo ──> User
+ │                                ├── createdBy ───> User
+ │                                └──< Comment >── User
  │
- ├──── Notification
+ ├──< Invitation >── Organisation
  │
- └──── User relationships
+ ├──< Notification
+ │
+ ├──< Friend >── User
+ │
+ └──< ConversationMember >── Conversation
+                                  │
+                                  └──< Message >── User
+                                           │
+                                           └──< MessageRead >── User
+
 ```
 
 ### Main entities
 
 * **User** — application users and their account/profile information.
-* **Organization** — shared workspaces containing members and projects.
+* **Organisation** — shared workspaces containing members and projects.
 * **Project** — projects belonging to an organization.
 * **Task** — pieces of work belonging to a project.
 * **Notification** — notifications associated with users.
-* **[Other entities — TO COMPLETE]**
+* **Comment** - comments on tasks
+* **Conversation** - private and group conversations
 
-For the final version, the complete Prisma schema / ER diagram should be included here, with the main fields, data types and relationships.
+### Relationships
+
+* User ↔ Organisation: A many-to-many relationship managed through the Member table. A member also has an organisation role (Admin or Member).
+* Organisation → Project: An organisation can contain multiple projects, while each project belongs to one organisation.
+* User ↔ Project: A many-to-many relationship managed through ProjectMember, which also stores the user's project role (Manager or User).
+* Project → Task: A project can contain multiple tasks. Tasks can be assigned to users and have a creator.
+* Task → Comment: A task can contain multiple comments, each associated with a user.
+* User ↔ Conversation: A many-to-many relationship managed through ConversationMember.
+* Conversation → Message: A conversation contains multiple messages, with each message associated with its sender.
+* Message ↔ User: The MessageRead table tracks which users have read each message.
+* User → Notification: Users can receive notifications related to organisations, projects, tasks, or invitations.
+* User ↔ User: Friend relationships are represented by the Friend table.
+
+### Data types
+
+The database primarily uses:
+
+* **Int** for primary keys and foreign keys.
+* **String** for text-based data such as usernames, emails, titles, and messages.
+* **Boolean** for boolean states such as online status and notification read status.
+* **DateTime** for timestamps and deadlines.
+* **Enum** for predefined values such as roles, task statuses, priorities, invitation statuses, and notification types.
+
+Optional fields are represented with ?, for example description: String? means that a description is not required.
+
+
+table, key fields et Contraintes a faire aussi
+features a revoir
 
 ---
 
