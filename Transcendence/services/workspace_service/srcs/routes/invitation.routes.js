@@ -2,7 +2,6 @@
 import express from 'express';
 
 import { checkPermissionOrga, authenticate, loadOrgMembership, loadInvitation } from '../middleware/permissions.js';
-// import { fakeDB, newId } from '../fakeDB.js';
 import prisma from '../../../prisma/prisma.js';
 import { notifyUser } from '../utils/notifications.js';
 
@@ -22,11 +21,10 @@ async function broadcastToOrgaMembers(req, orgId, event, excludeUserId = null) {
     }
 }
 
-// router.post('/organisation/inviter') = route pour inviter qq1
+// route pour inviter qq1
 // Avant d'exécuter la fonction, Express vérifie si l'utilisateur possède la permission inviter
 // async (req, res) => { -> cette fonction sera executer lorsque la requete est recue
 // const { userId } = req.body; = recupere l'id de user
-// const { orgId } = req.user; = recupere l'orga
 router.post('/organisations/:orgId/invitations', authenticate, loadOrgMembership, checkPermissionOrga('invit_member'),
     async (req, res) => {
         try {

@@ -1,4 +1,3 @@
-// require('dotenv').config(); = charge les variables d'environnement contenues dans le .env
 // importe express qui est un framework Node.js pour créer des API (un serveur web)
 // passport : bibliothèque qui gère l'authentification (ici avec Google).
 // express.Router() : permet de regrouper les routes dans un fichier séparé.
@@ -19,22 +18,14 @@ import passport from 'passport';
 const router = express.Router();
 
 // inscription email + mot de passe
-// POST /auth/register
-// Body : { pseudo, email, password}
 router.post('/auth/register', async (req, res) => {
     try{
     const { pseudo, email, password } = req.body;
 
-    // peut etre rajouter mettre le mail et pseudo en minuscule pour normaliser ici et dans login
     if (!pseudo || !email || !password)
         return res.status(400).json({ error: 'pseudo, email and password are required' });
 
-    // soit utilise une biblio avec un validateur d'email comme zod, joi ou validator.js
-    // soit on veut pas rajouter de dependance et on fait un regex simple (= regular expression / respecte la forme) qui va verifier juste qqch@qqch.qqch
-    // ^ → début de la chaîne.
-    // [^\s@]+ → un ou plusieurs caractères qui ne sont ni un espace (\s) ni @.
-    // $ → fin de la chaîne.
-
+    // regex simple (= regular expression / respecte la forme) qui va verifier juste qqch@qqch.qqch
     const pseudoTrimmed = pseudo.trim()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -66,7 +57,7 @@ router.post('/auth/register', async (req, res) => {
     if (pseudoAlreadyExist)
          return res.status(409).json({ error: 'Pseudo already used' });
 
-    // chiffrer le mot de passe
+    // hash le mot de passe
     const passwordHash = await bcrypt.hash(password, 10);
 
 
@@ -86,7 +77,6 @@ router.post('/auth/register', async (req, res) => {
             user: { id: user.id, pseudo: user.pseudo, email: user.email, avatar: user.avatar, hasPassword: !!user.passwordHash },
         });
     } catch (err) {
-        // quand ya une erreur, ca cree automatiquement une variable avec le catch et on met le nom qu'on veut ici err
         if (err.code === 'P2002' )
             return res.status(409).json({ error: 'Email or pseudo already used'});
         console.error(err);
@@ -94,10 +84,7 @@ router.post('/auth/register', async (req, res) => {
     }
 });
 
-// connexion email + mot de passe
-// POST /auth/login
-// Body : { identifier, password }
-// en fait on veut se co par email ou pseudo a faire
+// connexion email ou pseudo + mot de passe
 router.post('/auth/login', async (req, res) => {
     try {
         const { identifier, password } = req.body;
@@ -146,34 +133,16 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // connexion google oauth
-// GET /auth/google -> redirige vers google
-// GET /auth/google/callback -> google rappelle ici
-
-// lancer la connexion google
-// quand qq1 fait une requete GET /auth/google, on execute le code qui suit cad express appelle passport.authenticate('google')
-// mais passport ne connecte pas encore l'utilisateur, il le redirige vers google
-// utilise googleStrategy car 'google' est le name definit par defaut dans googleStrategy
+// express appelle passport.authenticate('google') mais passport ne connecte pas encore l'utilisateur, il le redirige vers google
 // l'option scope: ['profile', 'email'] = demande a google l'autorisation d'acceder au profil et a l'adresse email
 // s'il accepte, google redirige vers /auth/google/callback
 router.get('/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email']}));
 
-// router.get('/auth/google/callback' = Cette route est appelée uniquement par Google après que l'utilisateur a accepté
-// refait passport.authenticate car passport doit recuperer les donnees envoyer par google, verifier que tt est correct et appeler la fonction async
-// session:false = ne cree pas de session car par defaut passport cree une session, mais ici pas de session car on utilise a la place JWT
-// failureRedirect: '/login' = si google refuse la connexion, redirige vers /login
-// passport.authenticate(
-//     'google',
-//     {
-//         session:false,
-//         failureRedirect:'/login'
-//     }
-// )
-// cette fonction demande a passport de verifier que google a bien authentifier l'utilisateur
+
+// demande a passport de verifier que google a bien authentifier l'utilisateur
 // si tout se passe bien, req.user est rempli, sinon /login est afficher
-// (req, res) => { -> Cette fonction n'est exécutée que si Passport a réussi.
 // on recupere const { token, user } = req.user;
-// res.json({ -> reponse en json envoyer au front
 router.get('/auth/google/callback',
     passport.authenticate('google', { session:false, failureRedirect: '/login'}),
     (req, res) => {
@@ -194,15 +163,7 @@ router.get('/auth/github/callback',
     passport.authenticate('github', { session: false, failureRedirect: '/login' }),
     (req, res) => {
 
-        //console.log('🔥 GITHUB CALLBACK ATTEINT');
-        //console.log('req.user =', req.user);
-
-        //console.log('GITHUB USER:', req.user);
-
         const { token, user } = req.user;
-
-        //console.log('GITHUB TOKEN:', token);
-        //console.log('GITHUB USER DATA:', user);
 
         res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
@@ -210,12 +171,7 @@ router.get('/auth/github/callback',
 
 
 // deconnexion
-// POST /auth/logout
-// le front supprime juste son token, mais on confirme cote back
-
-// logout : cote front, dev1 supprime juste le token du localstorage
-// quand le front fait POST /logout, on repond juste disconnected.
-// pour se deconnecter, il suffira de supprimer le token coter client
+// le front supprime juste son token du localstorage, on confirme juste cote back
 router.post('/auth/logout', (req, res) => {
     res.json({ message: 'Successfully logged out'});
 });
@@ -395,5 +351,4 @@ router.post('/auth/2fa/disable', authenticate, async(req, res) => {
     }
 })
 
-// on exporte tte ces routes pour pouvoir les utiliser dans le serveur principal
 export default router;

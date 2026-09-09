@@ -46,7 +46,6 @@ router.post('/organisations/:orgId/projects', authenticate, loadOrgMembership, c
 );
 
 // voir toutes les projets accessibles par l'utilisateur
-// peut etre rajouter orderBy: { createdAt: 'desc' } ou orderBy: { title: 'asc'}
 router.get('/projects', authenticate,
     async (req, res) => {
         try {
@@ -205,7 +204,6 @@ router.delete('/projects/:projectId', authenticate, loadProject, checkPermission
                     req.project.id,
                     req.user.userId,
                     'ProjectDeleted',
-                    // `${req.user.pseudo} deleted the project ${req.project.title}`,
                     req.app.get('io')
                 );
 
@@ -464,6 +462,7 @@ router.delete('/projects/:projectId/members/:userId', authenticate, loadProject,
         }
     });
 
+// modifie le role d'un utilisateur dans un projet
 router.patch('/projects/:projectId/members/:userId', authenticate, loadProject, checkPermissionProject('edit_project'),
     async (req, res) => {
         try {

@@ -365,7 +365,7 @@ router.patch('/projects/:projectId/tasks/:taskId/move', authenticate, loadProjec
     }
 );
 
-// assigner task
+// assigner ou desassigner task
 router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProject, loadTask, checkPermissionProject('assign_task'),
     async (req, res) => {
         try {
@@ -427,7 +427,6 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
                     notification = await tx.notification.create({
                         data: {
                             type: 'Assignment',
-                            // content: `You have been assigned to the task "${task.title}"`,
                             actorId: req.user.userId,
                             userId,
                             projectId: req.project.id,
@@ -491,8 +490,6 @@ router.patch('/projects/:projectId/tasks/:taskId/assign', authenticate, loadProj
     }
 );
 
-// desassigner un utilisateur d'une tache a faire
-// DELETE /projects/:projectId/tasks/:taskId/assign/:userId
 
 // supprimer task
 router.delete('/projects/:projectId/tasks/:taskId', authenticate, loadProject, loadTask, checkPermissionProject('delete_task'), canManageTask,
