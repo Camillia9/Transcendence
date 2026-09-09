@@ -262,20 +262,6 @@ function Profil() {
           />
         </div>
 
-        <div className='flex items-center justify-between'>
-          <label className='text-sm text-gray-500'>{t('profile.languageLabel')}</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className='text-sm text-gray-700 border border-gray-200 rounded-lg px-2 py-1'
-            >
-              <option value="fr">Français</option>
-              <option value="en">English</option>
-              <option value="cn">中文</option>
-
-            </select>
-        </div>
-
         {error && <p className='text-sm text-red-400'>{error}</p>}
         {success && <p className='text-sm text-green-400'>{success}</p>}
         
