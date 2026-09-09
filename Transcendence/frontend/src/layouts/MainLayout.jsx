@@ -280,7 +280,7 @@ function MainLayout() {
               className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
             >
               <Avatar src={user?.avatar} username={user?.pseudo} size="sm" />
-              <span className='text-sm text-gray-700'>{user?.pseudo}</span>
+              <span className='hidden md:inline text-sm text-gray-700'>{user?.pseudo}</span>
             </div>
             {profileMenuOpen && (
               <div className='absolute top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md
