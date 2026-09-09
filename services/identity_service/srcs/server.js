@@ -18,7 +18,7 @@ import { metricsMiddleware } from '../../shared/metrics.js';
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://localhost:8443',
+  origin: process.env.APP_URL || 'https://localhost:8443',
   credentials: true,
 }));
 

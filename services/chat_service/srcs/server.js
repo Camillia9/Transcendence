@@ -17,7 +17,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   path: '/socket.io/',
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://localhost:8443',
+    origin: process.env.APP_URL || 'https://localhost:8443',
     methods: ['GET', 'POST'],
   },
 });
@@ -25,7 +25,7 @@ const io = new Server(httpServer, {
 app.set('io', io);
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://localhost:8443',
+  origin: process.env.APP_URL || 'https://localhost:8443',
   credentials: true,
 }));
 

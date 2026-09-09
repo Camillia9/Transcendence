@@ -44,8 +44,7 @@ services:
       - backend-network
     environment:
       - PORT=3001
-      - FRONTEND_URL=${FRONTEND_URL}
-      - BACKEND_URL=${BACKEND_URL}
+      - APP_URL=${APP_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
@@ -79,7 +78,7 @@ services:
       - backend-network
     environment:
       - PORT=3002
-      - FRONTEND_URL=${FRONTEND_URL}
+      - APP_URL=${APP_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
@@ -108,7 +107,7 @@ services:
       - backend-network
     environment:
       - PORT=3003
-      - FRONTEND_URL=${FRONTEND_URL}
+      - APP_URL=${APP_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}

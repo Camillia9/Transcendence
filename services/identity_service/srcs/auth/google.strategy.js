@@ -10,7 +10,7 @@ const googleStrategy = new GoogleStrategy(
     {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${process.env.BACKEND_URL}/api/auth/google/callback`,
+        callbackURL: `${process.env.APP_URL}/api/auth/google/callback`,
     },
 
     // accessToken = jeton donner par google qui permet d'acceder aux API google

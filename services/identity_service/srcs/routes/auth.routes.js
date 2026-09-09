@@ -149,7 +149,7 @@ router.get('/auth/google/callback',
 
         const { token, user } = req.user;
         // rediriger vers le front avec le token dans l'URL
-        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        res.redirect(`${process.env.APP_URL}/oauth-success?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
 );
 
@@ -165,7 +165,7 @@ router.get('/auth/github/callback',
 
         const { token, user } = req.user;
 
-        res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        res.redirect(`${process.env.APP_URL}/oauth-success?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
 );
 
