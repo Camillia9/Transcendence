@@ -442,7 +442,7 @@ function KanbanPage() {
 
     <div className="flex flex-col gap-6">
       {/*En tete*/}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-medium text-primary-900">{project.title}</h1>
 
         {/*Bouton noouvelle tache et ajout de membres*/}
