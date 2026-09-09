@@ -1,5 +1,3 @@
-/** Minimal Prometheus /metrics endpoint (no extra npm dependency). */
-
 export function metricsMiddleware(serviceName) {
 	let requests = 0;
 

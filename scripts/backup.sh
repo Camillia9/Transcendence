@@ -34,7 +34,6 @@ pg_dump \
 mv "$TMP" "$FILE"
 echo "[backup] OK → ${FILE}"
 
-# Rotation : supprimer les dumps plus vieux que RETENTION_DAYS
 DELETED="$(find "$BACKUP_DIR" -type f -name 'transcendence_*.sql.gz' -mtime "+${RETENTION_DAYS}" -print -delete | wc -l | tr -d ' ')"
 if [ "${DELETED}" != "0" ]; then
 	echo "[backup] rotation: ${DELETED} old dump(s) deleted (>${RETENTION_DAYS}j)"
