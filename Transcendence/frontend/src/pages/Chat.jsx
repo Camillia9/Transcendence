@@ -1,4 +1,4 @@
-import { IconUser, IconUsers, IconSend, IconMessage2, IconPlus, IconCheck, IconSearch } from '@tabler/icons-react'
+import { IconUser, IconUsers, IconSend, IconMessage2, IconPlus, IconCheck, IconSearch, IconArrowLeft } from '@tabler/icons-react'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -226,7 +226,7 @@ function Chat() {
     <div className="flex gap-4 h-[calc(100vh-8rem)]">
 
       {/* COLONNE GAUCHE : liste des conversations */}
-      <div className="w-72 flex flex-col border-r border-gray-100 pr-2">
+      <div className={`${activeId ? 'hidden' : 'flex'} md:flex w-full md:w-72 flex-col border-r border-gray-100 pr-2`}>
         <button
           onClick={() => setShowNewConv(true)}
           className="flex items-center justify-center gap-2 mb-2 px-3 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
@@ -293,11 +293,18 @@ function Chat() {
       </div>
 
       {/* COLONNE DROITE : conversation ouverte  */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className={`${activeId ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-h-0`}>
         {activeConversation ? (
           <>
             {/* En-tête */}
             <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <button
+                className='md:hidden p-1 -ml-1 rounded-lg hover:bg-gray-100 transition-colors shrink-0'
+                onClick={() => setActiveId(null)}
+              >
+                <IconArrowLeft size={20} className='text-gray-500'/>
+              </button>
+              
               {activeConversation.type === 'group'
                 ? (
                   <div className="w-10 h-10 rounded-full bg-primary-900/15 flex items-center justify-center shrink-0">
