@@ -240,7 +240,7 @@ function Home() {
                 
                 {adminOrgs.length === 0 ? (
                   // Si l'utilisateur n'est admin dans auccune orga :
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-red-400">
                     {t('home.noAdminOrg')}
                   </p>
                 ) : (
