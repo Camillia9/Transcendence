@@ -220,7 +220,12 @@ function MainLayout() {
               )}
             </button>
             {notifOpen && (
-              <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-80 flex flex-col overflow-hidden z-50'>
+              <div className='absolute top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md
+                right-0
+                max-sm:fixed max-sm:left-2 max-sm:right-2 max-sm:top-16 max-sm:w-auto
+                w-80
+                flex flex-col overflow-hidden z-50'
+              >
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                   <span className='text-sm font-medium text-gray-700'>{t('mainLayout.notificationsTitle')}</span>
                   {unreadCount > 0 && (
@@ -278,7 +283,12 @@ function MainLayout() {
               <span className='text-sm text-gray-700'>{user?.pseudo}</span>
             </div>
             {profileMenuOpen && (
-              <div className='absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md w-48 flex flex-col overflow-hidden z-50'>
+              <div className='absolute top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-md
+                right-0
+                max-sm:fixed max-sm:left-2 max-sm:right-2 max-sm:top-16 max-sm:w-auto
+                w-80
+                flex flex-col overflow-hidden z-50'
+              >
                 <button
                   className='px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors'
                   onClick={() => { navigate('/profil'); setProfileMenuOpen(false)}}
