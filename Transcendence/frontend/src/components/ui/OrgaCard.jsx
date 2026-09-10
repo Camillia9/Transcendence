@@ -22,13 +22,13 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
+      className="group rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
       style={{ backgroundColor: tint, borderLeftColor: accent }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      //onMouseEnter={() => setHovered(true)}
+      //onMouseLeave={() => setHovered(false)}
     >
-      {hovered && myRole === 'Admin' && (
-        <div className="absolute top-3 right-3 flex gap-1">
+      {myRole === 'Admin' && (
+        <div className="absolute top-3 right-3 flex md:hidden md:group-hover:flex gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(orga)}}
             className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
@@ -52,7 +52,9 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
           {expanded ? "▼" : "▶"} {orga.name}
         </h3>
         <span
-          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && myRole === 'Admin' ? 'mr-12' : ''}`}
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${
+            myRole === 'Admin' ? 'mr-14 md:mr-0 md:group-hover:mr-14' : ''
+          }`}
           style={{ backgroundColor: soft, color: text }}
         >
           {myRole}
@@ -123,7 +125,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
               </span>
 
               {myRole === "Admin" && (
-                <div className="hidden group-hover:flex gap-1">
+                <div className="flex md:hidden md:group-hover:flex gap-1">
                   <button onClick={() => onEditMember(orga.id, member)}
                     className="p-1 rounded hover:bg-gray-100 text-gray-500"
                     >
@@ -163,7 +165,7 @@ export default function OrgaCard({ orga, onEdit, onDelete, onDeleteMember, onEdi
             </span>
 
             {myRole === "Admin" && (
-                <div className="hidden group-hover:flex gap-1">
+                <div className="flex md:hidden md:group-hover:flex gap-1">
                   <button onClick={() => onDeleteInvitation(orga.id, inv.id)}
                     className="p-1 rounded hover:bg-red-100 text-red-500"
                     >
