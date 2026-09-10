@@ -26,14 +26,12 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
+      className="group rounded-2xl p-5 flex flex-col gap-4 min-h-40 relative border-l-4 shadow-sm hover:shadow-md transition-shadow"
       style={{ backgroundColor: tint, borderLeftColor: accent }}   /* l'accent latéral = couleur d'avancement */
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/*Icones au survol pour le manager*/}
       {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
-      {hovered && myRole === 'Manager' && (
+      {myRole === 'Manager' && (
         <div className="absolute top-3 right-3 flex gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(project)}}
@@ -60,7 +58,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
         </h3>
         {/* Transition au survol*/}
         <span
-          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${hovered && myRole === 'Manager' ? 'mr-12' : ''}`}
+          className={`text-xs rounded-full px-2 py-0.5 whitespace-nowrap transition-all duration-200 ${myRole === 'Manager' ? 'mr-14 md:mr-0 md:group-hover:mr-14' : ''}`}
           style={{ backgroundColor: soft, color: text }}
         >
           {myRole}
