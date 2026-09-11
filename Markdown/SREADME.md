@@ -29,7 +29,6 @@ Users can work together inside organizations, create projects and tasks, manage 
 * Real-time collaboration
 * Chat
 * Notifications
-* Public API
 * Multilingual interface
 * Custom design system
 * Microservices architecture
@@ -44,7 +43,7 @@ Users can work together inside organizations, create projects and tasks, manage 
 We worked as a team of five. Alongside development, we shared project responsibilities such as product management, project management and technical coordination.
 
 
-### Mary-line
+### Makoon
 
 **Role:** Developer
 
@@ -53,11 +52,11 @@ Responsible for:
 * Backend development
 * API routing
 * Database management (Prisma schema, migrations, seed)
-* Authentification (JWT, login, Google OAuth, Github OAuth, 2FA)
+* Authentification (JWT, login, Google OAuth, GitHub OAuth, 2FA)
 * Authorization and middleware (permissions, roles)
 
 
-### Camillia
+### Camansou
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -69,7 +68,7 @@ Responsible for:
 * Dashboard and UI components
 * Internationalization
 
-### Emmanuel
+### Eieong
 
 **Roles:** Technical Lead, Developer
 
@@ -80,7 +79,7 @@ Responsible for:
 * Docker, Nginx and Makefile
 * Monitoring, health checks and backups
 
-### Nicolas
+### Niclee
 
 **Role:** Developer
 
@@ -88,7 +87,7 @@ Responsible for:
 
 * [Features / modules — TO COMPLETE]
 
-### Sarah
+### Sachanai
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -210,26 +209,27 @@ A simplified view of the architecture is:
                          └──────┬───────┘
                                 │
                          ┌──────▼───────┐
-                         │   Frontend   │
+                         │    Nginx     │
                          └──────┬───────┘
                                 │
-                 ┌──────────────┼──────────────┐
-                 │              │              │
-          ┌──────▼─────┐ ┌──────▼─────┐ ┌──────▼─────┐
-          │    User    │ │   Project  │ │   Other    │
-          │  Service   │ │   Service  │ │  Services  │
-          └──────┬─────┘ └──────┬─────┘ └──────┬─────┘
-                 │              │              │
-                 └──────────────┼──────────────┘
+              ┌─────────────────┼─────────────────┐
+              │                 │                 │
+       ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
+       │   Identity  │   │  Workspace  │   │    Chat     │
+       │   Service   │   │   Service   │   │   Service   │
+       └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
+              │                 │                 │
+              └─────────────────┼─────────────────┘
                                 │
                          ┌──────▼───────┐
                          │  PostgreSQL  │
                          └──────────────┘
 
-                    Prometheus → Grafana
-```
+                    ┌─────────────────────┐
+                    │ Prometheus / Grafana│
+                    └─────────────────────┘
 
-> The diagram should be adjusted with the exact services and communication paths used in the final version of the project.
+```
 
 ---
 
@@ -303,9 +303,33 @@ The database primarily uses:
 
 Optional fields are represented with ?, for example description: String? means that a description is not required.
 
+The database uses several enums to restrict values and maintain data consistency:
 
-table, key fields et Contraintes a faire aussi
-features a revoir
+| Enum | Values | Usage |
+| --- | --- | --- |
+| OrganisationRole | Admin, Member | Organization roles |
+| ProjectRole | Manager, User | Project roles |
+| Priority | Low, Normal, Urgent | Task priority |
+| Colonne | ToDo, Doing, Blocked, Done | Task/board columns |
+| TypeConversation | Private, Group | Conversation type |
+| UserStatus | Available, Away, Busy | User availability |
+| Language | fr, en, cn | User language |
+| InvitationStatus | Pending, Accepted, Declined, Cancelled | Invitation state |
+| TypeNotification | Assignment, InvitationSent, InvitationAccepted, InvitationDeclined, InvitationCancelled, MemberLeftOrga, RoleChanged, RemovedFromOrga, MemberRemoved, OrgaUpdated, OrgaDeleted, ProjectUpdated, ProjectDeleted, RemovedFromProject, ProjectRoleUpdated, DeplacementTache | Notification events |
+
+### Data integrity
+
+Several constraints are used to ensure database consistency:
+
+* Primary keys are defined with @id.
+* Unique fields such as User.pseudo, User.email, User.githubId and User.googleId prevent duplicate accounts.
+* Composite primary keys are used for junction tables such as Member, ProjectMember, ConversationMember and MessageRead.
+* Foreign keys maintain relationships between entities.
+* onDelete: Cascade is used when dependent records should be removed automatically.
+* onDelete: SetNull is used for optional relationships where the referenced entity can be deleted without deleting the dependent record.
+* Tasks use a unique constraint on (projectId, status, position) to guarantee a unique position within each board column.
+
+
 
 ---
 
@@ -313,11 +337,11 @@ features a revoir
 
 ## Authentication & User Management
 
-Users can create and manage their accounts and profiles.
+Users can create and manage their accounts and profiles. Authentication allows users to securely authenticate to the application.
 
 The application also provides user interaction features such as profiles, friends and online status.
 
-**Contributors:** [TO COMPLETE]
+**Contributor:** Makoon
 
 ---
 
@@ -327,9 +351,10 @@ OAuth provides an alternative authentication method using an external identity p
 
 Two-factor authentication adds an additional security step to user accounts.
 
-**OAuth provider:** [TO COMPLETE]
+**OAuth provider:** Google, GitHub
+**Two-factor provider:** Authenticator app
 
-**Contributors:** [TO COMPLETE]
+**Contributor:** Makoon
 
 ---
 
@@ -339,7 +364,7 @@ Organizations provide a shared workspace for several users.
 
 Members have different permissions depending on their role. This controls which actions they can perform on organizations, projects and other resources.
 
-**Contributors:** [TO COMPLETE]
+**Contributor:** Makoon
 
 ---
 
@@ -349,7 +374,15 @@ Projects and tasks are the main organizational part of TaskBoard.
 
 Users can create and manage projects and tasks and assign work to members according to their permissions.
 
-**Contributors:** Cam, Marylin, [TO COMPLETE]
+**Contributors:** Camansou, Makoon
+
+---
+
+## Invitations
+
+This allows users to invite other users to join an organization and manage invitation requests.
+
+**Contributor:** Makoon
 
 ---
 
@@ -382,35 +415,7 @@ This means that users can receive updates without manually refreshing the applic
 
 The notification system informs users about relevant events happening in the application.
 
-**Contributors:** [TO COMPLETE]
-
----
-
-## Public API
-
-TaskBoard provides a public API that can be used by external clients.
-
-The API includes:
-
-* secured API key authentication;
-* rate limiting;
-* API documentation;
-* at least five endpoints;
-* several HTTP methods.
-
-### Main endpoints
-
-```text
-GET     /api/[endpoint]
-POST    /api/[endpoint]
-PUT     /api/[endpoint]
-DELETE  /api/[endpoint]
-...
-```
-
-**Exact endpoints:** [TO COMPLETE]
-
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon, Niclee
 
 ---
 
@@ -442,11 +447,11 @@ We chose modules that fit naturally with the idea of a collaborative project man
 
 According to the subject, a **Major is worth 2 points** and a **Minor is worth 1 point**.
 
-Our selected modules give us a total of **27 points**.
+Our selected modules give us a total of **26 points**.
 
 ---
 
-## Web — 12 points
+## Web — 10 points
 
 ### Major — Framework for frontend and backend — 2 pts
 
@@ -454,9 +459,9 @@ We use frameworks for both the frontend and backend to structure the application
 
 **Why we chose it:** it provides a clear structure for a large web application and makes it easier to separate responsibilities.
 
-**Implementation:** [EXACT FRAMEWORKS — TO COMPLETE]
+**Implementation:** React for frontend framework and Express for backend framework
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Camansou, Makoon, Eieong
 
 ---
 
@@ -478,17 +483,7 @@ This module is implemented through user profiles, friends, online status and cha
 
 **Why we chose it:** TaskBoard is designed around collaboration between users.
 
-**Contributors:** [TO COMPLETE]
-
----
-
-### Major — Public API — 2 pts
-
-The application exposes a public API with secured API keys, rate limiting, documentation and multiple endpoints using different HTTP methods.
-
-**Why we chose it:** it allows external clients to interact with TaskBoard without depending directly on the frontend.
-
-**Contributors:** [TO COMPLETE]
+**Contributors:** Camansou, Makoon, Niclee
 
 ---
 
@@ -498,7 +493,7 @@ Prisma is used to manage the PostgreSQL database from the backend.
 
 **Why we chose it:** it makes database access and relations easier to maintain.
 
-**Contributors:** [TO COMPLETE]
+**Contributor:** Makoon
 
 ---
 
@@ -508,7 +503,7 @@ The application provides notifications for relevant actions.
 
 **Why we chose it:** users should be informed about important changes without having to constantly check every project.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon, Niclee, Camansou
 
 ---
 
@@ -528,11 +523,11 @@ We created our own reusable UI components and a common visual style.
 
 **Why we chose it:** using shared components keeps the interface consistent and avoids duplicated code.
 
-**Contributors:** Camillia, Sarah
+**Contributors:** Camansou, Sachanai
 
 ---
 
-## Accessibility — 1 point
+## Accessibility — 2 points
 
 ### Minor — Multiple Languages — 1 pt
 
@@ -542,7 +537,17 @@ The application supports three languages: English, French and Chinese.
 
 **Implementation:** i18n system + language switcher.
 
-**Contributors:** Sarah
+**Contributors:** Sachanai
+
+---
+
+### Minor — Support for additional browsers  — 1 pt
+
+The application is compatible with Firefox, Chrome and Brave.
+
+**Why we chose it:** we wanted the application to be usable on different browsers.
+
+**Contributors:** Camansou
 
 ---
 
@@ -552,7 +557,7 @@ The application supports three languages: English, French and Chinese.
 
 Users can manage their accounts and profiles, interact with other users and see their online status.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon
 
 ---
 
@@ -560,9 +565,9 @@ Users can manage their accounts and profiles, interact with other users and see 
 
 OAuth provides an alternative way to authenticate users through an external identity provider.
 
-**Provider:** [TO COMPLETE]
+**Provider:** Google, GitHub
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon
 
 ---
 
@@ -572,7 +577,7 @@ Different roles have different permissions inside organizations and projects.
 
 **Why we chose it:** a collaborative application needs to control which members can perform administrative or project-related actions.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon
 
 ---
 
@@ -584,7 +589,7 @@ Members can be managed and their permissions can be controlled according to thei
 
 **Why we chose it:** organizations are at the center of our collaborative dashboard.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon
 
 ---
 
@@ -592,9 +597,9 @@ Members can be managed and their permissions can be controlled according to thei
 
 2FA adds an additional authentication step to protect user accounts.
 
-**Implementation:** [TO COMPLETE]
+**Implementation:** Authenticator app
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon
 
 ---
 
@@ -608,7 +613,7 @@ The backend is divided into several services with different responsibilities.
 
 **Implementation:** three Node.js services behind Nginx, orchestrated with Docker Compose: **identity**, **chat** and **workspace**. They share PostgreSQL via Prisma. Inter-service calls use an internal API key and stay on the backend network.
 
-**Contributors:** Emmanuel
+**Contributors:** Eieong
 
 ---
 
@@ -620,7 +625,7 @@ Prometheus collects metrics while Grafana provides dashboards and visualizations
 
 **Implementation:** Prometheus scrapes `/metrics` on the three services plus **postgres-exporter**. Grafana ships two dashboards: overview (uptime, HTTP traffic, firing alerts) and Postgres. Alert rules: **ServiceDown** and **PostgresDown**.
 
-**Contributors:** Emmanuel
+**Contributors:** Eieong
 
 ---
 
@@ -632,7 +637,7 @@ The application provides health checks and a status page showing the state of th
 
 **Implementation:** each service has a `/health` endpoint. A status page shows whether identity, chat and workspace are up. Backups of the database run automatically.
 
-**Contributors:** Emmanuel
+**Contributors:** Eieong
 
 ---
 
@@ -658,13 +663,13 @@ These include:
 # Module Point Calculation
 
 ```text
-Web                                      12 pts
-Accessibility                             1 pt
+Web                                      10 pts
+Accessibility                             2 pts
 User Management                           8 pts
 DevOps                                    5 pts
 Data & Analytics                          1 pt
                                           ─────
-TOTAL                                    27 pts
+TOTAL                                    26 pts
 ```
 
 ---
@@ -673,7 +678,7 @@ TOTAL                                    27 pts
 
 This section summarizes the concrete work done by each member.
 
-## Sarah
+## Sachanai
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -693,7 +698,7 @@ This section summarizes the concrete work done by each member.
 
 ---
 
-## Camillia
+## Camansou
 
 **Roles:** Product Owner, Project Manager, Developer
 
@@ -715,7 +720,7 @@ This section summarizes the concrete work done by each member.
 
 ---
 
-## Emmanuel
+## Eieong
 
 **Roles:** Technical Lead, Developer
 
@@ -738,7 +743,7 @@ Services were isolated behind Nginx, with a shared database and an internal API 
 
 ---
 
-## Nicolas
+## Niclee
 
 **Role:** Developer
 
@@ -758,27 +763,29 @@ Services were isolated behind Nginx, with a shared database and an internal API 
 
 ---
 
-## Mary-line
+## Makoon
 
 **Role:** Developer
 
 **Main contributions:**
 
-* Frontend development
-* Dashboard pages
-* i18n integration
-* English / French / Chinese translations
-* Language switcher
-* Reusable UI components
-* [TO COMPLETE]
+* Backend development
+* API routing
+* Database management (Prisma schema, migrations, seed)
+* Authentication (JWT, login, Google OAuth, GitHub OAuth, 2FA)
+* Authorization and middleware (permissions, roles)
 
 **Main challenge:**
 
-[TO COMPLETE]
+One of the main challenges was designing the database structure and managing the relationships between users, organizations, projects and tasks. The application contains several connected entities, with many-to-many relationships for organization and project members, as well as different roles and permissions depending on  the context.
+
+The second one is designing a secure and consistent authentication and authorization system while supporting multiple authentication methods, including traditional login, Google OAuth, GitHub OAuth and two-factor authentication.
 
 **How it was solved:**
 
-[TO COMPLETE]
+The database schema was designed using Prisma and carefully defined the relationships between the different models. Junction tables such as Member and ProjectMember were used to handle many-to-many relationships while storing the user's role. Prisma migrations and seed data were used to test and validate the database structure during development.
+
+The authentication system was centralized around JWT-based sessions, with dedicated flows for each authentication method. Middleware was implemented to verify authentication tokens and check user permissions before accessing protected API routes. Roles and permissions were handled at both the organization and project levels. Prisma was used to maintain the relationships between users, organizations, projects and roles.
 
 ---
 
