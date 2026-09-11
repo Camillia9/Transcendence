@@ -89,7 +89,7 @@ Responsible for:
 
 ### Sachanai
 
-**Roles:** Product Owner, Project Manager, Developer
+**Roles:** Developer
 
 Responsible for:
 
@@ -122,11 +122,15 @@ Because frontend, backend and database changes are often connected, we regularly
 
 ## Frontend
 
-**[EXACT FRONTEND TECHNOLOGY — TO COMPLETE]**
+**React**
 
-Used to build the dashboard, pages and reusable interface components.
 
-The frontend communicates with the backend through the API and WebSockets and also handles the multilingual interface.
+
+**Vite**
+
+
+**Tailwind CSS**
+
 
 ---
 
@@ -429,15 +433,15 @@ The design system currently includes at least ten reusable components:
 1. Button
 2. Card
 3. Input
-4. [Component]
-5. [Component]
-6. [Component]
-7. [Component]
-8. [Component]
-9. [Component]
-10. [Component]
+4. Avatar
+5. Badge
+6. Logo
+7. Modal
+8. TaskCard
+9. TaskPanel
+10. KanbanColumn
 
-**Contributors:** Cam [TO COMPLETE]
+**Contributors:** Camansou
 
 ---
 
@@ -654,9 +658,9 @@ These include:
 * deleting personal data;
 * confirmation before destructive operations.
 
-**Implementation:** [TO COMPLETE]
+**Implementation:** GET /profile/export returns the user's personal data as a downloadable payload, excluding passwordHash and twoFactorSecret. Export and account deletion both trigger a confirmation email (nodemailer + Mailhog in dev), and destructive operations require explicit confirmation.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Camansou
 
 ---
 
@@ -680,7 +684,7 @@ This section summarizes the concrete work done by each member.
 
 ## Sachanai
 
-**Roles:** Product Owner, Project Manager, Developer
+**Roles:** Developer
 
 **Main contributions:**
 
@@ -704,19 +708,22 @@ This section summarizes the concrete work done by each member.
 
 **Main contributions:**
 
-* Frontend development
-* Dashboard
-* Reusable UI components
-* i18n
-* [TO COMPLETE]
+* Frontend architecture and all UI development (React + Vite + Tailwind, mobile-first)
+* Kanban dashboard with drag-and-drop task management (@dnd-kit)
+* Reusable design system components (Avatar, Button, Modal, Input, Card, Badge, …)
+* Centralized frontend API layer (apiRequest) with progressive mock-to-real wiring
+* Notifications display, friends, and organization/project member management UI
+* Cross-browser compatibility (Firefox / Chromium / Brave)
+* GDPR: personal data export endpoint (GET /profile/export) with confirmation emails
+* Product ownership and project management: roadmap, module selection, task distribution
 
 **Main challenge:**
 
-[TO COMPLETE]
+Building the entire frontend before the backend was ready, without blocking the team.
 
 **How it was solved:**
 
-[TO COMPLETE]
+I developed each frontend resource using mock data and a resource-specific `USE_MOCK` flag, allowing the user interface to evolve independently of the backend. As actual endpoints became available, I toggled the flag and connected the resource to the real API via the centralized `apiRequest` utility function, while ensuring consistency between optimistic UI updates and server responses. This approach enabled the team to work in parallel without mutual dependencies and facilitated a gradual integration process.
 
 ---
 
