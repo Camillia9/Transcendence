@@ -456,6 +456,7 @@ function Organisations() {
             name="role"
             value={newRole}
             onChange={(e) => setNewRole(e.target.value)}
+            className="w-full text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-600"
           >
             <option value="Admin">{t('organisation.roles.admin')}</option>
             <option value="Member">{t('organisation.roles.member')}</option>
