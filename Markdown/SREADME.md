@@ -85,7 +85,11 @@ Responsible for:
 
 Responsible for:
 
-* [Features / modules — TO COMPLETE]
+* Real-time collaboration (WebSockets / Socket.IO) across Kanban, Chat, Organisation and Friends pages
+* Chat feature (backend routes, conversations, messages, read/unread status)
+* Notification system (task, chat and organisation/project events)
+* Permission and access-control fixes tied to real-time events (removal from an organisation/project, task assignment)
+* Input validation limits (username, password, organisation, project, task)
 
 ### Sachanai
 
@@ -397,7 +401,7 @@ Users can interact through:
 
 These features allow TaskBoard to be used as a collaborative workspace rather than only as a task tracker.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Makoon, Niclee
 
 ---
 
@@ -407,7 +411,9 @@ WebSockets are used to synchronize relevant changes between connected users.
 
 This means that users can receive updates without manually refreshing the application.
 
-**Contributors:** [TO COMPLETE]
+**Implementation:** Socket.IO rooms are used per organisation, project and conversation. Events keep the Kanban board (task creation, deletion and drag-and-drop between columns), the organisation/friends pages and the chat in sync between all connected members in real time.
+
+**Contributors:** Niclee
 
 ---
 
@@ -473,7 +479,7 @@ We use WebSockets for real-time communication between connected users.
 
 **Implementation:** real-time events are sent to connected clients when relevant changes occur.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Niclee
 
 ---
 
@@ -513,7 +519,7 @@ Real-time updates allow several connected users to see relevant changes without 
 
 **Why we chose it:** it improves the collaborative experience of the dashboard.
 
-**Contributors:** [TO COMPLETE]
+**Contributors:** Niclee
 
 ---
 
@@ -749,17 +755,18 @@ Services were isolated behind Nginx, with a shared database and an internal API 
 
 **Main contributions:**
 
-* [TO COMPLETE]
-* [TO COMPLETE]
-* [TO COMPLETE]
+* Real-time collaboration with WebSockets (Socket.IO): live updates on the Kanban board (task creation, deletion, drag-and-drop between columns), the organisation and friends pages, and the chat
+* Chat feature: backend routes for conversations and messages, read/unread status
+* Notification system: task, chat and organisation/project events
+* Bug fixes and permission handling around real-time events (redirect to home when a user is kicked from or their organisation/project is deleted, removing task permissions when unassigned) and input validation limits (username, password, organisation, project, task)
 
 **Main challenge:**
 
-[TO COMPLETE]
+Keeping the application state consistent in real time across several connected clients. Since Kanban tasks, organisation membership and chat all needed to update instantly for every affected user, a change made by one member (e.g. being kicked from an organisation, or a task being reassigned) had to be reflected immediately and safely on every other connected client, without breaking permissions or leaving a user on a page they no longer had access to.
 
 **How it was solved:**
 
-[TO COMPLETE]
+Socket.IO rooms were used to scope real-time events per organisation, project and conversation, so updates are only broadcast to the members concerned. Several iterations were needed to fix edge cases (users staying on a page after losing access, stale permissions on tasks, notifications not matching the read/unread state) by refining the socket events and adding redirects and permission checks whenever a user's access changed.
 
 ---
 
