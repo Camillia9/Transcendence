@@ -95,11 +95,11 @@ Responsible for:
 
 **Roles:** Developer
 
-Responsible for:
+Responsible for :
 
 * Product planning and priorities
 * Project organization
-* [Development responsibilities — TO COMPLETE]
+* Internationalization (i18n): full French, English and Chinese support across TaskBoard, language switcher, and the related localization fixes
 
 ---
 
