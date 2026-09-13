@@ -1,6 +1,6 @@
 export const privacyPolicy = {
   title: "Privacy Policy — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "09/13/26",
   sections: [
     {
       heading: "1. Introduction",
@@ -67,7 +67,7 @@ export const privacyPolicy = {
           "Erasure: delete your account and your data.",
           "Portability: request a copy of your data.",
         ] },
-        { type: "p", text: "To exercise these rights, contact us at [contact email address]." },
+        { type: "p", text: "To exercise these rights, contact us at TaskboardPro@mail.com." },
       ],
     },
     {
@@ -85,7 +85,7 @@ export const privacyPolicy = {
     {
       heading: "11. Contact",
       blocks: [
-        { type: "p", text: "For any question regarding your personal data: [contact email address]." },
+        { type: "p", text: "For any question regarding your personal data: TaskboardPro@mail.com." },
       ],
     },
   ],
@@ -93,7 +93,7 @@ export const privacyPolicy = {
 
 export const termsOfService = {
   title: "Terms of Service — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "09/13/26",
   sections: [
     {
       heading: "1. Acceptance of terms",
@@ -163,7 +163,7 @@ export const termsOfService = {
     {
       heading: "10. Contact",
       blocks: [
-        { type: "p", text: "For any question regarding these terms: [contact email address]." },
+        { type: "p", text: "For any question regarding these terms: TaskboardPro@mail.com." },
       ],
     },
   ],

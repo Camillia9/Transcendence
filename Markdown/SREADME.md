@@ -694,17 +694,17 @@ This section summarizes the concrete work done by each member.
 
 **Main contributions:**
 
-* [TO COMPLETE]
-* [TO COMPLETE]
-* [TO COMPLETE]
+* Built the i18n module with react-i18next: the whole app in French, English and Chinese, with a language switcher and the choice saved between sessions. Ten pages plus the shared components — MainLayout, DesignSystem, TaskCard, TaskPanel, OrgaCard, FriendCard — and the status, priority and time helpers.
+* Fixed localization bugs found along the way: dates and timestamps stayed in French format whatever the language, presence statuses were hardcoded in French, and TaskPanel called its React hooks in a wrong order.
+* Reported the pre-existing bugs found while going through every page, outside this module's scope, so the team could pick them up.
 
 **Main challenge:**
 
-[TO COMPLETE]
+Some text could not simply be wrapped in a translation call. On Chat, the functions that build the messages are declared outside the React component, so they cannot use the translation hook. The legal pages had the same issue, since their content comes from static files rather than the API.
 
 **How it was solved:**
 
-[TO COMPLETE]
+For Chat, the translation function and the active language are passed in as parameters, with a mapping to real locale codes (`cn` had to become `zh-CN`). For the legal pages, one content file per language and a hook that picks the right one. For sentences with bold text inside, react-i18next's `Trans` component.
 
 ---
 
@@ -812,7 +812,7 @@ The following tools are required:
 * Git
 * Docker
 * Docker Compose
-* [Other requirements — TO COMPLETE]
+
 
 **Versions used:**
 

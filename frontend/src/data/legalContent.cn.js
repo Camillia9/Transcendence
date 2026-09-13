@@ -1,6 +1,6 @@
 export const privacyPolicy = {
   title: "隐私政策 — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "2026年9月13日",
   sections: [
     {
       heading: "1. 介绍",
@@ -67,7 +67,7 @@ export const privacyPolicy = {
           "删除权：删除您的账户及数据。",
           "可携带权：请求获取您数据的副本。",
         ] },
-        { type: "p", text: "如需行使这些权利，请通过 [联系邮箱地址] 与我们联系。" },
+        { type: "p", text: "如需行使这些权利，请通过 TaskboardPro@mail.com。" },
       ],
     },
     {
@@ -85,7 +85,7 @@ export const privacyPolicy = {
     {
       heading: "11. 联系方式",
       blocks: [
-        { type: "p", text: "如对您的个人数据有任何疑问，请联系：[联系邮箱地址]。" },
+        { type: "p", text: "如对您的个人数据有任何疑问，请联系：TaskboardPro@mail.com。" },
       ],
     },
   ],
@@ -93,7 +93,7 @@ export const privacyPolicy = {
 
 export const termsOfService = {
   title: "服务条款 — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "2026年9月13日",
   sections: [
     {
       heading: "1. 条款的接受",
@@ -163,7 +163,7 @@ export const termsOfService = {
     {
       heading: "10. 联系方式",
       blocks: [
-        { type: "p", text: "如对本条款有任何疑问，请联系：[联系邮箱地址]。" },
+        { type: "p", text: "如对本条款有任何疑问，请联系：TaskboardPro@mail.com。" },
       ],
     },
   ],

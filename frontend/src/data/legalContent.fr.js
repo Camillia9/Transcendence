@@ -1,6 +1,6 @@
 export const privacyPolicy = {
   title: "Politique de confidentialité — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "13/09/26",
   sections: [
     {
       heading: "1. Introduction",
@@ -67,7 +67,7 @@ export const privacyPolicy = {
           "Effacement : supprimer votre compte et vos données.",
           "Portabilité : demander une copie de vos données.",
         ] },
-        { type: "p", text: "Pour exercer ces droits, contactez-nous à [adresse e-mail de contact]." },
+        { type: "p", text: "Pour exercer ces droits, contactez-nous à TaskboardPro@mail.com." },
       ],
     },
     {
@@ -85,7 +85,7 @@ export const privacyPolicy = {
     {
       heading: "11. Contact",
       blocks: [
-        { type: "p", text: "Pour toute question relative à vos données personnelles : [adresse e-mail de contact]." },
+        { type: "p", text: "Pour toute question relative à vos données personnelles : TaskboardPro@mail.com." },
       ],
     },
   ],
@@ -93,7 +93,7 @@ export const privacyPolicy = {
 
 export const termsOfService = {
   title: "Conditions d'utilisation — TaskBoard",
-  lastUpdated: "[date]",
+  lastUpdated: "13/09/26",
   sections: [
     {
       heading: "1. Acceptation des conditions",
@@ -163,7 +163,7 @@ export const termsOfService = {
     {
       heading: "10. Contact",
       blocks: [
-        { type: "p", text: "Pour toute question relative à ces conditions : [adresse e-mail de contact]." },
+        { type: "p", text: "Pour toute question relative à ces conditions : TaskboardPro@mail.com." },
       ],
     },
   ],
