@@ -128,13 +128,15 @@ Because frontend, backend and database changes are often connected, we regularly
 
 **React**
 
-
+We chose React as the JavaScript library used to build the user interface. Its component-based model fits our application well, since the dashboard is made of many repeated and reusable elements such as cards, board columns, modals and inputs. React's reactive state management also makes it straightforward to keep the interface in sync with real-time updates coming from the backend, and its large ecosystem gave us reliable tools for routing, drag-and-drop and internationalization.
 
 **Vite**
 
+We chose Vite as the build tool and development server for the frontend. It provides a very fast development experience thanks to instant hot module replacement, which noticeably sped up our iteration while building the UI. Vite relies on native ES modules and requires minimal configuration, while still producing an optimized bundle for production.
 
 **Tailwind CSS**
 
+We chose Tailwind CSS as our styling solution, following a utility-first approach with no inline styles. Applying styles directly through utility classes let us build a consistent design system and keep visual choices uniform across the whole application without maintaining separate CSS files. It also made it fast to develop a responsive, mobile-first interface that stays coherent with our reusable component library.
 
 ---
 
@@ -810,16 +812,17 @@ The authentication system was centralized around JWT-based sessions, with dedica
 The following tools are required:
 
 * Git
-* Docker
-* Docker Compose
+* Docker/Podman
+* Docker/Podman Compose
 
 
 **Versions used:**
 
 ```text
-Docker: [VERSION]
-Docker Compose: [VERSION]
-[Other: VERSION]
+Docker: 29.4.3
+Docker Compose: 5.1.4
+Podman: 5.8.4
+Podman-compose: 1.6.0
 ```
 
 ---
@@ -837,7 +840,22 @@ cp .env.example .env
 Then fill in the required variables:
 
 ```text
-[LIST REQUIRED VARIABLES — TO COMPLETE]
+POSTGRES_USER
+POSTGRES_PASSWORD
+POSTGRES_DB
+DATABASE_URL
+INTERNAL_API_KEY
+JWT_SECRET
+PORT
+APP_URL
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+BACKUP_RETENTION_DAYS
+BACKUP_INTERVAL_SECOND
+GRAFANA_ADMIN_USER
+GRAFANA_ADMIN_PASSWORD
 ```
 
 The `.env` file must not be committed to the repository.
@@ -883,16 +901,43 @@ Grafana:     https://localhost:8443/grafana
 
 We mainly used official documentation and technical references while developing the project.
 
-* React / frontend framework documentation
-* Backend framework documentation
-* PostgreSQL documentation
-* Prisma documentation
-* Docker documentation
-* WebSocket / Socket.IO documentation
-* Prometheus documentation
-* Grafana documentation
-* OAuth documentation
-* [Other documentation actually used by the team]
+**Frontend**
+
+* React — https://react.dev
+* Vite — https://vite.dev
+* Tailwind CSS — https://tailwindcss.com/docs
+* React Router — https://reactrouter.com
+* dnd kit (drag-and-drop) — https://docs.dndkit.com
+* i18next / react-i18next — https://www.i18next.com · https://react.i18next.com
+
+**Backend**
+
+* Node.js — https://nodejs.org/docs/latest/api/
+* Express — https://expressjs.com
+* Passport.js — https://www.passportjs.org
+* JSON Web Tokens — https://jwt.io
+
+**Database**
+
+* PostgreSQL — https://www.postgresql.org/docs/
+* Prisma — https://www.prisma.io/docs
+
+**Real-time**
+
+* Socket.IO — https://socket.io/docs/v4/
+
+**DevOps & Monitoring**
+
+* Docker — https://docs.docker.com
+* Docker Compose — https://docs.docker.com/compose/
+* Nginx — https://nginx.org/en/docs/
+* Prometheus — https://prometheus.io/docs/
+* Grafana — https://grafana.com/docs/
+
+**Authentication providers**
+
+* Google OAuth 2.0 — https://developers.google.com/identity/protocols/oauth2
+* GitHub OAuth — https://docs.github.com/en/apps/oauth-apps
 
 We used these resources mainly to understand APIs, authentication, database relations, WebSockets, containerization and monitoring.
 
