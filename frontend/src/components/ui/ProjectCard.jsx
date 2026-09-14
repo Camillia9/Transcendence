@@ -32,7 +32,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       {/*Icones au survol pour le manager*/}
       {/* stopPropagation: s'arrête au bouton edit, ne remonte pas aux parents en ouvrant une page */}
       {myRole === 'Manager' && (
-        <div className="absolute top-3 right-3 flex gap-1">
+        <div className="absolute top-3 right-3 flex md:hidden md:group-hover:flex gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(project)}}
             className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
