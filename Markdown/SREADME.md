@@ -212,20 +212,20 @@ The application is split into several services, each with a specific responsibil
 A simplified view of the architecture is:
 
 ```text
-                         ┌──────────────┐
-                         │   Browser    │
-                         └──────┬───────┘
+                         ┌─────────────┐
+                         │   Browser   │
+                         └──────┬──────┘
                                 │
-                         ┌──────▼───────┐
-                         │    Nginx     │
-                         └──────┬───────┘
+                         ┌──────▼──────┐
+                         │    Nginx    │
+                         └──────┬──────┘
                                 │
               ┌─────────────────┼─────────────────┐
               │                 │                 │
-       ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
-       │   Identity  │   │  Workspace  │   │    Chat     │
-       │   Service   │   │   Service   │   │   Service   │
-       └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
+       ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼─────┐
+       │   Identity  │   │  Workspace  │   │    Chat    │
+       │   Service   │   │   Service   │   │   Service  │
+       └──────┬──────┘   └──────┬──────┘   └──────┬─────┘
               │                 │                 │
               └─────────────────┼─────────────────┘
                                 │
@@ -233,9 +233,9 @@ A simplified view of the architecture is:
                          │  PostgreSQL  │
                          └──────────────┘
 
-                    ┌─────────────────────┐
-                    │ Prometheus / Grafana│
-                    └─────────────────────┘
+                    ┌──────────────────────┐
+                    │ Prometheus / Grafana │
+                    └──────────────────────┘
 
 ```
 
@@ -248,33 +248,34 @@ TaskBoard uses **PostgreSQL** with **Prisma**.
 The main relationships are based around users and collaborative workspaces:
 
 ```text
-User
+┌────────┐
+|  User  |
+└┬───────┘
  │
- ├──< Member >── Organisation
- │                  │
- │                  └──< Project
- │                         │
- │                         ├──< ProjectMember >── User
- │                         │
- │                         └──< Task
- │                                │
- │                                ├── assignedTo ──> User
- │                                ├── createdBy ───> User
- │                                └──< Comment >── User
+ ├──> Member ──> Organisation ──> Project
+ │                                 │
+ │                                 ├── ProjectMember ── User
+ │                                 │
+ │                                 └── Task
+ │                                      │
+ │                                      ├── assignedTo ── User
+ │                                      ├── createdBy ─── User
+ │                                      └── Comment ───── User
  │
- ├──< Invitation >── Organisation
+ ├──> Invitation ──> Organisation
  │
- ├──< Notification
+ ├──> Notification
  │
- ├──< Friend >── User
+ ├──> Friend ──> User
  │
- └──< ConversationMember >── Conversation
-                                  │
-                                  └──< Message >── User
-                                           │
-                                           └──< MessageRead >── User
-
+ └──> ConversationMember ──> Conversation ──> Message
+                                               │
+                                               └── MessageRead ── User
 ```
+
+- `<table>` in the middle of two entities is a **junction table** (many-to-many).
+- Solid arrows are **one-to-many** (one organisation has many projects).
+- `createdBy` / `assignedTo` are **foreign keys** on `Task` pointing back to `User`.
 
 ### Main entities
 
